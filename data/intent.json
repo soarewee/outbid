@@ -1,0 +1,7 @@
+{
+  "category": "design-tool",
+  "seats": 10,
+  "budget": { "amount": 1500, "currency": "USD", "per": "month" },
+  "termMonths": 12,
+  "merchantCategory": "5734"
+}

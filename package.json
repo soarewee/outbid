@@ -8,6 +8,8 @@
     "node": ">=20"
   },
   "scripts": {
-    "spike": "node --env-file=.env spike.mjs"
+    "spike": "node --env-file=.env spike.mjs",
+    "auction": "node --env-file=.env src/auction-cli.mjs",
+    "test": "node --test"
   }
 }
