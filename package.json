@@ -1,0 +1,13 @@
+{
+  "name": "outbid",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Outbid: vendors bid for an agent's purchase intent and the winning bid becomes an Airwallex virtual card",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "spike": "node --env-file=.env spike.mjs"
+  }
+}
