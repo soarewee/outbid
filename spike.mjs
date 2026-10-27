@@ -4,10 +4,8 @@
 // Run: npm run spike   (reads .env)
 import { randomUUID } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
+import { createClient, waitFor } from "./src/airwallex.mjs";
 
-const BASE = process.env.AIRWALLEX_BASE ?? "https://api.sandbox.airwallex.com";
-const CLIENT_ID = process.env.AIRWALLEX_CLIENT_ID;
-const API_KEY = process.env.AIRWALLEX_API_KEY;
 const CREATED_BY = process.env.AIRWALLEX_CREATED_BY ?? "Outbid Spike";
 
 // The winning bid from the demo story: Vendor A, $1,350 per month, a software merchant.
@@ -18,46 +16,14 @@ const CHARGES = [
   { label: "Wrong merchant (restaurant)", amount: 100, mcc: "5812", expect: "declined" },
 ];
 
-if (!CLIENT_ID || !API_KEY) {
-  console.error("Set AIRWALLEX_CLIENT_ID and AIRWALLEX_API_KEY in .env (see .env.example).");
+let aw;
+try {
+  aw = createClient();
+} catch (error) {
+  console.error(error.message);
   process.exit(1);
 }
-if (/\s/.test(CLIENT_ID) || /\s/.test(API_KEY)) {
-  console.error("AIRWALLEX_CLIENT_ID or AIRWALLEX_API_KEY contains spaces. Paste only the value from Account → Developer → API keys.");
-  process.exit(1);
-}
-
-const log = [];
-let token;
-
-async function api(method, path, body) {
-  const headers = { "Content-Type": "application/json" };
-  if (token) headers.Authorization = `Bearer ${token}`;
-  else Object.assign(headers, { "x-client-id": CLIENT_ID, "x-api-key": API_KEY });
-  const res = await fetch(`${BASE}${path}`, { method, headers, body: body ? JSON.stringify(body) : undefined });
-  const text = await res.text();
-  let data;
-  try {
-    data = text ? JSON.parse(text) : {};
-  } catch {
-    log.push({ method, path, status: res.status, body, response: text.slice(0, 500) });
-    throw new Error(`${method} ${path} → ${res.status} returned HTML, not JSON. Check AIRWALLEX_BASE and that the keys are correct.`);
-  }
-  log.push({ method, path, status: res.status, body, response: data });
-  if (!res.ok) throw Object.assign(new Error(`${method} ${path} → ${res.status}: ${text}`), { status: res.status, data });
-  return data;
-}
-
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-async function waitFor(label, fetchStatus, done, tries = 20) {
-  for (let i = 0; i < tries; i++) {
-    const status = await fetchStatus();
-    if (done(status)) return status;
-    await sleep(1500);
-  }
-  throw new Error(`${label} did not become ready in time`);
-}
+const api = (method, path, body) => (method === "GET" ? aw.get(path) : aw.post(path, body));
 
 async function ensureFunds() {
   const accounts = await api("GET", "/api/v1/global_accounts");
@@ -152,7 +118,7 @@ async function charge(cardId, { label, amount, mcc, expect }) {
 
 const results = [];
 try {
-  await api("POST", "/api/v1/authentication/login").then((r) => (token = r.token));
+  await aw.login();
   console.log("✓ Logged in to the Airwallex sandbox");
   await ensureFunds();
   const cardholderId = await createCardholder();
@@ -166,7 +132,7 @@ try {
 } finally {
   mkdirSync(new URL("./out/", import.meta.url), { recursive: true });
   const file = new URL(`./out/spike-${new Date().toISOString().replace(/[:.]/g, "-")}.json`, import.meta.url);
-  writeFileSync(file, JSON.stringify({ win: WIN, results, log }, null, 2));
+  writeFileSync(file, JSON.stringify({ win: WIN, results, log: aw.log }, null, 2));
   console.log(`\nFull request/response log: ${file.pathname}`);
   if (results.length && results.every((r) => r.ok)) console.log("All three checks behaved as the bid requires.");
 }
