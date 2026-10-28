@@ -1,0 +1,5 @@
+{
+  "startingCash": 25000,
+  "customerPayment": { "payer": "Northwind Traders", "amount": 40000 },
+  "wrongMerchant": { "name": "Corner Bistro", "mcc": "5812", "amount": 100 }
+}

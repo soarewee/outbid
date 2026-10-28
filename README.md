@@ -7,8 +7,25 @@ Outbid is a purchase-intent auction for company SaaS buying, built for the Airwa
 picks a bid that respects the company's cash reserve, and the approved terms become an Airwallex virtual card
 that can only pay that vendor, that amount, in that currency.
 
-> Work in progress. Today the repository holds the sandbox spike that proves the card controls and an auction CLI
-> that runs from intent to the first charge on a bid-bound card.
+> Work in progress. Today the repository holds the sandbox spike that proves the card controls, an auction CLI that
+> runs from intent to the first charge on a bid-bound card, and a demo that adds the renewal and cash-recovery scenes.
+> The fee escrow on Metal testnet and the rebate payout are next.
+
+## Demo
+
+`npm run demo` plays the whole story against the sandbox. It first sets the USD balance to the scenario's starting
+cash (`data/scenario.json`) with a simulated deposit or a payout, so every run starts from the same place.
+
+1. Three vendors bid. The annual prepay is cheapest but would break the reserve in week 7, so the best monthly bid wins
+   and the agent records when to reconsider.
+2. The winning bid becomes a card: the agreed charge clears and a restaurant charge is declined.
+3. At renewal the incumbent's price hike is declined by the card. The auction reopens with the hiked price, and the
+   incumbent is offered the best competing price: match, or the company switches. Any change of terms gets a new card
+   and the old one is frozen.
+4. A customer payment lands in the Global Account. The agent re-runs the decision, the annual prepay now fits, and
+   after approval it gets a new card while the old card is frozen and declines.
+
+Every step that changes a card asks for approval; add `-- --yes` to approve them all.
 
 ## Auction
 
@@ -21,6 +38,15 @@ price. Add `-- --yes` to approve without a prompt. The run log is written to `ou
 Since Oct 26 the sandbox answers every simulated card charge with `400 failed to process transaction`
 ([status](https://status.airwallex.com/)). While that lasts, the CLI checks the charge against the controls read back
 from the issued card and says so on screen. The spike never does this: it reports an API error as a failed check.
+
+## Sandbox notes
+
+- FX quotes come back in the market pair's direction whichever way you trade: selling USD for EUR returns
+  `currency_pair: EURUSD` with USD per EUR, so the rate is inverted for that direction.
+- A card is frozen with `POST /api/v1/issuing/cards/{id}/update` and `card_status: INACTIVE`, and unfrozen with
+  `ACTIVE`. Other names such as `FROZEN` are rejected with `invalid card_status`.
+- A `LOCAL` USD transfer to an ACH beneficiary has no fee and lowers the available balance as soon as it is created.
+  Simulated deposits show up in the available balance right away.
 
 ## Sandbox spike
 
