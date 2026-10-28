@@ -1,5 +1,6 @@
 // Minimal Airwallex API client: logs in once, then sends JSON requests with the bearer token.
 // Every request and response is kept in `log` so runs can be saved as evidence.
+import { mkdirSync, writeFileSync } from "node:fs";
 
 export function createClient({
   base = process.env.AIRWALLEX_BASE ?? "https://api.sandbox.airwallex.com",
@@ -48,6 +49,15 @@ export function createClient({
 }
 
 export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Writes a run's results and request log to out/ (not committed) and returns the file path.
+export function saveRun(name, data) {
+  const dir = new URL("../out/", import.meta.url);
+  mkdirSync(dir, { recursive: true });
+  const file = new URL(`${name}-${new Date().toISOString().replace(/[:.]/g, "-")}.json`, dir);
+  writeFileSync(file, JSON.stringify(data, null, 2));
+  return file.pathname;
+}
 
 // Polls until `done(value)` is true, for resources that become ready asynchronously (cardholders, cards).
 export async function waitFor(label, fetchValue, done, { tries = 20, intervalMs = 1500 } = {}) {

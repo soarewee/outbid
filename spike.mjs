@@ -2,9 +2,11 @@
 // Outbid sandbox spike: a virtual card bound to a winning bid approves the agreed charge
 // and declines a renewal hike and a charge at the wrong kind of merchant.
 // Run: npm run spike   (reads .env)
+// Every charge must come back from the sandbox; an API error fails the check rather than counting as a decline.
 import { randomUUID } from "node:crypto";
-import { mkdirSync, writeFileSync } from "node:fs";
-import { createClient, waitFor } from "./src/airwallex.mjs";
+import { createClient, saveRun } from "./src/airwallex.mjs";
+import { cardControls } from "./src/approval.mjs";
+import { charge, issueCard, readyCardholder } from "./src/issuing.mjs";
 
 const CREATED_BY = process.env.AIRWALLEX_CREATED_BY ?? "Outbid Spike";
 
@@ -23,19 +25,18 @@ try {
   console.error(error.message);
   process.exit(1);
 }
-const api = (method, path, body) => (method === "GET" ? aw.get(path) : aw.post(path, body));
 
 async function ensureFunds() {
-  const accounts = await api("GET", "/api/v1/global_accounts");
+  const accounts = await aw.get("/api/v1/global_accounts");
   let account = (accounts.items ?? [])[0];
   if (!account) {
-    account = await api("POST", "/api/v1/global_accounts/create", {
+    account = await aw.post("/api/v1/global_accounts/create", {
       request_id: randomUUID(),
       country_code: "US",
       required_features: [{ currency: "USD", transfer_method: "LOCAL" }],
     });
   }
-  await api("POST", "/api/v1/simulation/deposit/create", {
+  await aw.post("/api/v1/simulation/deposit/create", {
     global_account_id: account.id,
     amount: 25000,
     payer_name: "Outbid spike funding",
@@ -43,96 +44,39 @@ async function ensureFunds() {
   console.log(`✓ Wallet funded via global account ${account.id}`);
 }
 
-async function createCardholder() {
-  const holder = await api("POST", "/api/v1/issuing/cardholders/create", {
-    type: "INDIVIDUAL",
-    email: `outbid-spike+${Date.now()}@example.com`,
-    individual: {
-      name: { first_name: "Outbid", last_name: "Agent" },
-      date_of_birth: "1990-01-01",
-      express_consent_obtained: "yes",
-      address: { line1: "1 Market St", city: "San Francisco", state: "CA", postcode: "94105", country: "US" },
-    },
-  });
-  const id = holder.cardholder_id ?? holder.id;
-  if (holder.status !== "READY") {
-    await api("POST", `/api/v1/simulation/issuing/cardholders/${id}/pass_review`).catch(() => {});
-    await waitFor("cardholder", async () => (await api("GET", `/api/v1/issuing/cardholders/${id}`)).status, (s) => s === "READY");
-  }
-  console.log(`✓ Cardholder ${id} is READY`);
-  return id;
-}
-
-async function issueBidCard(cardholderId) {
-  const card = await api("POST", "/api/v1/issuing/cards/create", {
-    request_id: randomUUID(),
-    created_by: CREATED_BY,
-    cardholder_id: cardholderId,
-    is_personalized: true,
-    form_factor: "VIRTUAL",
-    // Valid type/sub_type depend on the account's region; omitting them uses the account default.
-    program: { purpose: "COMMERCIAL" },
-    nick_name: `Outbid: ${WIN.vendor} @ $${WIN.amount}/mo`,
-    authorization_controls: {
-      allowed_transaction_count: "MULTIPLE",
-      allowed_currencies: [WIN.currency],
-      allowed_merchant_categories: [WIN.mcc],
-      transaction_limits: {
-        currency: WIN.currency,
-        limits: [{ amount: WIN.amount, interval: "PER_TRANSACTION" }],
-      },
-    },
-  });
-  const id = card.card_id ?? card.id;
-  await waitFor("card", async () => (await api("GET", `/api/v1/issuing/cards/${id}`)).card_status, (s) => s === "ACTIVE");
-  console.log(`✓ Card ${id} issued: only MCC ${WIN.mcc}, max ${WIN.currency} ${WIN.amount} per charge`);
-  return id;
-}
-
-async function charge(cardId, { label, amount, mcc, expect }) {
-  let outcome;
-  let detail;
-  try {
-    const tx = await api("POST", "/api/v1/simulation/issuing/create", {
-      card_id: cardId,
-      transaction_amount: amount,
-      transaction_currency: WIN.currency,
-      merchant_category_code: mcc,
-      merchant_info: WIN.vendor,
-      single_phase: true,
-    });
-    // Per the builder guide: a decline ends in FAILED with a failure_reason; a cleared charge may stay
-    // PENDING, so treat transaction_type CLEARING (or no failure) as accepted rather than waiting for APPROVED.
-    const status = String(tx.status ?? "").toUpperCase();
-    const failure = tx.failure_reason ?? tx.transaction_failure_reason;
-    outcome = failure || status === "FAILED" ? "declined" : "approved";
-    detail = [status, tx.transaction_type, failure].filter(Boolean).join(" ");
-  } catch (error) {
-    outcome = "declined";
-    detail = `${error.status} ${error.data?.code ?? ""} ${error.data?.message ?? ""}`.trim();
-  }
-  const ok = outcome === expect;
-  console.log(`${ok ? "✓" : "✗"} ${label}: $${amount} at MCC ${mcc} → ${outcome} (${detail || "no detail"})`);
-  return { label, amount, mcc, expect, outcome, detail, ok };
-}
-
 const results = [];
 try {
   await aw.login();
   console.log("✓ Logged in to the Airwallex sandbox");
   await ensureFunds();
-  const cardholderId = await createCardholder();
-  const cardId = await issueBidCard(cardholderId);
-  for (const c of CHARGES) results.push(await charge(cardId, c));
+  const cardholderId = await readyCardholder(aw);
+  console.log(`✓ Cardholder ${cardholderId} is READY`);
+  const card = await issueCard(aw, {
+    cardholderId,
+    controls: cardControls({ amount: WIN.amount, currency: WIN.currency, merchantCategory: WIN.mcc }),
+    nickName: `Outbid: ${WIN.vendor} @ $${WIN.amount}/mo`,
+    createdBy: CREATED_BY,
+  });
+  console.log(`✓ Card ${card.id} issued: only MCC ${WIN.mcc}, max ${WIN.currency} ${WIN.amount} per charge`);
+  for (const c of CHARGES) {
+    const result = await charge(aw, card, { amount: c.amount, currency: WIN.currency, mcc: c.mcc, merchant: WIN.vendor });
+    const ok = result.outcome === c.expect;
+    console.log(`${ok ? "✓" : "✗"} ${c.label}: $${c.amount} at MCC ${c.mcc} → ${result.outcome} (${result.detail || "no detail"})`);
+    results.push({ ...c, ...result, ok });
+  }
   // Record what the issuing ledger says, for the evidence log.
-  await api("GET", `/api/v1/issuing/transactions?card_id=${cardId}`).catch(() => {});
+  await aw.get(`/api/v1/issuing/transactions?card_id=${card.id}`).catch(() => {});
 } catch (error) {
   console.error(`\n✗ ${error.message}`);
   process.exitCode = 1;
 } finally {
-  mkdirSync(new URL("./out/", import.meta.url), { recursive: true });
-  const file = new URL(`./out/spike-${new Date().toISOString().replace(/[:.]/g, "-")}.json`, import.meta.url);
-  writeFileSync(file, JSON.stringify({ win: WIN, results, log: aw.log }, null, 2));
-  console.log(`\nFull request/response log: ${file.pathname}`);
-  if (results.length && results.every((r) => r.ok)) console.log("All three checks behaved as the bid requires.");
+  console.log(`\nFull request/response log: ${saveRun("spike", { win: WIN, results, log: aw.log })}`);
+  if (results.some((r) => r.outcome === "error")) {
+    console.log("The sandbox could not simulate the charges, so the card controls were not checked. See https://status.airwallex.com/.");
+    process.exitCode = 1;
+  } else if (results.length && results.every((r) => r.ok)) {
+    console.log("All three checks behaved as the bid requires.");
+  } else if (results.length) {
+    process.exitCode = 1;
+  }
 }

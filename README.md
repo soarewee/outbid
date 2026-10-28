@@ -28,7 +28,7 @@ that can only pay that vendor, that amount, in that currency.
 3. `cp .env.example .env` and fill in the keys. Never commit `.env`.
 4. `npm run spike` (Node 20 or later, no dependencies).
 
-The script funds the wallet with a simulated deposit, creates a cardholder (simulating review), issues the bid-bound
+The script funds the wallet with a simulated deposit, reuses or creates a cardholder (simulating review), issues the bid-bound
 card and simulates the three charges. The full request/response log is written to `out/` (not committed).
 
 ### Notes
