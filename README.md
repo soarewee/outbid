@@ -7,7 +7,20 @@ Outbid is a purchase-intent auction for company SaaS buying, built for the Airwa
 picks a bid that respects the company's cash reserve, and the approved terms become an Airwallex virtual card
 that can only pay that vendor, that amount, in that currency.
 
-> Work in progress. Today the repository holds the sandbox spike that proves the card controls.
+> Work in progress. Today the repository holds the sandbox spike that proves the card controls and an auction CLI
+> that runs from intent to the first charge on a bid-bound card.
+
+## Auction
+
+`npm run auction` runs one auction against the sandbox: three vendor agents bid on an anonymous intent, bids are
+priced in the company's currency with Airwallex FX and ranked by total cost over the term, and the cheapest bid that
+keeps projected cash (live balance minus upcoming obligations) above the reserve floor wins. After you approve the
+terms, it issues a virtual card whose controls are exactly those terms and simulates the first charge at the winning
+price. Add `-- --yes` to approve without a prompt. The run log is written to `out/`.
+
+Since Oct 26 the sandbox answers every simulated card charge with `400 failed to process transaction`
+([status](https://status.airwallex.com/)). While that lasts, the CLI checks the charge against the controls read back
+from the issued card and says so on screen. The spike never does this: it reports an API error as a failed check.
 
 ## Sandbox spike
 

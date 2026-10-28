@@ -58,8 +58,27 @@ export function readTransaction(tx) {
   };
 }
 
-// Simulates a charge in the sandbox.
-export async function charge(aw, card, { amount, currency, mcc, merchant }) {
+// The sandbox's simulated-charge outage (Oct 26 onward) answers every charge with this 400.
+export function isSimulationOutage(error) {
+  return error.status >= 500 || (error.status === 400 && error.data?.message === "failed to process transaction");
+}
+
+// Applies the card's authorization controls to a charge the way Issuing did in the Oct 23 sandbox run.
+// The per-transaction limit is inclusive.
+export function checkCharge(controls, { amount, currency, mcc }) {
+  const allowedCurrencies = controls.allowed_currencies ?? [];
+  const allowedCategories = controls.allowed_merchant_categories ?? [];
+  if (allowedCurrencies.length && !allowedCurrencies.includes(currency)) return { outcome: "declined", detail: "CURRENCY_NOT_ALLOWED" };
+  if (allowedCategories.length && !allowedCategories.includes(mcc)) return { outcome: "declined", detail: "MERCHANT_CATEGORY_NOT_ALLOWED" };
+  const limits = controls.transaction_limits;
+  const perCharge = limits?.limits?.find((l) => l.interval === "PER_TRANSACTION");
+  if (perCharge && limits.currency === currency && amount > perCharge.amount) return { outcome: "declined", detail: "LIMIT_EXCEEDED" };
+  return { outcome: "approved", detail: "within controls" };
+}
+
+// Simulates a charge in the sandbox. When the simulation endpoint is down and `offline` is set, the
+// charge is checked against the card's controls instead, and the result says so (source: "offline").
+export async function charge(aw, card, { amount, currency, mcc, merchant }, { offline = false } = {}) {
   try {
     const tx = await aw.post("/api/v1/simulation/issuing/create", {
       card_id: card.id,
@@ -73,6 +92,7 @@ export async function charge(aw, card, { amount, currency, mcc, merchant }) {
   } catch (error) {
     if (error.status === undefined) throw error;
     const apiError = `${error.status} ${error.data?.code ?? ""} ${error.data?.message ?? ""}`.replace(/\s+/g, " ").trim();
+    if (offline && isSimulationOutage(error)) return { ...checkCharge(card.controls, { amount, currency, mcc }), source: "offline", apiError };
     return { outcome: "error", detail: apiError, source: "sandbox" };
   }
 }
