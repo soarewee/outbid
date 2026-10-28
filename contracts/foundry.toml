@@ -1,0 +1,10 @@
+# Settings follow Metal's escrow guide: Solidity 0.8.31 on the Osaka EVM, no library dependencies.
+[profile.default]
+src = "src"
+test = "test"
+out = "out"
+cache_path = "cache"
+solc_version = "0.8.31"
+evm_version = "osaka"
+optimizer = true
+optimizer_runs = 200

@@ -60,6 +60,7 @@ export function readTransaction(tx) {
   const status = String(tx.status ?? "").toUpperCase();
   const failure = tx.failure_reason ?? tx.transaction_failure_reason;
   return {
+    id: tx.transaction_id ?? tx.id,
     outcome: failure || status === "FAILED" ? "declined" : "approved",
     detail: [status, tx.transaction_type, failure].filter(Boolean).join(" "),
   };

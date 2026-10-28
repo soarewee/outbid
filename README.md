@@ -7,25 +7,44 @@ Outbid is a purchase-intent auction for company SaaS buying, built for the Airwa
 picks a bid that respects the company's cash reserve, and the approved terms become an Airwallex virtual card
 that can only pay that vendor, that amount, in that currency.
 
-> Work in progress. Today the repository holds the sandbox spike that proves the card controls, an auction CLI that
-> runs from intent to the first charge on a bid-bound card, and a demo that adds the renewal and cash-recovery scenes.
-> The fee escrow on Metal testnet and the rebate payout are next.
+> Work in progress. The demo runs end to end against the Airwallex sandbox and Metal testnet. Buyer and vendor
+> screens are next.
 
 ## Demo
 
-`npm run demo` plays the whole story against the sandbox. It first sets the USD balance to the scenario's starting
-cash (`data/scenario.json`) with a simulated deposit or a payout, so every run starts from the same place.
+`npm run demo` plays the whole story against the sandbox and Metal testnet. It first sets the USD balance to the
+scenario's starting cash (`data/scenario.json`) with a simulated deposit or a payout, so every run starts from the
+same place.
 
 1. Three vendors bid. The annual prepay is cheapest but would break the reserve in week 7, so the best monthly bid wins
    and the agent records when to reconsider.
-2. The winning bid becomes a card: the agreed charge clears and a restaurant charge is declined.
-3. At renewal the incumbent's price hike is declined by the card. The auction reopens with the hiked price, and the
+2. The winning bid becomes a card, and the winning vendor prepays its acquisition fee into the escrow on Metal. The
+   agreed charge clears and a restaurant charge is declined.
+3. The cleared charge is the proof of sale. Outbid reports it to the escrow, which splits the fee into the buyer's
+   rebate (80%) and Outbid's fee in one transaction, and the rebate goes to the buyer's bank through Airwallex Payouts.
+4. At renewal the incumbent's price hike is declined by the card. The auction reopens with the hiked price, and the
    incumbent is offered the best competing price: match, or the company switches. Any change of terms gets a new card
    and the old one is frozen.
-4. A customer payment lands in the Global Account. The agent re-runs the decision, the annual prepay now fits, and
+5. A customer payment lands in the Global Account. The agent re-runs the decision, the annual prepay now fits, and
    after approval it gets a new card while the old card is frozen and declines.
 
 Every step that changes a card asks for approval; add `-- --yes` to approve them all.
+
+## Fee escrow on Metal
+
+`contracts/` is a Foundry project with `FeeEscrow`, deployed on Metal testnet (chain 63825) at the address in
+`contracts/deployments/metal-testnet.json`. A vendor funds a deal with USDZ; only Outbid's attester can release it,
+once, before the deadline, and the split is fixed at deployment. If no charge clears by the deadline, the vendor takes
+the fee back. Every transfer checks that the recipient's balance rose by the full amount, since Metal can quarantine a
+credit instead of delivering it.
+
+- `cd contracts && forge test` runs the contract tests (no library dependencies).
+- `npm run escrow:deploy` deploys a new escrow and records it (needs `METAL_RPC_URL` and `METAL_PRIVATE_KEY`).
+- Vendor, rebate and fee wallets are test wallets derived from `METAL_PRIVATE_KEY`, so no other keys are stored.
+  The operator funds each vendor's prepay and sweeps earlier demo rebates back when it runs short.
+
+In the sandbox one Airwallex account plays both the buyer and Outbid, so the rebate payout leaves the same wallet the
+buyer's cash is read from.
 
 ## Auction
 

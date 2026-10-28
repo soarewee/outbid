@@ -11,6 +11,7 @@
     "spike": "node --env-file=.env spike.mjs",
     "auction": "node --env-file=.env src/auction-cli.mjs",
     "demo": "node --env-file=.env src/demo-cli.mjs",
+    "escrow:deploy": "node --env-file=.env src/escrow-deploy-cli.mjs",
     "test": "node --test"
   }
 }
