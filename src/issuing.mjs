@@ -44,7 +44,14 @@ export async function issueCard(aw, { cardholderId, controls, nickName, createdB
   });
   const id = created.card_id ?? created.id;
   const card = await waitFor("card", () => aw.get(`/api/v1/issuing/cards/${id}`), (c) => c.card_status === "ACTIVE");
-  return { id, controls: card.authorization_controls ?? controls };
+  return { id, status: card.card_status, controls: card.authorization_controls ?? controls };
+}
+
+// Freezes a card: INACTIVE declines every charge until the card is set back to ACTIVE.
+// (The sandbox rejects other names such as FROZEN with "invalid card_status".)
+export async function freezeCard(aw, card) {
+  const updated = await aw.post(`/api/v1/issuing/cards/${card.id}/update`, { card_status: "INACTIVE" });
+  return { ...card, status: updated.card_status };
 }
 
 // Reads a simulated transaction. Per the builder guide, a decline ends in FAILED with a failure_reason;
@@ -64,8 +71,9 @@ export function isSimulationOutage(error) {
 }
 
 // Applies the card's authorization controls to a charge the way Issuing did in the Oct 23 sandbox run.
-// The per-transaction limit is inclusive.
-export function checkCharge(controls, { amount, currency, mcc }) {
+// The per-transaction limit is inclusive. A card that isn't ACTIVE declines everything.
+export function checkCharge({ status = "ACTIVE", controls }, { amount, currency, mcc }) {
+  if (status !== "ACTIVE") return { outcome: "declined", detail: `CARD_${status}` };
   const allowedCurrencies = controls.allowed_currencies ?? [];
   const allowedCategories = controls.allowed_merchant_categories ?? [];
   if (allowedCurrencies.length && !allowedCurrencies.includes(currency)) return { outcome: "declined", detail: "CURRENCY_NOT_ALLOWED" };
@@ -92,7 +100,7 @@ export async function charge(aw, card, { amount, currency, mcc, merchant }, { of
   } catch (error) {
     if (error.status === undefined) throw error;
     const apiError = `${error.status} ${error.data?.code ?? ""} ${error.data?.message ?? ""}`.replace(/\s+/g, " ").trim();
-    if (offline && isSimulationOutage(error)) return { ...checkCharge(card.controls, { amount, currency, mcc }), source: "offline", apiError };
+    if (offline && isSimulationOutage(error)) return { ...checkCharge(card, { amount, currency, mcc }), source: "offline", apiError };
     return { outcome: "error", detail: apiError, source: "sandbox" };
   }
 }

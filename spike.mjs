@@ -3,9 +3,9 @@
 // and declines a renewal hike and a charge at the wrong kind of merchant.
 // Run: npm run spike   (reads .env)
 // Every charge must come back from the sandbox; an API error fails the check rather than counting as a decline.
-import { randomUUID } from "node:crypto";
 import { createClient, saveRun } from "./src/airwallex.mjs";
 import { cardControls } from "./src/approval.mjs";
+import { available, deposit } from "./src/funds.mjs";
 import { charge, issueCard, readyCardholder } from "./src/issuing.mjs";
 
 const CREATED_BY = process.env.AIRWALLEX_CREATED_BY ?? "Outbid Spike";
@@ -26,22 +26,13 @@ try {
   process.exit(1);
 }
 
+// Tops up only when the wallet can't cover the charges, so repeated runs don't inflate the demo's cash.
 async function ensureFunds() {
-  const accounts = await aw.get("/api/v1/global_accounts");
-  let account = (accounts.items ?? [])[0];
-  if (!account) {
-    account = await aw.post("/api/v1/global_accounts/create", {
-      request_id: randomUUID(),
-      country_code: "US",
-      required_features: [{ currency: "USD", transfer_method: "LOCAL" }],
-    });
-  }
-  await aw.post("/api/v1/simulation/deposit/create", {
-    global_account_id: account.id,
-    amount: 25000,
-    payer_name: "Outbid spike funding",
-  });
-  console.log(`✓ Wallet funded via global account ${account.id}`);
+  const need = CHARGES.reduce((sum, c) => sum + c.amount, 0);
+  const cash = await available(aw, WIN.currency);
+  if (cash >= need) return console.log(`✓ Wallet has ${WIN.currency} ${cash} available`);
+  const accountId = await deposit(aw, need, "Outbid spike funding");
+  console.log(`✓ Wallet funded with ${WIN.currency} ${need} via global account ${accountId}`);
 }
 
 const results = [];

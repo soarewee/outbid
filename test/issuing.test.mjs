@@ -15,10 +15,14 @@ const failingClient = (status, data) => ({
 const outage = failingClient(400, { code: "bad_request", message: "failed to process transaction" });
 
 test("the offline check matches the Oct 23 sandbox results", () => {
-  assert.deepEqual(checkCharge(card.controls, { amount: 1350, currency: "USD", mcc: "5734" }).outcome, "approved");
-  assert.deepEqual(checkCharge(card.controls, { amount: 1650, currency: "USD", mcc: "5734" }), { outcome: "declined", detail: "LIMIT_EXCEEDED" });
-  assert.deepEqual(checkCharge(card.controls, { amount: 100, currency: "USD", mcc: "5812" }), { outcome: "declined", detail: "MERCHANT_CATEGORY_NOT_ALLOWED" });
-  assert.deepEqual(checkCharge(card.controls, { amount: 1000, currency: "EUR", mcc: "5734" }).outcome, "declined");
+  assert.deepEqual(checkCharge(card, { amount: 1350, currency: "USD", mcc: "5734" }).outcome, "approved");
+  assert.deepEqual(checkCharge(card, { amount: 1650, currency: "USD", mcc: "5734" }), { outcome: "declined", detail: "LIMIT_EXCEEDED" });
+  assert.deepEqual(checkCharge(card, { amount: 100, currency: "USD", mcc: "5812" }), { outcome: "declined", detail: "MERCHANT_CATEGORY_NOT_ALLOWED" });
+  assert.deepEqual(checkCharge(card, { amount: 1000, currency: "EUR", mcc: "5734" }).outcome, "declined");
+});
+
+test("a frozen card declines even the agreed charge", () => {
+  assert.equal(checkCharge({ ...card, status: "INACTIVE" }, { amount: 1350, currency: "USD", mcc: "5734" }).outcome, "declined");
 });
 
 test("sandbox transactions are read as approved or declined", () => {
