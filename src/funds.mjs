@@ -1,13 +1,16 @@
 // Money in and out of the company's Airwallex wallet: balances, simulated deposits into the Global
 // Account, and payouts to a bank beneficiary.
 import { randomUUID } from "node:crypto";
+import { waitFor } from "./airwallex.mjs";
 
 export async function available(aw, currency) {
   const balances = await aw.get("/api/v1/balances/current");
   return balances.find((b) => b.currency === currency)?.available_amount ?? 0;
 }
 
-// A simulated incoming payment to the Global Account (sandbox only). USD lands as USD.
+// A simulated incoming payment to the Global Account (sandbox only). USD lands as USD. The deposit is
+// created PENDING and usually shows up in the balance at once, but on Oct 28 one took over a minute, so
+// this waits until the available balance has risen by the amount.
 export async function deposit(aw, amount, payerName) {
   const accounts = (await aw.get("/api/v1/global_accounts")).items ?? [];
   const account = accounts[0] ?? await aw.post("/api/v1/global_accounts/create", {
@@ -15,7 +18,9 @@ export async function deposit(aw, amount, payerName) {
     country_code: "US",
     required_features: [{ currency: "USD", transfer_method: "LOCAL" }],
   });
+  const before = await available(aw, "USD");
   await aw.post("/api/v1/simulation/deposit/create", { global_account_id: account.id, amount, payer_name: payerName });
+  await waitFor("deposit", () => available(aw, "USD"), (cash) => cash >= before + amount - 0.005, { tries: 60, intervalMs: 3000 });
   return account.id;
 }
 
