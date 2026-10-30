@@ -66,7 +66,7 @@ export function readTransaction(tx) {
   };
 }
 
-// The sandbox's simulated-charge outage (Oct 26 onward) answers every charge with this 400.
+// During a simulated-charge outage (as on Oct 26–29) the sandbox answers every charge with this 400.
 export function isSimulationOutage(error) {
   return error.status >= 500 || (error.status === 400 && error.data?.message === "failed to process transaction");
 }

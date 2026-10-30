@@ -54,8 +54,8 @@ keeps projected cash (live balance minus upcoming obligations) above the reserve
 terms, it issues a virtual card whose controls are exactly those terms and simulates the first charge at the winning
 price. Add `-- --yes` to approve without a prompt. The run log is written to `out/`.
 
-Since Oct 26 the sandbox answers every simulated card charge with `400 failed to process transaction`
-([status](https://status.airwallex.com/)). While that lasts, the CLI checks the charge against the controls read back
+If the sandbox can't simulate card charges (from Oct 26 to 29 it answered every one with `400 failed to process
+transaction`, see [status](https://status.airwallex.com/)), the CLI checks the charge against the controls read back
 from the issued card and says so on screen. The spike never does this: it reports an API error as a failed check.
 
 ## Sandbox notes

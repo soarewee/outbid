@@ -46,7 +46,7 @@ export async function cardFor(aw, bid) {
   return { ...card, approval };
 }
 
-// Charges a card in the sandbox, checking against its controls while the simulation endpoint is down.
+// Charges a card in the sandbox, checking against its controls if the simulation endpoint is down.
 export async function chargeAndPrint(aw, card, { label, amount, currency, mcc, merchant }) {
   const result = await charge(aw, card, { amount, currency, mcc, merchant }, { offline: true });
   if (result.source === "offline") console.log(`  (sandbox charge simulation unavailable: ${result.apiError}; checked against the card's controls)`);
