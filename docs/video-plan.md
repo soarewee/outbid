@@ -1,8 +1,8 @@
 # Demo video plan
 
 Deliverables: a working demo, a video under 5 minutes, and a repository link with run instructions. Deadline
-Nov 14, 2026 03:29 KST. Recording happens in the Nov 10–12 wrap-up block. This plan assumes the sandbox charge
-simulation is back by then, so decline reasons on screen come from Airwallex Issuing, not the offline check.
+Nov 14, 2026 03:29 KST. Recording happens in the Nov 10–12 wrap-up block. Decline reasons on screen come from
+Airwallex Issuing.
 
 ## Scenes (4:50)
 

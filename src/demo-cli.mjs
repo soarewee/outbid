@@ -80,10 +80,9 @@ run.charges.push(await chargeAndPrint(aw, card, { label: "Wrong merchant", amoun
 scene(3, "The cleared charge releases the fee");
 const agreed = run.charges[0];
 if (agreed.outcome !== "approved") stop("The agreed charge did not clear, so the fee stays in escrow until the vendor's refund date.");
-// The Airwallex transaction id is the proof of sale. If the sandbox can't simulate the charge there is
-// none, so the offline check's result stands in and says so.
-const chargeId = agreed.id ?? `offline-check:${card.id}:${agreed.amount}`;
-if (!agreed.id) console.log(`  (no sandbox transaction id; proof is ${chargeId})`);
+// The Airwallex transaction id is the proof of sale.
+const chargeId = agreed.id;
+console.log(`Proof of sale: Airwallex transaction ${chargeId}`);
 const released = await releaseFee(metal, { dealId: prepaid.dealId, chargeId });
 const rebate = (fee.amount * released.rebateBps) / 10_000;
 console.log(`Escrow split ${money(fee.amount, fee.currency)}: ${money(rebate, fee.currency)} rebate, ${money(fee.amount - rebate, fee.currency)} Outbid fee: ${explorer(released.hash)}`);

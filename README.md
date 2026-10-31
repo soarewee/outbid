@@ -54,9 +54,7 @@ keeps projected cash (live balance minus upcoming obligations) above the reserve
 terms, it issues a virtual card whose controls are exactly those terms and simulates the first charge at the winning
 price. Add `-- --yes` to approve without a prompt. The run log is written to `out/`.
 
-If the sandbox can't simulate card charges (from Oct 26 to 29 it answered every one with `400 failed to process
-transaction`, see [status](https://status.airwallex.com/)), the CLI checks the charge against the controls read back
-from the issued card and says so on screen. The spike never does this: it reports an API error as a failed check.
+Every charge outcome comes from Airwallex Issuing. An API error is reported as an error, never as a decline.
 
 ## Sandbox notes
 
@@ -64,6 +62,9 @@ from the issued card and says so on screen. The spike never does this: it report
   `currency_pair: EURUSD` with USD per EUR, so the rate is inverted for that direction.
 - A card is frozen with `POST /api/v1/issuing/cards/{id}/update` and `card_status: INACTIVE`, and unfrozen with
   `ACTIVE`. Other names such as `FROZEN` are rejected with `invalid card_status`.
+- A simulated charge answers with `process_result` (`APPROVED` or `DECLINED`), `failure_reason` on a decline, and
+  `card_transaction_id`, which is the proof of sale the escrow release records. Between Oct 26 and Oct 31 the
+  endpoint answered every charge with `400 failed to process transaction`.
 - A `LOCAL` USD transfer to an ACH beneficiary has no fee and lowers the available balance as soon as it is created.
   Simulated deposits show up in the available balance right away.
 
@@ -71,11 +72,11 @@ from the issued card and says so on screen. The spike never does this: it report
 
 `spike.mjs` issues a virtual card bound to a winning bid ($1,350/month at a software merchant) and simulates three charges.
 
-| Charge | Result (Oct 23, US sandbox business) |
+| Charge | Result (Oct 31, US sandbox business) |
 | --- | --- |
-| $1,350 at a software merchant (MCC 5734) | cleared (`CLEARING` / `PENDING`) |
-| $1,650 renewal hike | declined (`FAILED` / `LIMIT_EXCEEDED`) |
-| $100 at a restaurant (MCC 5812) | declined (`FAILED` / `MERCHANT_CATEGORY_NOT_ALLOWED`) |
+| $1,350 at a software merchant (MCC 5734) | `APPROVED` |
+| $1,650 renewal hike | `DECLINED` / `LIMIT_EXCEEDED` |
+| $100 at a restaurant (MCC 5812) | `DECLINED` / `MERCHANT_CATEGORY_NOT_ALLOWED` |
 
 ### Run
 
@@ -92,6 +93,4 @@ card and simulates the three charges. The full request/response log is written t
 ### Notes
 
 - Only `program.purpose: COMMERCIAL` is sent, so the account's default card program is used.
-- Following the [builder guide](https://airwallexdev.com/guide), a declined transaction ends in `FAILED` with a
-  `failure_reason`, and a cleared one may stay `PENDING`, so `transaction_type: CLEARING` counts as approved.
 - The per-transaction limit is inclusive: a charge equal to the limit passes.

@@ -54,40 +54,21 @@ export async function freezeCard(aw, card) {
   return { ...card, status: updated.card_status };
 }
 
-// Reads a simulated transaction. Per the builder guide, a decline ends in FAILED with a failure_reason;
-// a cleared charge may stay PENDING, so CLEARING (or no failure) counts as approved.
+// Reads a simulated transaction. The sandbox answers with `process_result` APPROVED or DECLINED and a
+// `failure_reason` on a decline; older responses used `status` FAILED, and a cleared charge could stay PENDING.
 export function readTransaction(tx) {
-  const status = String(tx.status ?? "").toUpperCase();
+  const result = String(tx.process_result ?? tx.status ?? "").toUpperCase();
   const failure = tx.failure_reason ?? tx.transaction_failure_reason;
   return {
-    id: tx.transaction_id ?? tx.id,
-    outcome: failure || status === "FAILED" ? "declined" : "approved",
-    detail: [status, tx.transaction_type, failure].filter(Boolean).join(" "),
+    id: tx.card_transaction_id ?? tx.transaction_id ?? tx.id,
+    outcome: failure || result === "DECLINED" || result === "FAILED" ? "declined" : "approved",
+    detail: failure ?? (result || "APPROVED"),
+    authCode: tx.auth_code,
   };
 }
 
-// During a simulated-charge outage (as on Oct 26–29) the sandbox answers every charge with this 400.
-export function isSimulationOutage(error) {
-  return error.status >= 500 || (error.status === 400 && error.data?.message === "failed to process transaction");
-}
-
-// Applies the card's authorization controls to a charge the way Issuing did in the Oct 23 sandbox run.
-// The per-transaction limit is inclusive. A card that isn't ACTIVE declines everything.
-export function checkCharge({ status = "ACTIVE", controls }, { amount, currency, mcc }) {
-  if (status !== "ACTIVE") return { outcome: "declined", detail: `CARD_${status}` };
-  const allowedCurrencies = controls.allowed_currencies ?? [];
-  const allowedCategories = controls.allowed_merchant_categories ?? [];
-  if (allowedCurrencies.length && !allowedCurrencies.includes(currency)) return { outcome: "declined", detail: "CURRENCY_NOT_ALLOWED" };
-  if (allowedCategories.length && !allowedCategories.includes(mcc)) return { outcome: "declined", detail: "MERCHANT_CATEGORY_NOT_ALLOWED" };
-  const limits = controls.transaction_limits;
-  const perCharge = limits?.limits?.find((l) => l.interval === "PER_TRANSACTION");
-  if (perCharge && limits.currency === currency && amount > perCharge.amount) return { outcome: "declined", detail: "LIMIT_EXCEEDED" };
-  return { outcome: "approved", detail: "within controls" };
-}
-
-// Simulates a charge in the sandbox. When the simulation endpoint is down and `offline` is set, the
-// charge is checked against the card's controls instead, and the result says so (source: "offline").
-export async function charge(aw, card, { amount, currency, mcc, merchant }, { offline = false } = {}) {
+// Simulates a charge in the sandbox. An API error is reported as an error, never as a decline.
+export async function charge(aw, card, { amount, currency, mcc, merchant }) {
   try {
     const tx = await aw.post("/api/v1/simulation/issuing/create", {
       card_id: card.id,
@@ -97,11 +78,9 @@ export async function charge(aw, card, { amount, currency, mcc, merchant }, { of
       merchant_info: merchant,
       single_phase: true,
     });
-    return { ...readTransaction(tx), source: "sandbox" };
+    return readTransaction(tx);
   } catch (error) {
     if (error.status === undefined) throw error;
-    const apiError = `${error.status} ${error.data?.code ?? ""} ${error.data?.message ?? ""}`.replace(/\s+/g, " ").trim();
-    if (offline && isSimulationOutage(error)) return { ...checkCharge(card, { amount, currency, mcc }), source: "offline", apiError };
-    return { outcome: "error", detail: apiError, source: "sandbox" };
+    return { outcome: "error", detail: `${error.status} ${error.data?.code ?? ""} ${error.data?.message ?? ""}`.replace(/\s+/g, " ").trim() };
   }
 }
