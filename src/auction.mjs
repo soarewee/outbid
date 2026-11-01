@@ -36,18 +36,22 @@ export function obligationSchedule(obligations, horizonDays) {
   return out;
 }
 
-// Walks cash forward day by day and returns the first day it drops below the floor, if any.
+// Walks cash forward day by day and returns the first day it drops below the floor, if any, with the
+// whole path (one balance per day) so the decision can be drawn.
 export function projectCash({ cash, floor, horizonDays, outflows }) {
   const byDay = new Map();
   for (const o of outflows) if (o.day <= horizonDays) byDay.set(o.day, (byDay.get(o.day) ?? 0) + o.amount);
   let balance = cash;
   let low = { day: 0, balance: cash };
+  const path = [];
+  let breach = null;
   for (let day = 0; day <= horizonDays; day++) {
     balance = round2(balance - (byDay.get(day) ?? 0));
+    path.push(balance);
     if (balance < low.balance) low = { day, balance };
-    if (balance < floor) return { ok: false, breachDay: day, balance, low };
+    if (balance < floor && !breach) breach = { breachDay: day, balance };
   }
-  return { ok: true, low };
+  return breach ? { ok: false, ...breach, low, path } : { ok: true, low, path };
 }
 
 export async function decide({ intent, company, cash, bids, rate, today = new Date() }) {
@@ -73,5 +77,5 @@ export async function decide({ intent, company, cash, bids, rate, today = new Da
       }
     : null;
 
-  return { cash, floor, ranked: evaluated, winner, passedOver, reconsider };
+  return { cash, floor, budget: round2(budget), ranked: evaluated, winner, passedOver, reconsider };
 }

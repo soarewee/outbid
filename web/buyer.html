@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Outbid · Buyer</title>
+<link rel="stylesheet" href="outbid.css">
+<style>
+  .top { padding: 44px 0 8px; }
+  .intent { font-size: 30px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.2; margin: 0 0 20px; }
+  .intent .q { color: var(--ink3); font-weight: 600; }
+  .figures { display: flex; gap: 36px; flex-wrap: wrap; }
+  .figure .l { font-size: 13px; color: var(--ink3); font-weight: 500; }
+  .figure .v { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; transition: color .4s; }
+  .figure .v.bump { color: var(--green); }
+  .scene { padding-top: 56px; }
+  .scene .step { font-size: 13px; font-weight: 700; color: var(--blue); letter-spacing: .02em; }
+  .scene h2 { font-size: 24px; font-weight: 800; letter-spacing: -0.025em; margin: 4px 0 16px; line-height: 1.25; }
+  .say { font-size: 17px; font-weight: 600; margin: 22px 0 8px; animation: rise .3s ease-out; }
+  .say.quiet { font-weight: 500; color: var(--ink2); font-size: 15px; margin-top: 4px; }
+
+  /* the intent form */
+  .post { margin-top: 8px; }
+  .post .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; margin-bottom: 16px; }
+  @media (max-width: 520px) { .post .grid { grid-template-columns: 1fr; } }
+  .post .policy { background: var(--plane); border-radius: 14px; padding: 12px 16px; font-size: 14px; color: var(--ink2); margin-bottom: 16px; line-height: 1.5; }
+  .post .policy b { color: var(--ink); font-weight: 600; }
+  .post .err { color: var(--red); font-size: 14px; margin-top: 10px; display: none; }
+  .post .btn.primary { width: 100%; }
+
+  /* bids */
+  .bids .bid { display: grid; grid-template-columns: 1fr auto; gap: 2px 18px; padding: 16px 0; border-top: 1px solid var(--line); align-items: center; }
+  .bids .bid:first-of-type { border-top: 0; padding-top: 4px; }
+  .bids .bid:last-of-type { padding-bottom: 4px; }
+  .bid .name { display: flex; align-items: center; gap: 9px; font-weight: 600; font-size: 16px; }
+  .bid .name i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .bid .price { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; text-align: right; }
+  .bid .price small { font-size: 14px; font-weight: 500; color: var(--ink3); margin-left: 3px; }
+  .bid .sub { font-size: 14px; color: var(--ink2); }
+  .bid .right { text-align: right; font-size: 14px; color: var(--ink3); }
+  .bid .why { grid-column: 1 / -1; margin-top: 8px; display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--ink2); flex-wrap: wrap; }
+
+  /* chart */
+  .chart { position: relative; margin-top: 6px; }
+  .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .keys { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--ink2); margin: 0 0 10px; }
+  .keys span { display: inline-flex; align-items: center; gap: 6px; }
+  .keys i { display: inline-block; width: 14px; height: 2px; border-radius: 1px; }
+  .keys i.floor { height: 0; border-top: 1.5px solid var(--ink3); }
+  .tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--card); border-radius: 12px; padding: 10px 12px; font-size: 13px; display: none; min-width: 170px; box-shadow: var(--shadow); }
+  .tip .d { opacity: .7; font-size: 12px; margin-bottom: 4px; }
+  .tip .r { display: flex; justify-content: space-between; gap: 14px; }
+  .tip .r i { display: inline-block; width: 10px; height: 2px; margin-right: 6px; vertical-align: middle; }
+  details.table { margin-top: 12px; font-size: 13px; color: var(--ink3); }
+  details.table summary { cursor: pointer; }
+  details.table table { border-collapse: collapse; margin-top: 6px; color: var(--ink2); }
+  details.table td, details.table th { padding: 2px 12px 2px 0; text-align: right; font-weight: 500; }
+  details.table th:first-child, details.table td:first-child { text-align: left; }
+
+  /* approval */
+  .btns { display: flex; gap: 10px; }
+  .btns .btn { flex: 1; }
+  .decided { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 16px; padding: 12px 0 2px; }
+  .decided svg { width: 18px; height: 18px; }
+  .decided.yes { color: var(--green); }
+  .decided.no { color: var(--red); }
+
+  /* the card */
+  .cardrow { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+  .rules { flex: 1; min-width: 240px; display: grid; gap: 14px; }
+  .rule .l { font-size: 13px; color: var(--ink3); font-weight: 500; }
+  .rule .v { font-size: 17px; font-weight: 600; }
+  .rule .v code { font-family: var(--mono); font-size: 13px; color: var(--ink3); font-weight: 500; margin-left: 6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="bar">
+    <a class="wordmark" href="/"><span class="dot" id="dot"></span>Outbid</a>
+    <nav class="nav"><a href="/buyer" class="on">Buyer</a><a href="/vendor">Vendors</a><a href="/">About</a></nav>
+  </header>
+  <div class="top">
+    <h1 class="intent" id="intent"><span class="q">Waiting for the agent…</span></h1>
+    <div class="figures" id="figures" hidden>
+      <div class="figure"><div class="l">Available cash</div><div class="v num" id="cash">—</div></div>
+      <div class="figure"><div class="l">Reserve floor</div><div class="v num" id="floor">—</div></div>
+    </div>
+  </div>
+  <div id="scenes">
+    <div class="empty" id="empty">Run <code>npm run demo -- --wait</code> and post your intent here, or <code>npm run demo</code> to post the one in <code>data/intent.json</code>. The story appears as it happens.</div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const SYMBOL = { USD: "$", EUR: "€", GBP: "£" };
+  // $1,350.00 · €1,180.00 — the symbol when there is one, the code otherwise.
+  const money = (n, c) => `${SYMBOL[c] ?? `${c} `}${Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const whole = (n, c) => `${SYMBOL[c] ?? `${c} `}${Math.round(Number(n)).toLocaleString("en-US")}`;
+  const compact = (n) => (n >= 1000 ? `${Math.round(n / 1000)}K` : String(n));
+  const el = (tag, cls, text) => {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  };
+  const svgEl = (tag, attrs = {}) => {
+    const e = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+    return e;
+  };
+  const icon = (kind) => {
+    const s = svgEl("svg", { viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", "stroke-width": "2.2", "stroke-linecap": "round", "stroke-linejoin": "round" });
+    s.appendChild(svgEl("path", { d: kind === "check" ? "M3 8.5l3 3 7-7" : "M4 4l8 8M12 4l-8 8" }));
+    return s;
+  };
+  const MCC = { 5734: "software vendors", 5812: "restaurants" };
+  const REASON = {
+    LIMIT_EXCEEDED: "more than the approved amount",
+    MERCHANT_CATEGORY_NOT_ALLOWED: "not a software vendor",
+    CURRENCY_NOT_ALLOWED: "wrong currency",
+    CARD_INACTIVE: "card is frozen",
+  };
+  const CATEGORY = { "design-tool": "Design tool" };
+  const categoryName = (c) => CATEGORY[c] ?? c.replace(/-/g, " ");
+  const cycleWord = (cycle) => (cycle === "annual" ? "per year, prepaid" : "per month");
+  const perShort = (cycle) => (cycle === "annual" ? "/yr" : "/mo");
+
+  const state = { slot: {}, currency: "USD", term: 12, scene: null, last: null, cards: {}, escrows: {} };
+  const colorOf = (vendor) => `var(--s${state.slot[vendor] ?? 1})`;
+
+  function mount(node) {
+    (state.scene ?? $("scenes")).appendChild(node);
+    requestAnimationFrame(() => node.scrollIntoView({ behavior: "smooth", block: "end" }));
+    return node;
+  }
+  function card(kind) {
+    const c = mount(el("div", "card"));
+    state.last = { kind, node: c };
+    return c;
+  }
+  const breakRun = () => (state.last = null);
+
+  // ─── posting the intent ───
+  // The demo was started with --wait: the buyer fills in what to buy, and the story starts when
+  // it is posted. Vendors will see only these fields.
+  function awaitIntent(e) {
+    $("empty")?.remove();
+    $("intent").replaceChildren(el("span", "q", "What does your company need?"));
+    const d = e.defaults, p = e.company.policy, cur = e.company.currency;
+    const c = el("div", "card post");
+    c.id = "post";
+    c.append(el("div", "cap", "Post a purchase intent. Vendors see exactly this and nothing else: not your name, not your cash."));
+    const grid = el("div", "grid");
+    const field = (label, input, unit) => {
+      const f = el("div", "field"); f.append(el("label", null, label));
+      const box = el("div", "in"); box.append(input); if (unit) box.append(el("span", "unit", unit));
+      f.append(box); return f;
+    };
+    const category = el("select"); category.name = "category";
+    for (const [v, t] of Object.entries(CATEGORY)) { const o = el("option", null, t); o.value = v; category.append(o); }
+    category.value = d.category;
+    const seats = el("input"); seats.type = "number"; seats.min = 1; seats.max = 1000; seats.value = d.seats; seats.name = "seats";
+    const budget = el("input"); budget.type = "number"; budget.min = 1; budget.step = 1; budget.value = d.budget.amount; budget.name = "budget";
+    const currency = el("select"); currency.name = "currency";
+    for (const v of ["USD", "EUR", "GBP"]) { const o = el("option", null, v); o.value = v; currency.append(o); }
+    currency.value = d.budget.currency;
+    const term = el("select"); term.name = "term";
+    for (const v of [6, 12, 24, 36]) { const o = el("option", null, `${v} months`); o.value = v; term.append(o); }
+    term.value = d.termMonths;
+    grid.append(field("Category", category), field("Seats", seats), field("Budget per month", budget, currency.value), field("Currency", currency), field("Term", term));
+    currency.onchange = () => (budget.parentElement.querySelector(".unit").textContent = currency.value);
+    const policy = el("div", "policy");
+    const dues = (e.company.obligations ?? []).map((o) => `${whole(o.amount, cur)} ${o.label.toLowerCase()}${o.everyDays ? ` every ${o.everyDays === 7 ? "week" : `${o.everyDays} days`}` : ` on day ${o.firstDay}`}`).join(", ");
+    policy.append("Your agent will keep cash above the ", el("b", null, `${whole(p.reserveFloor, cur)} reserve floor`), ` for the next ${p.horizonDays} days, after what is already due${dues ? ` (${dues})` : ""}. The cheapest bid that respects that wins. Those rules are code, not a prompt.`);
+    const err = el("div", "err");
+    const go = el("button", "btn primary", "Post intent");
+    go.onclick = async () => {
+      go.disabled = true; err.style.display = "none";
+      const body = { category: category.value, seats: Number(seats.value), budget: { amount: Number(budget.value), currency: currency.value }, termMonths: Number(term.value) };
+      const r = await fetch("/intent", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      if (!r.ok) { err.textContent = (await r.json()).error ?? "Could not post the intent."; err.style.display = "block"; go.disabled = false; return; }
+      go.textContent = "Posted. Vendors are bidding…";
+    };
+    c.append(grid, policy, go, err);
+    $("scenes").append(c);
+  }
+
+  // ─── top ───
+  function start(e) {
+    $("empty")?.remove();
+    $("post")?.remove();
+    e.vendors.forEach((v, i) => (state.slot[v] = i + 1));
+    state.currency = e.company.currency;
+    state.term = e.intent.termMonths;
+    const { intent } = e;
+    const h = $("intent");
+    h.replaceChildren(
+      el("span", "q", "Your agent wants "),
+      `a ${categoryName(intent.category).toLowerCase()}, ${intent.seats} seats, up to ${whole(intent.budget.amount, intent.budget.currency)} a ${intent.budget.per}, for ${intent.termMonths} months`,
+      el("span", "q", ". Vendors don't know who you are."),
+    );
+    $("floor").textContent = whole(e.company.policy.reserveFloor, state.currency);
+    $("figures").hidden = false;
+    $("dot").classList.add("live");
+  }
+  function cash(e) {
+    const v = $("cash");
+    const changed = v.textContent !== "—" && v.textContent !== whole(e.available, state.currency);
+    v.textContent = whole(e.available, state.currency);
+    if (changed) { v.classList.add("bump"); setTimeout(() => v.classList.remove("bump"), 1500); }
+  }
+
+  // ─── scenes & lines ───
+  function scene(e) {
+    const s = el("section", "scene");
+    s.append(el("div", "step", `Step ${e.n}`), el("h2", null, e.title));
+    $("scenes").appendChild(s);
+    state.scene = s;
+    breakRun();
+    requestAnimationFrame(() => s.scrollIntoView({ behavior: "smooth", block: "start" }));
+  }
+  function note(e) {
+    const quiet = /^Reconsider|^Not approved|^Staying|^No bid/.test(e.text);
+    mount(el("p", `say ${quiet ? "quiet" : ""}`, e.text.replace(/^Pick: (.*)$/, "The agent picks $1.").replace(/^Switch: (.*) → (.*)$/, "Switch from $1 to $2.")));
+    breakRun();
+  }
+  function deposit(e) {
+    mount(el("p", "say", `${e.payer} paid ${whole(e.amount, e.currency)} into the Global Account.`));
+    breakRun();
+  }
+
+  // ─── bids ───
+  function ranking(e) {
+    const c = card("ranking");
+    if (e.title) c.append(el("div", "cap", e.title));
+    const list = el("div", "bids");
+    for (const bid of e.bids) {
+      const row = el("div", "bid");
+      const name = el("div", "name"); const dot = el("i"); dot.style.background = colorOf(bid.vendor);
+      name.append(dot, bid.vendor);
+      const price = el("div", "price num");
+      price.append(money(bid.price.amount, bid.price.currency), el("small", null, perShort(bid.billing)));
+      const sub = el("div", "sub", bid.price.currency === e.currency ? cycleWord(bid.billing) : `${cycleWord(bid.billing)} · ${bid.price.currency} at ${bid.fx.toFixed(4)}`);
+      const right = el("div", "right num", `${whole(bid.total, e.currency)} over ${state.term} months`);
+      const why = el("div", "why");
+      const pill = el("span", "pill");
+      if (bid.verdict === "fits") {
+        pill.classList.add("good"); pill.append(icon("check"), "Keeps the reserve");
+        why.append(pill, `Lowest cash ${whole(bid.cashPath.low.balance, e.currency)}, on day ${bid.cashPath.low.day}`);
+      } else if (bid.verdict === "breaks-reserve") {
+        pill.classList.add("bad"); pill.append(icon("cross"), `Breaks the reserve in week ${Math.ceil(bid.cashPath.breachDay / 7)}`);
+        why.append(pill, `Cash would fall to ${whole(bid.cashPath.balance, e.currency)} on day ${bid.cashPath.breachDay}`);
+      } else {
+        pill.classList.add("bad"); pill.append(icon("cross"), "Over budget");
+        why.append(pill, e.budget ? `${whole(bid.perMonth, e.currency)} a month against a ${whole(e.budget, e.currency)} budget` : `${whole(bid.perMonth, e.currency)} a month`);
+      }
+      if (bid.vendor === e.winner) { const p = el("span", "pill pick", "Picked"); why.prepend(p); }
+      row.append(name, price, sub, right, why);
+      list.append(row);
+    }
+    c.append(list);
+    const withPath = e.bids.filter((x) => x.cashPath?.path);
+    if (withPath.length) {
+      const cc = card("chart");
+      cc.append(el("div", "cap", `Cash over the next ${withPath[0].cashPath.path.length - 1} days, with each bid`));
+      cc.append(cashChart(e, withPath));
+      const breaker = withPath.find((x) => !x.cashPath.ok);
+      if (breaker) cc.append(el("div", "foot", `${breaker.vendor}'s prepay would take cash to ${whole(breaker.cashPath.balance, e.currency)} on day ${breaker.cashPath.breachDay}, under the ${whole(e.floor, e.currency)} floor. The rule lives in code; the agent only explains it.`));
+    }
+    breakRun();
+  }
+
+  function cashChart(e, bids) {
+    const wrap = el("div");
+    const keys = el("div", "keys");
+    for (const bid of bids) { const s = el("span"); const i = el("i"); i.style.background = colorOf(bid.vendor); s.append(i, bid.vendor); keys.append(s); }
+    const f = el("span"); f.append(el("i", "floor"), `Reserve floor ${whole(e.floor, e.currency)}`); keys.append(f);
+    wrap.append(keys);
+
+    const W = 640, H = 220, m = { t: 12, r: 16, b: 24, l: 36 };
+    const horizon = Math.max(...bids.map((x) => x.cashPath.path.length)) - 1;
+    const ymax = Math.max(e.cash, ...bids.flatMap((x) => x.cashPath.path));
+    const step = ymax > 40000 ? 20000 : ymax > 16000 ? 10000 : 5000;
+    const top = Math.ceil(ymax / step) * step;
+    const x = (d) => m.l + (d / horizon) * (W - m.l - m.r);
+    const y = (v) => m.t + (1 - v / top) * (H - m.t - m.b);
+    const chart = el("div", "chart");
+    const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Projected cash for each bid against the reserve floor" });
+    for (let v = 0; v <= top; v += step) {
+      svg.append(svgEl("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), stroke: "var(--line)", "stroke-width": 1 }));
+      const t = svgEl("text", { x: m.l - 8, y: y(v) + 4, "text-anchor": "end", fill: "var(--ink3)", "font-size": 11 });
+      t.textContent = compact(v); svg.append(t);
+    }
+    for (const d of [0, 30, 60, 90].filter((d) => d <= horizon)) {
+      const t = svgEl("text", { x: x(d), y: H - 6, "text-anchor": d === 0 ? "start" : "middle", fill: "var(--ink3)", "font-size": 11 });
+      t.textContent = d === 0 ? "today" : `day ${d}`; svg.append(t);
+    }
+    svg.append(svgEl("line", { x1: m.l, x2: W - m.r, y1: y(e.floor), y2: y(e.floor), stroke: "var(--ink3)", "stroke-width": 1.5 }));
+    const fl = svgEl("text", { x: W - m.r, y: y(e.floor) - 6, "text-anchor": "end", fill: "var(--ink2)", "font-size": 11, "font-weight": 600 });
+    fl.textContent = "reserve floor"; svg.append(fl);
+    for (const bid of bids) {
+      const d = bid.cashPath.path.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join("");
+      svg.append(svgEl("path", { d, fill: "none", stroke: colorOf(bid.vendor), "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }));
+      const last = bid.cashPath.path.length - 1;
+      svg.append(svgEl("circle", { cx: x(last), cy: y(bid.cashPath.path[last]), r: 6, fill: "var(--card)" }));
+      svg.append(svgEl("circle", { cx: x(last), cy: y(bid.cashPath.path[last]), r: 4, fill: colorOf(bid.vendor) }));
+      if (!bid.cashPath.ok) {
+        const bx = x(bid.cashPath.breachDay), by = y(bid.cashPath.balance);
+        svg.append(svgEl("circle", { cx: bx, cy: by, r: 7, fill: "var(--card)" }));
+        svg.append(svgEl("circle", { cx: bx, cy: by, r: 5, fill: "var(--red)" }));
+        const t = svgEl("text", { x: bx + 12, y: by + 16, fill: "var(--red)", "font-size": 12, "font-weight": 600 });
+        t.textContent = `${whole(bid.cashPath.balance, e.currency)} on day ${bid.cashPath.breachDay}`; svg.append(t);
+      }
+    }
+    const cross = svgEl("line", { y1: m.t, y2: H - m.b, stroke: "var(--ink3)", "stroke-width": 1, visibility: "hidden" });
+    svg.append(cross);
+    const hit = svgEl("rect", { x: m.l, y: 0, width: W - m.l - m.r, height: H, fill: "transparent" });
+    svg.append(hit);
+    const tip = el("div", "tip");
+    chart.append(svg, tip);
+    hit.addEventListener("pointermove", (ev) => {
+      const rect = svg.getBoundingClientRect();
+      const px = ((ev.clientX - rect.left) / rect.width) * W;
+      const day = Math.max(0, Math.min(horizon, Math.round(((px - m.l) / (W - m.l - m.r)) * horizon)));
+      cross.setAttribute("x1", x(day)); cross.setAttribute("x2", x(day)); cross.setAttribute("visibility", "visible");
+      tip.replaceChildren(el("div", "d", day === 0 ? "today" : `day ${day}`));
+      for (const bid of bids) {
+        const r = el("div", "r"); const i = el("i"); i.style.background = colorOf(bid.vendor);
+        const name = el("span"); name.append(i, bid.vendor);
+        r.append(name, el("b", "num", whole(bid.cashPath.path[Math.min(day, bid.cashPath.path.length - 1)], e.currency)));
+        tip.append(r);
+      }
+      tip.style.display = "block";
+      const left = (x(day) / W) * rect.width;
+      tip.style.left = `${left > rect.width - 200 ? left - 190 : left + 14}px`;
+      tip.style.top = `${Math.max(0, ev.clientY - rect.top - 44)}px`;
+    });
+    hit.addEventListener("pointerleave", () => { cross.setAttribute("visibility", "hidden"); tip.style.display = "none"; });
+    wrap.append(chart);
+
+    const details = el("details", "table");
+    details.append(el("summary", null, "Show as a table"));
+    const table = el("table"); const head = el("tr"); head.append(el("th", null, "Day"));
+    for (const bid of bids) head.append(el("th", null, bid.vendor));
+    table.append(head);
+    for (let d = 0; d <= horizon; d += 15) {
+      const tr = el("tr"); tr.append(el("td", null, String(d)));
+      for (const bid of bids) tr.append(el("td", "num", whole(bid.cashPath.path[Math.min(d, bid.cashPath.path.length - 1)], e.currency)));
+      table.append(tr);
+    }
+    details.append(table);
+    wrap.append(details);
+    return wrap;
+  }
+
+  // ─── approval ───
+  const pending = {};
+  function approval(e) {
+    const c = card("approval");
+    c.append(el("div", "cap", "You approve exactly this. Nothing broader."));
+    const terms = el("div", "terms");
+    for (const [l, v] of [
+      ["Vendor", e.terms.vendor],
+      ["Amount", `${money(e.terms.amount, e.terms.currency)} ${cycleWord(e.terms.cycle)}`],
+      ["Currency", e.terms.currency],
+      ["Merchant", `Only ${MCC[e.terms.merchantCategory] ?? `category ${e.terms.merchantCategory}`}`],
+    ]) { const t = el("div"); t.append(el("div", "l", l), el("div", "v", v)); terms.append(t); }
+    const btns = el("div", "btns");
+    const no = el("button", "btn", "Decline"), yes = el("button", "btn primary", "Approve");
+    const answer = (approved) => fetch("/approve", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: e.id, approved }) });
+    yes.onclick = () => answer(true); no.onclick = () => answer(false);
+    btns.append(no, yes);
+    c.append(terms, btns);
+    pending[e.id] = btns;
+    breakRun();
+  }
+  function approved(e) {
+    const btns = pending[e.id];
+    if (!btns) return;
+    const d = el("div", `decided ${e.approved ? "yes" : "no"}`);
+    d.append(icon(e.approved ? "check" : "cross"), e.approved ? "Approved" : "Declined");
+    btns.replaceWith(d);
+  }
+
+  // ─── the card ───
+  function cardIssued(e) {
+    const c = card("card");
+    c.append(el("div", "cap", e.replaces ? "A new card for the new terms. The old one is frozen." : "The approved terms are the card's controls, enforced by the network before money moves."));
+    const row = el("div", "cardrow");
+    const v = el("div", "vcard");
+    const t = el("div", "t"); const st = el("span", "state", e.status); t.append(el("span", null, "Airwallex · virtual"), st);
+    const n = el("div", "n", (e.number ?? "****************").replace(/\*{4}/g, "•••• ").trim());
+    const b = el("div", "b"); const fr = el("div", "for"); fr.append("pays only ", el("b", null, e.approval.vendor));
+    b.append(fr, el("span", "brand", e.brand ?? ""));
+    v.append(t, n, b);
+    const rules = el("div", "rules");
+    for (const [l, val, code] of [
+      ["Per charge, at most", money(e.approval.amount, e.approval.currency)],
+      ["Only in", e.approval.currency],
+      ["Only at", MCC[e.approval.merchantCategory] ?? "the vendor's category", `MCC ${e.approval.merchantCategory}`],
+    ]) { const r = el("div", "rule"); const vv = el("div", "v", val); if (code) vv.append(el("code", null, code)); r.append(el("div", "l", l), vv); rules.append(r); }
+    row.append(v, rules);
+    c.append(row);
+    state.cards[e.id] = { vcard: v, st };
+    breakRun();
+  }
+  function cardStatus(e) {
+    const c = state.cards[e.id];
+    if (!c) return;
+    c.st.textContent = e.status === "ACTIVE" ? "ACTIVE" : "FROZEN";
+    c.vcard.classList.toggle("frozen", e.status !== "ACTIVE");
+  }
+
+  // ─── charges, as a receipt ───
+  function charge(e) {
+    if (state.last?.kind !== "receipt") {
+      const c = card("receipt");
+      c.append(el("div", "cap", "Charges on the card, decided by Airwallex Issuing"));
+      c.append(el("div", "receipt"));
+    }
+    const receipt = state.last.node.querySelector(".receipt");
+    const line = el("div", "line");
+    const who = el("div", "who", e.merchant);
+    const how = el("div", "how", `${e.label}${e.txId ? ` · ${e.txId.slice(0, 8)}` : ""}`);
+    const amt = el("div", "amt num", money(e.amount, e.currency));
+    const res = el("div", `res ${e.outcome}`);
+    res.append(icon(e.outcome === "approved" ? "check" : "cross"));
+    if (e.outcome === "approved") res.append("Approved");
+    else { res.append(`Declined · ${REASON[e.detail] ?? e.detail}`, " ", el("code", null, e.detail)); }
+    line.append(who, amt, how, res);
+    receipt.append(line);
+    requestAnimationFrame(() => line.scrollIntoView({ behavior: "smooth", block: "nearest" }));
+  }
+
+  // ─── escrow ───
+  function escrow(e) {
+    if (e.step === "prepaid" || state.last?.kind !== "escrow") {
+      const c = card("escrow");
+      c.append(el("div", "cap", e.step === "prepaid" ? "Vendors pay only for closed deals" : "Settlement"));
+      c.append(el("div", "hero"), el("div", "steps"));
+      if (e.step === "prepaid") state.escrows[e.cardId] = c;
+    }
+    const c = state.last.node;
+    // The release usually lands in a later step: the prepay card stops waiting wherever it is.
+    if (e.step === "released") state.escrows[e.cardId]?.querySelector(".wait")?.remove();
+    const hero = c.querySelector(".hero"), steps = c.querySelector(".steps");
+    const line = (left, right, cls) => { const s = el("div", `s ${cls ?? ""}`); s.append(el("span", null, left), right); steps.append(s); };
+    const link = (url, hash) => { const a = el("a", null, `${hash.slice(0, 10)}… on Metal`); a.href = url; a.target = "_blank"; a.rel = "noopener"; return a; };
+    if (e.step === "prepaid") {
+      hero.replaceChildren(money(e.amount, e.currency), el("small", null, `${e.vendor} prepays its acquisition fee into the escrow on Metal testnet. It is released only when a charge clears on the card.`));
+      line(`${e.vendor} funds the escrow (USDZ)`, link(e.url, e.hash));
+      line("Waiting for the first cleared charge", el("code", null, "…"), "wait");
+    }
+    if (e.step === "released") {
+      steps.querySelector(".wait")?.remove();
+      hero.replaceChildren(`${money(e.rebate, e.currency)} back to you`, el("small", null, `The cleared charge is the proof of sale. The escrow splits ${e.vendor}'s ${money(e.amount, e.currency)} fee in one transaction.`));
+      const split = el("div", "split");
+      const r = el("i"); r.style.flex = String(e.rebate); r.style.background = "var(--blue)";
+      const f = el("i"); f.style.flex = String(e.outbidFee); f.style.background = "var(--line)";
+      split.append(r, f);
+      const keys = el("div", "split-keys");
+      const k1 = el("span"); const i1 = el("i"); i1.style.background = "var(--blue)"; k1.append(i1, `Your rebate ${money(e.rebate, e.currency)}`);
+      const k2 = el("span"); const i2 = el("i"); i2.style.background = "var(--line)"; k2.append(i2, `Outbid ${money(e.outbidFee, e.currency)}`);
+      keys.append(k1, k2);
+      hero.after(split, keys);
+      line("Proof of sale, Airwallex transaction", el("code", null, `${e.txId.slice(0, 13)}…`));
+      line("Escrow releases and splits the fee", link(e.url, e.hash));
+    }
+    if (e.step === "payout") {
+      line(`Rebate ${money(e.amount, e.currency)} sent to your bank via Airwallex Payouts`, el("code", null, `${e.transferId.slice(0, 8)}… ${e.status.toLowerCase()}`));
+    }
+    requestAnimationFrame(() => c.scrollIntoView({ behavior: "smooth", block: "end" }));
+  }
+
+  // ─── the message to the incumbent ───
+  function offer(e) {
+    const c = card("offer");
+    c.append(el("div", "cap", `Outbid to ${e.to}`));
+    const m = el("div", "msg");
+    const out = el("div", "bubble out", `${e.from} costs ${money(e.amount, e.currency)} per ${e.per}. Match, or the company switches.`);
+    const back = el("div", "bubble in");
+    back.append(el("span", "from", e.to), e.matched ? `We match: ${money(e.matched.amount, e.matched.currency)} per ${e.per}.` : "We pass.");
+    m.append(out, back);
+    c.append(m);
+    breakRun();
+  }
+
+  const end = () => {
+    source.close();
+    $("dot").classList.remove("on", "live");
+    mount(el("p", "fin", "Every step above ran against the Airwallex sandbox and Metal testnet."));
+  };
+  // What each vendor's agent sees is on its own page (/vendor); the buyer never sees it here.
+  const handlers = { "await-intent": awaitIntent, start, cash, scene, note, deposit, ranking, approval, approved, card: cardIssued, cardStatus, charge, escrow, offer, end };
+  const source = new EventSource("/events");
+  source.onopen = () => $("dot").classList.add("on");
+  source.onerror = () => $("dot").classList.remove("on");
+  source.onmessage = (m) => {
+    const e = JSON.parse(m.data);
+    handlers[e.type]?.(e);
+  };
+})();
+</script>
+</body>
+</html>

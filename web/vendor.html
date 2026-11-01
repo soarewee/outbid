@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Outbid · Vendor</title>
+<link rel="stylesheet" href="outbid.css">
+<style>
+  .top { padding: 40px 0 8px; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .top h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.2; margin: 0; display: flex; align-items: center; gap: 12px; }
+  .top h1 i { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .top .sub { color: var(--ink3); font-size: 15px; margin-top: 4px; }
+  .switch { display: flex; gap: 2px; background: var(--card); border-radius: 999px; padding: 3px; box-shadow: var(--shadow); }
+  .switch button { font: inherit; font-size: 13px; font-weight: 600; color: var(--ink3); padding: 7px 14px; border-radius: 999px; border: 0; background: none; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
+  .switch button i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .switch button.on { background: var(--ink); color: var(--card); }
+  .section { margin-top: 36px; }
+  .section[hidden] { display: none; }
+  .section h2 { font-size: 13px; font-weight: 700; color: var(--ink3); letter-spacing: .04em; text-transform: uppercase; margin: 0 0 4px 4px; }
+
+  .intent-card .big { font-size: 26px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.2; margin-bottom: 14px; }
+  .facts { display: flex; gap: 8px; flex-wrap: wrap; }
+  .mine { display: grid; grid-template-columns: 1fr auto; gap: 2px 18px; padding: 16px 0; border-top: 1px solid var(--line); align-items: center; animation: rise .3s ease-out; }
+  .mine:first-of-type { border-top: 0; padding-top: 2px; }
+  .mine:last-of-type { padding-bottom: 2px; }
+  .mine .t { font-weight: 600; font-size: 16px; }
+  .mine .price { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; text-align: right; }
+  .mine .price small { font-size: 14px; font-weight: 500; color: var(--ink3); margin-left: 3px; }
+  .mine .sub { font-size: 14px; color: var(--ink2); }
+  .mine .right { text-align: right; font-size: 14px; color: var(--ink3); }
+  .mine .state { grid-column: 1 / -1; margin-top: 8px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 14px; color: var(--ink2); }
+  .deal .head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .deal .head .cap { margin: 0; }
+  .deal .note { font-size: 14px; color: var(--ink2); margin-top: 4px; }
+  .log .row { display: grid; grid-template-columns: 52px 1fr; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); font-size: 15px; animation: rise .3s ease-out; }
+  .log .row:first-of-type { border-top: 0; padding-top: 2px; }
+  .log .row:last-of-type { padding-bottom: 2px; }
+  .log .at { font-family: var(--mono); font-size: 12px; color: var(--ink3); padding-top: 4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="bar">
+    <a class="wordmark" href="/"><span class="dot" id="dot"></span>Outbid</a>
+    <nav class="nav"><a href="/buyer">Buyer</a><a href="/vendor" class="on">Vendors</a><a href="/">About</a></nav>
+  </header>
+  <div class="top">
+    <div>
+      <h1><i id="hue"></i><span id="who">Vendor</span></h1>
+      <div class="sub" id="sub">Your agent's console. It bids on intents and never learns who the buyer is until the card pays you.</div>
+    </div>
+    <div class="switch" id="switch"></div>
+  </div>
+  <div id="empty" class="empty">No open intents. When a buyer posts one, it appears here and your agent bids.</div>
+  <section class="section" id="s-intent" hidden><h2>Open intent</h2><div class="card intent-card" id="intent"></div></section>
+  <section class="section" id="s-bids" hidden><h2>Your bids</h2><div class="card" id="bids"></div></section>
+  <section class="section" id="s-offer" hidden><h2>From Outbid</h2><div class="card" id="offer"><div class="msg" id="msgs"></div></div></section>
+  <section class="section" id="s-deals" hidden><h2>Deals</h2><div id="deals"></div></section>
+  <section class="section" id="s-pay" hidden><h2>Payments from the buyer</h2><div class="card"><div class="cap">Each one is decided by the card network, not by you or the buyer.</div><div class="receipt" id="pay"></div></div></section>
+  <section class="section" id="s-fee" hidden><h2>Acquisition fee</h2><div id="fees"></div></section>
+  <section class="section" id="s-log" hidden><h2>Activity</h2><div class="card"><div class="log" id="log"></div></div></section>
+  <p class="fin" id="fin" hidden>Everything above happened on the Airwallex sandbox and Metal testnet.</p>
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const SYMBOL = { USD: "$", EUR: "€", GBP: "£" };
+  const money = (n, c) => `${SYMBOL[c] ?? `${c} `}${Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const whole = (n, c) => `${SYMBOL[c] ?? `${c} `}${Math.round(Number(n)).toLocaleString("en-US")}`;
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+  const svgEl = (tag, attrs = {}) => { const e = document.createElementNS("http://www.w3.org/2000/svg", tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); return e; };
+  const icon = (kind) => {
+    const s = svgEl("svg", { viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", "stroke-width": "2.2", "stroke-linecap": "round", "stroke-linejoin": "round" });
+    s.appendChild(svgEl("path", { d: kind === "check" ? "M3 8.5l3 3 7-7" : "M4 4l8 8M12 4l-8 8" }));
+    return s;
+  };
+  const CATEGORY = { "design-tool": "Design tool" };
+  const categoryName = (c) => CATEGORY[c] ?? c.replace(/-/g, " ");
+  const cycleWord = (cycle) => (cycle === "annual" ? "per year, prepaid" : "per month");
+  const perShort = (cycle) => (cycle === "annual" ? "/yr" : "/mo");
+  const clock = (t) => `${String(Math.floor(t / 60000)).padStart(2, "0")}:${String(Math.floor((t % 60000) / 1000)).padStart(2, "0")}`;
+  const TITLE = { opening: "Opening bid", reopened: "Renewal, reopened", recheck: "Re-run after the buyer's cash changed" };
+  // Why a charge failed, as the vendor should read it.
+  const REASON = {
+    LIMIT_EXCEEDED: "above what the buyer approved",
+    MERCHANT_CATEGORY_NOT_ALLOWED: "merchant category not allowed",
+    CURRENCY_NOT_ALLOWED: "wrong currency",
+    CARD_INACTIVE: "the buyer froze this card",
+  };
+
+  const DEFAULT = ["Vendor A", "Vendor B", "Vendor C"];
+  const events = [];
+  let vendors = DEFAULT;
+  let me = new URLSearchParams(location.search).get("v") ?? DEFAULT[0];
+  const state = { slot: {}, term: 12, deals: {} };
+  const colorOf = (v) => `var(--s${state.slot[v] ?? vendors.indexOf(v) + 1 ?? 1})`;
+  const show = (id) => { $(id).hidden = false; $("empty").hidden = true; };
+
+  function header() {
+    $("who").textContent = me;
+    $("hue").style.background = colorOf(me);
+    const sw = $("switch");
+    sw.replaceChildren();
+    for (const v of vendors) {
+      const b = el("button", v === me ? "on" : "", null);
+      const i = el("i"); i.style.background = colorOf(v);
+      b.append(i, v);
+      b.onclick = () => { me = v; history.replaceState(null, "", `?v=${encodeURIComponent(v)}`); render(); };
+      sw.append(b);
+    }
+    document.title = `Outbid · ${me}`;
+  }
+
+  function reset() {
+    state.deals = {};
+    for (const id of ["intent", "bids", "msgs", "deals", "pay", "fees", "log"]) $(id).replaceChildren();
+    for (const s of document.querySelectorAll(".section")) s.hidden = true;
+    $("fin").hidden = true;
+    $("empty").hidden = false;
+    $("empty").textContent = "No open intents. When a buyer posts one, it appears here and your agent bids.";
+  }
+
+  const handlers = {
+    "await-intent"() { $("empty").textContent = "A buyer is writing an intent…"; },
+    start(e) {
+      vendors = e.vendors; e.vendors.forEach((v, i) => (state.slot[v] = i + 1));
+      state.term = e.intent.termMonths;
+      header();
+      const { intent } = e;
+      const c = $("intent");
+      c.append(el("div", "cap", "Anonymous buyer · posted just now"));
+      c.append(el("div", "big", `${categoryName(intent.category)}, ${intent.seats} seats, up to ${whole(intent.budget.amount, intent.budget.currency)} a ${intent.budget.per}`));
+      const facts = el("div", "facts");
+      for (const t of [`${intent.termMonths}-month term`, `Budget ${whole(intent.budget.amount, intent.budget.currency)}/${intent.budget.per}`, `${intent.seats} seats`, "Pays by card"]) facts.append(el("span", "pill quiet", t));
+      c.append(facts, el("div", "foot", "That is all you get. The buyer's name, balance and reserve stay hidden; the agent bids on the intent alone and the card tells you when you've won."));
+      show("s-intent");
+    },
+    ranking(e) {
+      const i = e.bids.findIndex((b) => b.vendor === me);
+      if (i < 0) return;
+      const bid = e.bids[i];
+      const row = el("div", "mine");
+      const price = el("div", "price num"); price.append(money(bid.price.amount, bid.price.currency), el("small", null, perShort(bid.billing)));
+      const st = el("div", "state");
+      const pill = el("span", `pill ${e.winner === me ? "good" : "quiet"}`);
+      pill.append(icon(e.winner === me ? "check" : "cross"), e.winner === me ? "Picked" : "Passed over");
+      st.append(pill, `Ranked #${i + 1} of ${e.bids.length} on cost over ${state.term} months`);
+      row.append(el("div", "t", TITLE[e.key] ?? e.title ?? "Bid"), price, el("div", "sub", cycleWord(bid.billing)), el("div", "right num", `${whole(bid.total, e.currency)} to the buyer, in ${e.currency}`), st);
+      $("bids").append(row);
+      show("s-bids");
+    },
+    offer(e) {
+      if (e.to !== me) return;
+      const m = $("msgs");
+      const inb = el("div", "bubble in");
+      inb.append(el("span", "from", "Outbid"), `A competing bid is at ${money(e.amount, e.currency)} per ${e.per}. Match it, or the buyer switches.`);
+      const out = el("div", "bubble out", e.matched ? `We match: ${money(e.matched.amount, e.matched.currency)} per ${e.per}.` : "We pass.");
+      m.append(inb, out);
+      show("s-offer");
+    },
+    card(e) {
+      if (e.approval.vendor !== me) return;
+      const c = el("div", "card deal");
+      const head = el("div", "head");
+      const pill = el("span", "pill good"); pill.append(icon("check"), "Active");
+      head.append(el("div", "cap", e.replaces ? "Renewed. The buyer's card is bound to your new terms." : "Won. The buyer's card is bound to your terms."), pill);
+      const terms = el("div", "terms");
+      for (const [l, v, s] of [
+        ["You can charge", money(e.approval.amount, e.approval.currency), cycleWord(e.approval.cycle)],
+        ["Currency", e.approval.currency],
+        ["Merchant category", `MCC ${e.approval.merchantCategory}`],
+        ["Card", `•••• ${(e.number ?? "").slice(-4) || "????"}`, e.brand],
+      ]) { const t = el("div"); const vv = el("div", "v", v); if (s) vv.append(el("small", null, s)); t.append(el("div", "l", l), vv); terms.append(t); }
+      const note = el("div", "note", "Bill exactly this and it clears. Anything above it, in another currency or from another merchant is declined by the network.");
+      c.append(head, terms, note);
+      $("deals").append(c);
+      state.deals[e.id] = { pill, note };
+      // The card this one replaces was ours too: it was superseded, not lost.
+      const old = state.deals[e.replaces];
+      if (old) { old.replaced = true; old.note.textContent = "Replaced by the new terms below."; }
+      show("s-deals");
+    },
+    cardStatus(e) {
+      const d = state.deals[e.id];
+      if (!d) return;
+      const frozen = e.status !== "ACTIVE";
+      d.pill.className = `pill ${frozen ? "bad" : "good"}`;
+      d.pill.replaceChildren(icon(frozen ? "cross" : "check"), frozen ? "Frozen" : "Active");
+      if (frozen && !d.replaced) d.note.textContent = "The buyer moved on. Charges on this card now decline.";
+    },
+    charge(e) {
+      if (e.merchant !== me) return;
+      const line = el("div", "line");
+      const res = el("div", `res ${e.outcome}`);
+      res.append(icon(e.outcome === "approved" ? "check" : "cross"));
+      if (e.outcome === "approved") res.append("Cleared");
+      else res.append(`Declined · ${REASON[e.detail] ?? e.detail}`, " ", el("code", null, e.detail));
+      line.append(el("div", "who", e.label), el("div", "amt num", money(e.amount, e.currency)), el("div", "how", e.txId ? `Airwallex transaction ${e.txId.slice(0, 8)}` : "Airwallex transaction"), res);
+      $("pay").append(line);
+      show("s-pay");
+    },
+    escrow(e) {
+      if (e.step === "payout" || e.vendor !== me) return;
+      const link = (url, hash) => { const a = el("a", null, `${hash.slice(0, 10)}… on Metal`); a.href = url; a.target = "_blank"; a.rel = "noopener"; return a; };
+      const line = (steps, left, right, cls) => { const s = el("div", `s ${cls ?? ""}`); s.append(el("span", null, left), right); steps.append(s); };
+      if (e.step === "prepaid") {
+        const c = el("div", "card"); c.dataset.card = e.cardId;
+        c.append(el("div", "cap", "You pay only for closed deals"));
+        const hero = el("div", "hero"); hero.append(`${money(e.amount, e.currency)} in escrow`, el("small", null, "Your acquisition fee, prepaid into the Outbid escrow on Metal testnet. It is released only when the buyer's charge clears on the card. If nothing clears by the deadline, it comes back to you."));
+        const steps = el("div", "steps");
+        line(steps, "You funded the escrow (USDZ)", link(e.url, e.hash));
+        line(steps, "Waiting for the buyer's first charge", el("code", null, "…"), "wait");
+        c.append(hero, steps);
+        $("fees").append(c);
+      }
+      if (e.step === "released") {
+        const c = $("fees").querySelector(`[data-card="${e.cardId}"]`) ?? $("fees").lastElementChild;
+        if (!c) return;
+        c.querySelector(".wait")?.remove();
+        c.querySelector(".cap").textContent = "Deal closed";
+        const hero = c.querySelector(".hero");
+        hero.replaceChildren(`${money(e.amount, e.currency)} released`, el("small", null, `The buyer's charge cleared, which is the proof of sale. The escrow paid ${money(e.rebate, e.currency)} to the buyer as a rebate and ${money(e.outbidFee, e.currency)} to Outbid, in one transaction.`));
+        const split = el("div", "split");
+        const r = el("i"); r.style.flex = String(e.rebate); r.style.background = "var(--blue)";
+        const f = el("i"); f.style.flex = String(e.outbidFee); f.style.background = "var(--line)";
+        split.append(r, f);
+        const keys = el("div", "split-keys");
+        const k1 = el("span"); const i1 = el("i"); i1.style.background = "var(--blue)"; k1.append(i1, `Buyer rebate ${money(e.rebate, e.currency)}`);
+        const k2 = el("span"); const i2 = el("i"); i2.style.background = "var(--line)"; k2.append(i2, `Outbid ${money(e.outbidFee, e.currency)}`);
+        keys.append(k1, k2);
+        hero.after(split, keys);
+        const steps = c.querySelector(".steps");
+        line(steps, "Proof of sale, Airwallex transaction", el("code", null, `${e.txId.slice(0, 13)}…`));
+        line(steps, "Escrow released and split", link(e.url, e.hash));
+      }
+      show("s-fee");
+    },
+    vendor(e) {
+      if (e.vendor !== me) return;
+      const row = el("div", "row");
+      row.append(el("div", "at", clock(e.t)), el("div", null, e.text));
+      $("log").append(row);
+      show("s-log");
+    },
+    end() { $("fin").hidden = false; },
+  };
+
+  function render() {
+    reset();
+    header();
+    for (const e of events) handlers[e.type]?.(e);
+  }
+
+  header();
+  const source = new EventSource("/events");
+  source.onopen = () => $("dot").classList.add("on");
+  source.onerror = () => $("dot").classList.remove("on");
+  source.onmessage = (m) => {
+    const e = JSON.parse(m.data);
+    events.push(e);
+    if (e.type === "end") { source.close(); $("dot").classList.remove("on"); }
+    handlers[e.type]?.(e);
+  };
+})();
+</script>
+</body>
+</html>

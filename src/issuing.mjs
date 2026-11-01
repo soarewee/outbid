@@ -44,7 +44,7 @@ export async function issueCard(aw, { cardholderId, controls, nickName, createdB
   });
   const id = created.card_id ?? created.id;
   const card = await waitFor("card", () => aw.get(`/api/v1/issuing/cards/${id}`), (c) => c.card_status === "ACTIVE");
-  return { id, status: card.card_status, controls: card.authorization_controls ?? controls };
+  return { id, status: card.card_status, number: card.card_number, brand: card.brand, controls: card.authorization_controls ?? controls };
 }
 
 // Freezes a card: INACTIVE declines every charge until the card is set back to ACTIVE.

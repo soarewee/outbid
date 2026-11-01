@@ -7,14 +7,47 @@ Outbid is a purchase-intent auction for company SaaS buying, built for the Airwa
 picks a bid that respects the company's cash reserve, and the approved terms become an Airwallex virtual card
 that can only pay that vendor, that amount, in that currency.
 
-> Work in progress. The demo runs end to end against the Airwallex sandbox and Metal testnet. Buyer and vendor
-> screens are next.
+> The demo runs end to end against the Airwallex sandbox and Metal testnet, with a buyer console and a vendor
+> console that fill in live. Open `web/index.html` for the site.
+
+## Run it
+
+Node 20 or later, no dependencies, no build.
+
+1. Create a sandbox account at [sandbox.airwallex.com](https://sandbox.airwallex.com). Register the business in the
+   **United States** and name it `Sandbox Business` or `New Business Sandbox` so it skips review; card issuing is
+   rejected with `Invalid issuance details` for businesses in unsupported regions. Create a Client ID and API key
+   under Account → Developer → API keys.
+2. Get a Metal testnet RPC endpoint and a disposable test key (`cast wallet new`) funded with USDZ from the faucet.
+   The escrow is already deployed; the key only funds the vendors' prepaid fees.
+3. `cp .env.example .env` and fill in the keys. Never commit `.env`.
+4. `npm run demo -- --wait`, then open [localhost:4780/buyer](http://localhost:4780/buyer) and post the intent.
+
+## The site and the two consoles
+
+`web/` is three static pages served by the demo itself (`src/stage.mjs`, `node:http` only), at
+[localhost:4780](http://localhost:4780) while a demo or replay is running:
+
+- `/` (`web/index.html`) is the site: what Outbid does, how it works, who sees what, why a card, the sandbox
+  evidence, and how to run it. It also opens straight from the file.
+- `/buyer` (`web/buyer.html`) is the **buyer console**, where the company's agent starts. With `--wait` it opens on
+  the intent form (category, seats, budget, term, with the reserve policy the agent will hold to); posting it
+  starts the auction. Then: every bid ranked by FX-priced total cost with a cash projection against the reserve
+  floor, the exact terms to approve with Approve and Decline buttons, the card and its controls, every charge
+  with the reason Issuing gave, the escrow split and the rebate payout.
+- `/vendor` (`web/vendor.html`) is a **vendor console**, one vendor at a time (switch at the top, or `?v=Vendor%20B`).
+  Its agent sees the anonymous intent, its own bid and rank, whether it was picked, the deal the buyer's card is
+  bound to, its own charges (cleared, or declined for billing above what the buyer approved), its fee in escrow
+  and released, and at renewal the message from Outbid: match, or the buyer switches. Never the buyer's name,
+  cash or the other bids.
+
+Both consoles fill in live from the same run, so they can be recorded side by side.
 
 ## Demo
 
-`npm run demo` plays the whole story against the sandbox and Metal testnet. It first sets the USD balance to the
-scenario's starting cash (`data/scenario.json`) with a simulated deposit or a payout, so every run starts from the
-same place.
+`npm run demo` plays the whole story against the sandbox and Metal testnet. The demo first sets the USD balance to
+the scenario's starting cash (`data/scenario.json`) with a simulated deposit or a payout, so every run starts from
+the same place. Vendors price per seat, so the bids follow the seats in the intent; 10 seats gives the pitch's numbers.
 
 1. Three vendors bid. The annual prepay is cheapest but would break the reserve in week 7, so the best monthly bid wins
    and the agent records when to reconsider.
@@ -28,7 +61,10 @@ same place.
 5. A customer payment lands in the Global Account. The agent re-runs the decision, the annual prepay now fits, and
    after approval it gets a new card while the old card is frozen and declines.
 
-Every step that changes a card asks for approval; add `-- --yes` to approve them all.
+Every step that changes a card asks for approval, on the buyer console or in the terminal; add `-- --yes` to approve
+them all. `-- --wait` lets the buyer post the intent from the console instead of reading `data/intent.json`. Each run
+saves its stage events with the request log in `out/`, and `npm run demo:replay -- out/demo-<time>.json` plays them
+back on the pages with the original pacing, without touching the sandbox (`--speed 2` to hurry).
 
 ## Fee escrow on Metal
 
@@ -78,16 +114,7 @@ Every charge outcome comes from Airwallex Issuing. An API error is reported as a
 | $1,650 renewal hike | `DECLINED` / `LIMIT_EXCEEDED` |
 | $100 at a restaurant (MCC 5812) | `DECLINED` / `MERCHANT_CATEGORY_NOT_ALLOWED` |
 
-### Run
-
-1. Create a sandbox account at [sandbox.airwallex.com](https://sandbox.airwallex.com). Register the business in the
-   **United States** and name it `Sandbox Business` or `New Business Sandbox` so it skips review. Card issuing is
-   rejected with `Invalid issuance details` for businesses in unsupported regions.
-2. Create a Client ID and API key under Account → Developer → API keys.
-3. `cp .env.example .env` and fill in the keys. Never commit `.env`.
-4. `npm run spike` (Node 20 or later, no dependencies).
-
-The script funds the wallet with a simulated deposit, reuses or creates a cardholder (simulating review), issues the bid-bound
+`npm run spike` funds the wallet with a simulated deposit, reuses or creates a cardholder (simulating review), issues the bid-bound
 card and simulates the three charges. The full request/response log is written to `out/` (not committed).
 
 ### Notes
