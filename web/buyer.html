@@ -10,46 +10,48 @@
 <link rel="stylesheet" href="outbid.css">
 <style>
   .wrap { max-width: 720px; }
-  .top { padding: 40px 0 0; }
-  .intent { font-size: 24px; font-weight: 500; letter-spacing: -0.025em; line-height: 1.25; margin: 0 0 18px; }
+
+  /* the purchase, as one ticket at the top */
+  .ticket { padding: 40px 0 28px; border-bottom: 1px solid var(--line); }
+  .ticket .status { margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+  .ticket .status .pill { font-size: 13px; padding: 5px 11px; }
+  .ticket .status .pill i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; display: inline-block; }
+  .ticket .status .pill.live i { animation: pulse 1.6s infinite; }
+  .intent { font-size: 26px; font-weight: 500; letter-spacing: -0.025em; line-height: 1.25; margin: 0 0 20px; }
   .intent .q { color: var(--ink3); }
   .figures { display: flex; gap: 32px; flex-wrap: wrap; }
   .figure .l { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); }
   .figure .v { font-size: 20px; font-weight: 500; letter-spacing: -0.02em; transition: color .4s; margin-top: 2px; }
+  .figure .v small { font-size: 13px; font-weight: 400; color: var(--ink3); margin-left: 4px; }
   .figure .v.bump { color: var(--green); }
 
-  /* the rail: one segment per scene, one dot per step */
-  .rail { display: flex; gap: 18px; margin: 36px 0 28px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
-  .rail::-webkit-scrollbar { display: none; }
-  .seg { flex: 1; min-width: 96px; }
-  .seg .lab { font-size: 12px; font-weight: 500; color: var(--ink3); margin-bottom: 8px; white-space: nowrap; }
-  .seg.on .lab { color: var(--ink); }
-  .seg .dots { display: flex; gap: 4px; }
-  .seg .dots button { flex: 1; height: 3px; border-radius: 2px; border: 0; padding: 0; background: var(--line2); cursor: pointer; transition: background .2s; }
-  .seg .dots button.past { background: var(--ink3); }
-  .seg .dots button.cur { background: var(--ink); }
-
-  /* the stage: one step at a time */
-  .stage { animation: rise .3s ease-out; }
-  .kicker { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink3); display: flex; gap: 12px; flex-wrap: wrap; }
-  .kicker b { color: var(--ink2); font-weight: 500; }
-  .title { font-size: 28px; font-weight: 500; letter-spacing: -0.03em; line-height: 1.2; margin: 10px 0 12px; }
-  .lead { font-size: 16px; line-height: 1.6; color: var(--ink2); margin: 0 0 22px; max-width: 640px; }
-  .lead b { color: var(--ink); }
-  .stage .card { margin: 0; }
-  .notes { margin-top: 18px; display: grid; gap: 6px; }
-  .say { font-size: 16px; font-weight: 500; margin: 0; animation: rise .3s ease-out; }
-  .say.quiet { font-weight: 400; color: var(--ink2); font-size: 15px; }
-
-  .navrow { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--line); }
-  .navrow .count { font-family: var(--mono); font-size: 12px; color: var(--ink3); }
-  .navrow .btn.wait { color: var(--ink3); }
-  .navrow .btn.wait i { width: 7px; height: 7px; border-radius: 50%; background: var(--ink3); animation: pulse 1.6s infinite; }
-  .navrow .btn.next.new { background: var(--ink); color: var(--plane); border-color: var(--ink); }
-  .navrow .btn .arr { font-family: var(--mono); }
-  .navrow .btn span.t { max-width: 300px; overflow: hidden; text-overflow: ellipsis; }
-  .navrow .btn span.m { display: none; }
-  @media (max-width: 560px) { .navrow .btn span.t { display: none; } .navrow .btn span.m { display: inline; } .title { font-size: 24px; } table.path { font-size: 13px; } table.path td:first-child { white-space: nowrap; } }
+  /* the feed: everything that happens, as it happens */
+  .feed { padding-top: 8px; }
+  .chapter { display: flex; align-items: center; gap: 14px; margin: 40px 0 10px; animation: rise .4s ease-out; }
+  .chapter .k { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink3); white-space: nowrap; }
+  .chapter .t { font-size: 15px; font-weight: 500; color: var(--ink); }
+  .chapter::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .feed .card { margin: 12px 0; }
+  .card .title { font-size: 20px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.3; margin: 0 0 6px; }
+  .card .lead { font-size: 15px; line-height: 1.55; color: var(--ink2); margin: 0 0 18px; }
+  .card .lead b { color: var(--ink); }
+  .card .lead:last-child { margin-bottom: 0; }
+  .card.now { border-color: var(--line2); box-shadow: var(--shadow-lg); }
+  .ev { display: flex; gap: 12px; align-items: baseline; padding: 8px 4px; font-size: 14.5px; color: var(--ink2); animation: rise .35s ease-out; line-height: 1.5; }
+  .ev::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--line2); flex: none; position: relative; top: -1px; }
+  .ev b { color: var(--ink); font-weight: 500; }
+  .ev a, .ev code { font-family: var(--mono); font-size: 12px; color: var(--ink3); }
+  .ev a { border-bottom: 1px solid var(--line2); }
+  .live { display: flex; align-items: center; gap: 10px; padding: 18px 4px 0; font-size: 14px; color: var(--ink3); }
+  .live i { width: 7px; height: 7px; border-radius: 50%; background: var(--ink3); animation: pulse 1.6s infinite; }
+  .newer { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 5; box-shadow: var(--shadow-lg); display: none; }
+  .newer.show { display: inline-flex; animation: rise .3s ease-out; }
+  details.more { margin-top: 14px; }
+  details.more summary { cursor: pointer; font-size: 14px; font-weight: 500; color: var(--ink2); list-style: none; display: inline-flex; align-items: center; gap: 8px; }
+  details.more summary::-webkit-details-marker { display: none; }
+  details.more summary::before { content: "+"; font-family: var(--mono); color: var(--ink3); }
+  details.more[open] summary::before { content: "–"; }
+  details.more > :not(summary) { margin-top: 14px; }
 
   /* the intent form */
   .post .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; margin-bottom: 16px; }
@@ -60,17 +62,17 @@
   .post .btn.primary { width: 100%; }
 
   /* bids */
-  .bids .bid { display: grid; grid-template-columns: 1fr auto; gap: 2px 18px; padding: 16px 0; border-top: 1px solid var(--line); align-items: center; }
-  .bids .bid:first-of-type { border-top: 0; padding-top: 4px; }
-  .bids .bid:last-of-type { padding-bottom: 4px; }
+  .bids .bid { display: grid; grid-template-columns: 1fr auto; gap: 2px 18px; padding: 14px 0; border-top: 1px solid var(--line); align-items: center; }
+  .bids .bid:first-of-type { border-top: 0; padding-top: 2px; }
+  .bids .bid:last-of-type { padding-bottom: 2px; }
   .bid .name { display: flex; align-items: center; gap: 9px; font-weight: 500; font-size: 15px; white-space: nowrap; }
   .bid .name i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-  .bid .price { font-size: 20px; font-weight: 500; letter-spacing: -0.02em; text-align: right; }
+  .bid .price { font-size: 19px; font-weight: 500; letter-spacing: -0.02em; text-align: right; }
   .bid .price small { font-size: 13px; font-weight: 400; color: var(--ink3); margin-left: 3px; }
   .bid .sub { font-size: 14px; color: var(--ink2); }
   .bid .right { text-align: right; font-size: 14px; color: var(--ink3); }
   .bid .right b { color: var(--ink); font-weight: 500; }
-  .bid .why { grid-column: 1 / -1; margin-top: 8px; display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--ink2); flex-wrap: wrap; }
+  .bid .why { grid-column: 1 / -1; margin-top: 6px; display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--ink2); flex-wrap: wrap; }
   .bid .rank { font-family: var(--mono); font-size: 11px; color: var(--ink3); margin-right: 2px; }
 
   /* chart */
@@ -88,20 +90,16 @@
   table.path th { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); font-weight: 500; text-align: right; padding: 0 0 8px; }
   table.path th:first-child, table.path td:first-child { text-align: left; }
   table.path td { text-align: right; padding: 8px 0; border-top: 1px solid var(--line); }
-  table.path td:first-child { font-weight: 500; }
+  table.path td:first-child { font-weight: 500; white-space: nowrap; }
   table.path td:first-child i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
   table.path td.under { color: var(--red); font-weight: 500; }
   table.path td.over { color: var(--green); }
-  details.table { margin-top: 12px; font-size: 13px; color: var(--ink3); }
-  details.table summary { cursor: pointer; }
-  details.table table { border-collapse: collapse; margin-top: 6px; color: var(--ink2); }
-  details.table td, details.table th { padding: 2px 12px 2px 0; text-align: right; font-weight: 500; }
-  details.table th:first-child, details.table td:first-child { text-align: left; }
+  @media (max-width: 560px) { table.path { font-size: 13px; } .card .title { font-size: 18px; } .intent { font-size: 22px; } }
 
   /* approval */
   .btns { display: flex; gap: 10px; }
   .btns .btn { flex: 1; }
-  .decided { display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 15px; padding: 12px 0 2px; }
+  .decided { display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 15px; padding: 10px 0 0; }
   .decided svg { width: 18px; height: 18px; }
   .decided.yes { color: var(--green); }
   .decided.no { color: var(--red); }
@@ -113,7 +111,6 @@
   .rule .v { font-size: 16px; font-weight: 500; }
   .rule .v code { font-family: var(--mono); font-size: 12px; color: var(--ink3); margin-left: 6px; }
 
-  /* a deposit */
   .deposit .hero { font-size: 32px; }
 </style>
 </head>
@@ -123,24 +120,21 @@
     <a class="wordmark" href="/"><span class="dot" id="dot"></span>Outbid</a>
     <nav class="nav"><a href="/buyer" class="on">Buyer</a><a href="/vendor">Vendors</a><a href="/">About</a></nav>
   </header>
-  <div class="top">
-    <h1 class="intent" id="intent"><span class="q">Waiting for the agent…</span></h1>
+  <div class="ticket">
+    <div class="status"><span class="pill quiet" id="status"><i></i>Waiting for the agent</span></div>
+    <h1 class="intent" id="intent"><span class="q">Nothing to buy yet.</span></h1>
     <div class="figures" id="figures" hidden>
       <div class="figure"><div class="l">Available cash</div><div class="v num" id="cash">—</div></div>
       <div class="figure"><div class="l">Reserve floor</div><div class="v num" id="floor">—</div></div>
+      <div class="figure" id="payfig" hidden><div class="l">Paying</div><div class="v num" id="paying">—</div></div>
+      <div class="figure" id="rebfig" hidden><div class="l">Rebates</div><div class="v num" id="rebates">—</div></div>
     </div>
   </div>
-  <div class="empty" id="empty">Run <code>npm run demo -- --wait</code> and post your intent here, or <code>npm run demo</code> to post the one in <code>data/intent.json</code>. The story appears one step at a time.</div>
-  <div id="stepper" hidden>
-    <div class="rail" id="rail"></div>
-    <div class="stage" id="stage"></div>
-    <div class="navrow">
-      <button class="btn" id="back"><span class="arr">←</span> Back</button>
-      <span class="count" id="count"></span>
-      <button class="btn next" id="next"></button>
-    </div>
-  </div>
+  <div class="empty" id="empty">Run <code>npm run demo -- --wait</code> and post your intent here, or <code>npm run demo</code> to post the one in <code>data/intent.json</code>. Then watch: everything the agent does shows up here as it happens, and the only thing it asks of you is an approval.</div>
+  <div class="feed" id="feed"></div>
+  <div class="live" id="live" hidden><i></i><span>Live</span></div>
 </div>
+<button class="btn dark newer" id="newer">New activity <span class="arr">↓</span></button>
 
 <script>
 (() => {
@@ -177,105 +171,63 @@
   const categoryName = (c) => CATEGORY[c] ?? c.replace(/-/g, " ");
   const cycleWord = (cycle) => (cycle === "annual" ? "per year, prepaid" : "per month");
   const perShort = (cycle) => (cycle === "annual" ? "/yr" : "/mo");
-  const SHORT = { 0: "Intent", 1: "Bids", 2: "Approval", 3: "Fee", 4: "Renewal", 5: "Cash recovers" };
   const duesOf = (obligations, cur) => (obligations ?? []).map((o) => `${whole(o.amount, cur)} ${o.label.toLowerCase()}${o.everyDays ? ` every ${o.everyDays === 7 ? "week" : `${o.everyDays} days`}` : ` on day ${o.firstDay}`}`);
 
-  const state = { slot: {}, currency: "USD", term: 12, cash: 0, floor: 0, dues: "", scene: 0, sceneTitle: "", cards: {}, escrows: {}, receipt: null, released: null, ended: false };
+  const state = { slot: {}, currency: "USD", term: 12, cash: 0, floor: 0, dues: "", scene: 0, cards: {}, escrows: {}, receipt: null, released: null, rebates: 0, approvals: 0 };
   const colorOf = (vendor) => `var(--s${state.slot[vendor] ?? 1})`;
 
-  // ─── steps ───
-  // Each event that matters becomes one step: a title, a line that says why, and the card itself. The
-  // reader moves at their own pace; the run keeps going behind them and lights up the Next button.
-  // A step the reader has already acted on (posted, approved) advances by itself when the next arrives.
-  const steps = [];
-  let cur = -1;
-  function addStep({ title, lead, kind, done = false, body }) {
-    const step = { scene: state.scene, sceneTitle: state.sceneTitle, title, lead, kind, done, cash: state.cash, node: body ?? el("div", "card"), notes: el("div", "notes") };
-    steps.push(step);
+  // ─── the feed ───
+  // Everything the agent does is appended as it happens and the page follows along, like a chat. The
+  // reader never has to click: the only buttons are Post intent and Approve. If they scroll up to look at
+  // something, the page stops following and offers a way back down.
+  const feed = $("feed");
+  const nearBottom = () => innerHeight + scrollY >= document.documentElement.scrollHeight - 240;
+  let following = true;
+  // Only a deliberate move up stops the page from following; reaching the bottom again resumes it. A
+  // burst of events can outrun the smooth scroll, so the scroll position alone is not a signal.
+  const stop = () => { following = false; };
+  addEventListener("wheel", (ev) => { if (ev.deltaY < 0) stop(); }, { passive: true });
+  addEventListener("touchmove", stop, { passive: true });
+  addEventListener("keydown", (ev) => { if (["ArrowUp", "PageUp", "Home"].includes(ev.key)) stop(); });
+  addEventListener("scroll", () => { if (nearBottom()) { following = true; $("newer").classList.remove("show"); } }, { passive: true });
+  $("newer").onclick = () => { following = true; scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" }); $("newer").classList.remove("show"); };
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function append(node) {
     $("empty").hidden = true;
-    $("stepper").hidden = false;
-    const atEnd = cur === steps.length - 2;
-    if (cur < 0 || (atEnd && steps[cur].done)) go(steps.length - 1);
-    else { rail(); nav(); }
-    return step;
+    feed.querySelector(".card.now")?.classList.remove("now");
+    if (node.classList.contains("card")) node.classList.add("now");
+    feed.append(node);
+    if (following) requestAnimationFrame(() => scrollTo({ top: document.documentElement.scrollHeight, behavior: reduced ? "auto" : "smooth" }));
+    else $("newer").classList.add("show");
+    return node;
   }
-  const last = () => steps[steps.length - 1];
-  function go(i) {
-    cur = Math.max(0, Math.min(steps.length - 1, i));
-    const s = steps[cur];
-    const stage = $("stage");
-    stage.replaceChildren();
-    const k = el("div", "kicker");
-    k.append(el("span", "n"));
-    if (s.sceneTitle) k.append(el("b", null, s.sceneTitle));
-    stage.append(k, el("h2", "title", s.title));
-    if (s.lead?.length) { const p = el("p", "lead"); p.append(...s.lead); stage.append(p); }
-    stage.append(s.node, s.notes);
-    stage.style.animation = "none"; void stage.offsetWidth; stage.style.animation = "";
-    showCash(s.cash);
-    rail(); nav();
-    const top = $("stepper").getBoundingClientRect().top;
-    if (top < 0 || top > innerHeight * 0.6) $("stepper").scrollIntoView({ behavior: "smooth", block: "start" });
+  function card({ title, lead, kind }) {
+    const c = el("div", `card ${kind ?? ""}`);
+    if (title) c.append(el("h2", "title", title));
+    if (lead?.length) { const p = el("p", "lead"); p.append(...lead); c.append(p); }
+    return append(c);
   }
-  function rail() {
-    const r = $("rail");
-    r.replaceChildren();
-    const scenes = [...new Set(steps.map((s) => s.scene))];
-    for (const n of scenes) {
-      const seg = el("div", `seg ${steps[cur]?.scene === n ? "on" : ""}`);
-      seg.append(el("div", "lab", SHORT[n] ?? `Scene ${n}`));
-      const dots = el("div", "dots");
-      steps.forEach((s, i) => {
-        if (s.scene !== n) return;
-        const b = el("button", i === cur ? "cur" : i < cur ? "past" : "");
-        b.title = s.title; b.onclick = () => go(i);
-        dots.append(b);
-      });
-      seg.append(dots);
-      r.append(seg);
-    }
-    r.querySelector(".seg.on")?.scrollIntoView({ inline: "nearest", block: "nearest" });
+  function line(...parts) { const l = el("div", "ev"); const s = el("span"); s.append(...parts); l.append(s); return append(l); }
+  function chapter(n, title) { const c = el("div", "chapter"); c.append(el("span", "k", `Part ${n}`), el("span", "t", title)); return append(c); }
+  const more = (summary, body) => { const d = el("details", "more"); d.append(el("summary", null, summary), body); return d; };
+  function status(text, cls, live) {
+    const p = $("status");
+    p.className = `pill ${cls} ${live ? "live" : ""}`;
+    p.replaceChildren(el("i"), text);
   }
-  function nav() {
-    const n0 = $("stage").querySelector(".kicker .n"); if (n0) n0.textContent = `Step ${cur + 1} of ${steps.length}`;
-    $("back").disabled = cur <= 0;
-    $("count").textContent = `${cur + 1} / ${steps.length}`;
-    const n = $("next");
-    n.replaceChildren();
-    n.className = "btn next";
-    if (cur < steps.length - 1) {
-      n.disabled = false;
-      n.classList.add("new");
-      n.append(el("span", "t", steps[cur + 1].title), el("span", "m", "Next"), el("span", "arr", "→"));
-    } else if (state.ended) {
-      n.disabled = true;
-      n.append("End of the run");
-    } else {
-      n.disabled = true;
-      n.classList.add("wait");
-      n.append(el("i"), "Waiting for the next step");
-    }
-  }
-  $("back").onclick = () => go(cur - 1);
-  $("next").onclick = () => go(cur + 1);
-  addEventListener("keydown", (ev) => {
-    if (ev.target.matches("input, select, textarea")) return;
-    if (ev.key === "ArrowRight") go(cur + 1);
-    if (ev.key === "ArrowLeft") go(cur - 1);
-  });
-  // A note belongs to the step it follows. Before any step of a scene, it opens one.
-  function say(text, quiet) {
-    if (!steps.length || last().scene !== state.scene) addStep({ title: state.sceneTitle || text, lead: [], kind: "note", done: true, body: el("div") });
-    last().notes.append(el("p", `say ${quiet ? "quiet" : ""}`, text));
-  }
+  const bump = (node, text) => {
+    const changed = node.textContent !== "—" && node.textContent !== text;
+    node.textContent = text;
+    if (changed) { node.classList.add("bump"); setTimeout(() => node.classList.remove("bump"), 1500); }
+  };
 
   // ─── posting the intent ───
   function awaitIntent(e) {
     $("intent").replaceChildren(el("span", "q", "What does your company need?"));
+    status("Draft", "quiet");
     const d = e.defaults, p = e.company.policy, cur_ = e.company.currency;
     const dues = duesOf(e.company.obligations, cur_).join(", ");
-    const step = addStep({ title: "Post a purchase intent", lead: ["Vendors see exactly these four fields and nothing else: not your name, not your cash. Your agent will hold to the reserve policy below while it picks."], kind: "post" });
-    const c = step.node; c.classList.add("post");
+    const c = card({ title: "Post a purchase intent", lead: ["Vendors see exactly these four fields and nothing else: not your name, not your cash. Your agent will hold to the reserve policy below while it picks."], kind: "post" });
     const grid = el("div", "grid");
     const field = (label, input, unit) => {
       const f = el("div", "field"); f.append(el("label", null, label));
@@ -304,13 +256,12 @@
       const body = { category: category.value, seats: Number(seats.value), budget: { amount: Number(budget.value), currency: currency.value }, termMonths: Number(term.value) };
       const r = await fetch("/intent", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       if (!r.ok) { err.textContent = (await r.json()).error ?? "Could not post the intent."; err.style.display = "block"; post.disabled = false; return; }
-      post.textContent = "Posted. Vendors are bidding…";
-      step.done = true;
+      post.textContent = "Posted";
     };
     c.append(grid, policy, post, err);
   }
 
-  // ─── top ───
+  // ─── the ticket ───
   function start(e) {
     e.vendors.forEach((v, i) => (state.slot[v] = i + 1));
     state.currency = e.company.currency;
@@ -319,53 +270,55 @@
     state.dues = duesOf(e.company.obligations, state.currency).join(" and ");
     const { intent } = e;
     $("intent").replaceChildren(
-      el("span", "q", "Your agent wants "),
-      `a ${categoryName(intent.category).toLowerCase()}, ${intent.seats} seats, up to ${whole(intent.budget.amount, intent.budget.currency)} a ${intent.budget.per}, for ${intent.termMonths} months`,
-      el("span", "q", ". Vendors don't know who you are."),
+      `${categoryName(intent.category)}, ${intent.seats} seats, up to ${whole(intent.budget.amount, intent.budget.currency)} a ${intent.budget.per}, for ${intent.termMonths} months`,
+      el("span", "q", ". Posted anonymously."),
     );
     $("floor").textContent = whole(state.floor, state.currency);
     $("figures").hidden = false;
+    $("live").hidden = false;
     $("dot").classList.add("live");
-    if (steps.length && last().kind === "post") last().done = true;
+    status("Vendors are bidding", "info", true);
+    const post = feed.querySelector(".post .btn.primary"); if (post) { post.disabled = true; post.textContent = "Posted"; }
   }
-  // The figure at the top is the cash as of the step on screen, so stepping back reads right.
-  function showCash(amount) {
-    const v = $("cash");
-    const text = amount ? whole(amount, state.currency) : "—";
-    const changed = v.textContent !== "—" && v.textContent !== text;
-    v.textContent = text;
-    if (changed) { v.classList.add("bump"); setTimeout(() => v.classList.remove("bump"), 1500); }
-  }
-  function cash(e) {
-    state.cash = e.available;
-    if (!steps.length || cur === steps.length - 1) showCash(e.available);
-    if (steps.length) last().cash = e.available;
-  }
-  function scene(e) { state.scene = e.n; state.sceneTitle = e.title; }
+  function cash(e) { state.cash = e.available; bump($("cash"), whole(e.available, state.currency)); }
+  function scene(e) { state.scene = e.n; chapter(e.n, e.title); }
   function note(e) {
-    const quiet = /^Reconsider|^Not approved|^Staying|^No bid/.test(e.text);
-    say(e.text.replace(/^Pick: (.*)$/, "The agent picks $1.").replace(/^Switch: (.*) → (.*)$/, "Switch from $1 to $2."), quiet);
+    if (/^Pick: /.test(e.text)) return; // the ranking already says who was picked
+    const m = e.text.match(/^Switch: (.*) → (.*)$/);
+    if (m) { line("Switching from ", el("b", null, m[1]), " to ", el("b", null, m[2]), "."); return; }
+    line(e.text);
   }
   function deposit(e) {
-    const s = addStep({ title: "A customer payment lands", lead: ["Nothing about the intent changed, but the balance did. The agent re-runs the same rules on the new number."], kind: "deposit" });
-    s.node.classList.add("deposit");
-    s.node.append(el("div", "hero", `+${whole(e.amount, e.currency)}`), el("div", "foot", `${e.payer} paid into the company's Global Account. Available cash goes from ${whole(state.cash, state.currency)} to ${whole(state.cash + e.amount, state.currency)}.`));
+    const c = card({ title: `+${whole(e.amount, e.currency)} from ${e.payer}`, lead: [`A customer payment lands in the company's Global Account. Nothing about the intent changed, but cash goes from ${whole(state.cash, state.currency)} to ${whole(state.cash + e.amount, state.currency)}, so the agent re-runs the same rules on the new number.`], kind: "deposit" });
+    status("Rechecking the deal", "info", true);
   }
 
   // ─── bids ───
   function ranking(e) {
     const bids = e.bids;
     const cheapest = [...bids].sort((a, b) => a.total - b.total)[0];
-    const n = bids.length;
-    const lead = {
-      opening: [`${n} bids, ranked by total cost over ${state.term} months with Airwallex FX. `, el("b", null, `${cheapest.vendor} is cheapest in total`), `${cheapest.billing === "annual" ? ", but it bills the whole year up front" : ""}. Cheapest in total is not the same as safe for cash: the next step checks what each bid does to the balance.`],
-      reopened: [`The incumbent's renewal price goes back into the auction against fresh bids. Same ranking, same reserve check, on today's balance of ${whole(e.cash, e.currency)}.`],
-      recheck: [`The same rules, re-run on the new balance of ${whole(e.cash, e.currency)}. A bid that broke the reserve before may fit now.`],
-    }[e.key] ?? [e.title];
-    const title = { opening: `${n} bids, ranked by total cost`, reopened: "The auction reopens", recheck: "Same rules, new balance" }[e.key] ?? e.title;
-    const step = addStep({ title, lead, kind: "ranking" });
-    const c = step.node;
-    c.append(el("div", "cap", e.title));
+    const winner = bids.find((b) => b.vendor === e.winner);
+    const withPath = bids.filter((x) => x.cashPath?.path);
+    const breaker = withPath.find((x) => !x.cashPath.ok);
+    const fits = withPath.filter((x) => x.cashPath.ok);
+
+    // The agent's explanation, built from the numbers: who wins, and what rules out the cheaper one.
+    const lead = [];
+    if (e.key === "opening") lead.push(`${bids.length} bids came in, priced over ${state.term} months with Airwallex FX. `);
+    else if (e.key === "reopened") lead.push(`The incumbent's new price goes back into the auction against fresh bids, on today's balance of ${whole(e.cash, e.currency)}. `);
+    else lead.push(`Same rules, re-run on ${whole(e.cash, e.currency)}. `);
+    if (winner) lead.push(el("b", null, `${winner.vendor} ${e.key === "reopened" ? "is now lowest" : "wins"} at ${money(winner.price.amount, winner.price.currency)} ${cycleWord(winner.billing)}`), ` (${whole(winner.total, e.currency)} in total). `);
+    if (breaker && winner && breaker.vendor !== winner.vendor) {
+      lead.push(`${breaker.vendor} is cheaper in total, but it takes ${whole(breaker.total, e.currency)} up front: with ${state.dues || "the bills already due"}, cash would be down to ${whole(breaker.cashPath.balance, e.currency)} by day ${breaker.cashPath.breachDay}, under your ${whole(e.floor, e.currency)} floor. `);
+      if (fits.length) lead.push(`Paying monthly never drops below ${whole(Math.min(...fits.map((x) => x.cashPath.low.balance)), e.currency)}.`);
+    } else if (winner && cheapest.vendor === winner.vendor && e.key === "recheck") {
+      lead.push(`The annual prepay that broke the reserve before now fits, and it is the cheapest, so it wins.`);
+    } else if (winner && cheapest.vendor === winner.vendor) {
+      lead.push(`It is the cheapest, and it keeps cash above the ${whole(e.floor, e.currency)} floor for ${e.horizonDays ?? 90} days.`);
+    }
+    const title = { opening: e.winner ? `${bids.length} bids in. ${e.winner} wins.` : `${bids.length} bids in. None fits.`, reopened: `Re-auctioned: ${e.winner} is now lowest`, recheck: `Rechecked: ${e.winner} fits now` }[e.key] ?? e.title;
+    const c = card({ title, lead, kind: "ranking" });
+
     const list = el("div", "bids");
     bids.forEach((bid, i) => {
       const row = el("div", "bid");
@@ -375,7 +328,7 @@
       price.append(money(bid.price.amount, bid.price.currency), el("small", null, perShort(bid.billing)));
       const fx = bid.price.currency === e.currency ? "" : ` · ${bid.price.currency} at ${bid.fx.toFixed(4)}`;
       const sub = el("div", "sub", bid.billing === "annual" ? `${whole(bid.total, e.currency)} up front, then nothing for ${state.term} months${fx}` : `${state.term} payments of ${whole(bid.perMonth, e.currency)}${fx}`);
-      const right = el("div", "right num"); right.append(el("b", null, whole(bid.total, e.currency)), ` over ${state.term} months`);
+      const right = el("div", "right num"); right.append(el("b", null, whole(bid.total, e.currency)), ` total`);
       const why = el("div", "why");
       const pill = el("span", "pill");
       if (bid.verdict === "fits") {
@@ -393,23 +346,13 @@
       list.append(row);
     });
     c.append(list);
-
-    const withPath = bids.filter((x) => x.cashPath?.path);
     if (!withPath.length) return;
-    const breaker = withPath.find((x) => !x.cashPath.ok);
-    const fits = withPath.filter((x) => x.cashPath.ok);
     const horizon = withPath[0].cashPath.path.length - 1;
-    const chartLead = [`Starting from ${whole(e.cash, e.currency)}${state.dues ? `, with ${state.dues} already due` : ""}. `];
-    if (breaker) {
-      chartLead.push(el("b", null, `${breaker.vendor} takes ${whole(breaker.total, e.currency)} on day one`), `, which leaves ${whole(breaker.cashPath.path[0], e.currency)}; by day ${breaker.cashPath.breachDay} cash is down to ${whole(breaker.cashPath.balance, e.currency)}, under the ${whole(e.floor, e.currency)} floor. `);
-      if (fits.length) chartLead.push(`The monthly bids spread the same spend out and never drop below ${whole(Math.min(...fits.map((x) => x.cashPath.low.balance)), e.currency)}. `);
-      chartLead.push("So the cheapest bid loses, and the cheapest one that keeps the floor wins. The rule is code; the agent only explains it.");
-    } else {
-      chartLead.push(`Every bid keeps cash above the ${whole(e.floor, e.currency)} floor for ${horizon} days, so the cheapest one simply wins${e.winner ? `: ${e.winner}` : ""}.`);
-    }
-    const cs = addStep({ title: "What each bid does to cash", lead: chartLead, kind: "chart" });
-    cs.node.append(el("div", "cap", `Projected cash for the next ${horizon} days, under each bid`));
-    cs.node.append(cashChart(e, withPath));
+    const chart = cashChart(e, withPath);
+    // The cash forecast is the whole argument the first time; afterwards it is there for whoever wants it.
+    if (e.key === "opening") { const d = more(`Cash over the next ${horizon} days, under each bid`, chart); d.open = true; c.append(d); }
+    else c.append(more(`Cash over the next ${horizon} days, under each bid`, chart));
+    if (e.key === "opening") status("Picking", "info", true);
   }
 
   function cashChart(e, bids) {
@@ -419,7 +362,7 @@
     const f = el("span"); f.append(el("i", "floor"), `Reserve floor ${whole(e.floor, e.currency)}`); keys.append(f);
     wrap.append(keys);
 
-    const W = 640, H = 220, m = { t: 12, r: 16, b: 24, l: 36 };
+    const W = 640, H = 200, m = { t: 12, r: 16, b: 24, l: 36 };
     const horizon = Math.max(...bids.map((x) => x.cashPath.path.length)) - 1;
     const ymax = Math.max(e.cash, ...bids.flatMap((x) => x.cashPath.path));
     const step = ymax > 40000 ? 20000 : ymax > 16000 ? 10000 : 5000;
@@ -494,29 +437,18 @@
       t.append(tr);
     }
     wrap.append(t);
-
-    const details = el("details", "table");
-    details.append(el("summary", null, "Every 15 days, as a table"));
-    const table = el("table"); const hh = el("tr"); hh.append(el("th", null, "Day"));
-    for (const bid of bids) hh.append(el("th", null, bid.vendor));
-    table.append(hh);
-    for (let d = 0; d <= horizon; d += 15) {
-      const tr = el("tr"); tr.append(el("td", null, String(d)));
-      for (const bid of bids) tr.append(el("td", "num", whole(bid.cashPath.path[Math.min(d, bid.cashPath.path.length - 1)], e.currency)));
-      table.append(tr);
-    }
-    details.append(table);
-    wrap.append(details);
     return wrap;
   }
 
-  // ─── approval ───
+  // ─── approval: the one thing the buyer is asked to do ───
   const pending = {};
   function approval(e) {
-    const first = !Object.keys(pending).length;
-    const step = addStep({ title: first ? "Approve the terms" : "Approve the new terms", lead: [`One approval, bound to this vendor, this amount, this currency and this cycle. ${first ? "The card's controls will be derived from exactly this, so the agent cannot widen them later." : "Any change of terms means a new card; the old one is frozen."}`], kind: "approval" });
-    const c = step.node;
-    c.append(el("div", "cap", "You approve exactly this. Nothing broader."));
+    const first = !state.approvals++;
+    const c = card({
+      title: `Approve ${e.terms.vendor} at ${money(e.terms.amount, e.terms.currency)} ${cycleWord(e.terms.cycle)}?`,
+      lead: [first ? "This is all you are asked to do. The card will only be able to pay exactly this: this vendor, this amount, this currency, nothing broader." : "New terms mean a new card with these exact controls. The old card is frozen the moment it is issued."],
+      kind: "approval",
+    });
     const terms = el("div", "terms");
     for (const [l, v] of [
       ["Vendor", e.terms.vendor],
@@ -530,25 +462,25 @@
     yes.onclick = () => answer(true); no.onclick = () => answer(false);
     btns.append(no, yes);
     c.append(terms, btns);
-    pending[e.id] = { btns, step };
+    pending[e.id] = btns;
+    status("Needs your approval", "warn");
   }
   function approved(e) {
-    const p = pending[e.id];
-    if (!p) return;
+    const btns = pending[e.id];
+    if (!btns) return;
     const d = el("div", `decided ${e.approved ? "yes" : "no"}`);
     d.append(icon(e.approved ? "check" : "cross"), e.approved ? "Approved" : "Declined");
-    p.btns.replaceWith(d);
-    p.step.done = true;
+    btns.replaceWith(d);
+    status(e.approved ? "Issuing the card" : "Not approved", e.approved ? "info" : "quiet", e.approved);
   }
 
   // ─── the card ───
   function cardIssued(e) {
-    const step = addStep({
-      title: e.replaces ? "A new card for the new terms" : "The approval becomes the card",
-      lead: [e.replaces ? "The old card is frozen at the same moment. Anything billed to it from now on is declined by the network." : "An Airwallex virtual card whose controls are the approved terms: a per-charge limit at the approved amount, a currency allowlist and the vendor's merchant category. Enforced at authorization, before money moves."],
+    const c = card({
+      title: e.replaces ? `A new card, for ${e.approval.vendor}` : `Your card for ${e.approval.vendor}`,
+      lead: [e.replaces ? "Issued with the new terms as its controls. The old card is frozen; anything billed to it from now on is declined by the network." : "An Airwallex virtual card whose controls are the approved terms: a per-charge limit at the approved amount, a currency allowlist and the vendor's merchant category. Enforced at authorization, before money moves."],
       kind: "card",
     });
-    const c = step.node;
     const row = el("div", "cardrow");
     const v = el("div", "vcard");
     const t = el("div", "t"); const st = el("span", "state", e.status); t.append(el("span", null, "Airwallex · virtual"), st);
@@ -564,30 +496,36 @@
     ]) { const r = el("div", "rule"); const vv = el("div", "v", val); if (code) vv.append(el("code", null, code)); r.append(el("div", "l", l), vv); rules.append(r); }
     row.append(v, rules);
     c.append(row);
-    state.cards[e.id] = { vcard: v, st, step };
+    state.cards[e.id] = { vcard: v, st, last4: (e.number ?? "").slice(-4) };
     state.receipt = null;
+    const pay = $("paying"); pay.replaceChildren(`${e.approval.vendor} ${money(e.approval.amount, e.approval.currency)}`, el("small", null, perShort(e.approval.cycle)));
+    $("payfig").hidden = false;
+    status(`Active · paying ${e.approval.vendor}`, "good", true);
   }
   function cardStatus(e) {
     const c = state.cards[e.id];
     if (!c) return;
     c.st.textContent = e.status === "ACTIVE" ? "ACTIVE" : "FROZEN";
     c.vcard.classList.toggle("frozen", e.status !== "ACTIVE");
+    if (e.status !== "ACTIVE") line("The old card ", el("b", null, `•••• ${c.last4}`), " is frozen.");
   }
 
   // ─── charges, as a receipt ───
   function charge(e) {
-    if (!state.receipt || state.receipt.scene !== state.scene) {
-      const hike = e.outcome === "declined" && e.detail === "LIMIT_EXCEEDED";
-      const step = addStep({
-        title: hike ? "The renewal hike is declined" : "Charges on the card",
-        lead: [hike ? `The vendor bills ${money(e.amount, e.currency)} against a card approved for less. Issuing declines it with the same limit the approval set; nobody had to notice. Outbid takes that as a reopened auction.` : "Every charge is decided by Airwallex Issuing against the card's controls. Approved means the terms were met; declined says which control stopped it."],
-        kind: "receipt",
-      });
-      step.node.append(el("div", "cap", "Decided by Airwallex Issuing"), el("div", "receipt"));
-      state.receipt = step;
+    const hike = e.outcome === "declined" && e.detail === "LIMIT_EXCEEDED";
+    if (hike) {
+      const c = card({ title: `${e.merchant} billed ${money(e.amount, e.currency)}. Declined.`, lead: [`The card is approved for less, so Issuing declined the renewal hike with the limit the approval set. Nobody had to notice. Outbid takes that as a reopened auction.`], kind: "receipt" });
+      c.append(el("div", "receipt"));
+      state.receipt = c;
+      status("Renewal: price went up", "warn", true);
+    } else if (!state.receipt || state.receipt.dataset.scene !== String(state.scene)) {
+      const c = card({ title: "Charges on the card", lead: ["Every charge is decided by Airwallex Issuing against the card's controls. Approved means the terms were met; declined says which control stopped it."], kind: "receipt" });
+      c.append(el("div", "receipt"));
+      state.receipt = c;
     }
-    const receipt = state.receipt.node.querySelector(".receipt");
-    const line = el("div", "line");
+    state.receipt.dataset.scene = String(state.scene);
+    const receipt = state.receipt.querySelector(".receipt");
+    const l = el("div", "line");
     const who = el("div", "who", e.merchant);
     const how = el("div", "how", `${e.label}${e.txId ? ` · ${e.txId.slice(0, 8)}` : ""}`);
     const amt = el("div", "amt num", money(e.amount, e.currency));
@@ -595,30 +533,21 @@
     res.append(icon(e.outcome === "approved" ? "check" : "cross"));
     if (e.outcome === "approved") res.append("Approved");
     else { res.append(`Declined · ${REASON[e.detail] ?? e.detail}`, " ", el("code", null, e.detail)); }
-    line.append(who, amt, how, res);
-    receipt.append(line);
+    l.append(who, amt, how, res);
+    receipt.append(l);
+    if (state.receipt !== feed.lastElementChild) append(state.receipt); // bring the receipt back to the bottom when a charge arrives later
   }
 
   // ─── escrow ───
   function escrow(e) {
     const link = (url, hash) => { const a = el("a", null, `${hash.slice(0, 10)}… on Metal`); a.href = url; a.target = "_blank"; a.rel = "noopener"; return a; };
-    const line = (box, left, right, cls) => { const s = el("div", `s ${cls ?? ""}`); s.append(el("span", null, left), right); box.append(s); };
+    const row = (box, left, right, cls) => { const s = el("div", `s ${cls ?? ""}`); s.append(el("span", null, left), right); box.append(s); };
     if (e.step === "prepaid") {
-      const step = addStep({ title: `${e.vendor} prepays its fee into escrow`, lead: ["Vendors pay only for closed deals. The winner's acquisition fee goes into an escrow on Metal, and it is released only when a charge clears on the card. No charge by the deadline, and the fee goes back to the vendor."], kind: "escrow" });
-      const hero = el("div", "hero"), box = el("div", "steps");
-      hero.append(money(e.amount, e.currency), el("small", null, `${e.vendor}'s acquisition fee, in USDZ on Metal testnet.`));
-      line(box, `${e.vendor} funds the escrow (USDZ)`, link(e.url, e.hash));
-      line(box, "Waiting for the first cleared charge", el("code", null, "…"), "wait");
-      step.node.append(el("div", "cap", "Vendors pay only for closed deals"), hero, box);
-      state.escrows[e.cardId] = step;
+      line(el("b", null, e.vendor), ` put its ${money(e.amount, e.currency)} acquisition fee in escrow. It is released only when a charge clears on your card. `, link(e.url, e.hash));
       return;
     }
     if (e.step === "released") {
-      state.escrows[e.cardId]?.node.querySelector(".wait")?.remove();
-      const step = addStep({ title: "The cleared charge releases the fee", lead: [`The settled charge on the card is the proof of sale, reported by the network rather than by either party. The escrow splits ${e.vendor}'s ${money(e.amount, e.currency)} fee in one transaction: `, el("b", null, `${money(e.rebate, e.currency)} back to you`), `, ${money(e.outbidFee, e.currency)} to Outbid.`], kind: "released" });
-      const c = step.node;
-      const hero = el("div", "hero");
-      hero.append(`${money(e.rebate, e.currency)} back to you`, el("small", null, `Your rebate from ${e.vendor}'s fee, paid out to your bank by Airwallex Payouts.`));
+      const c = card({ title: `${money(e.rebate, e.currency)} back to you`, lead: [`The cleared charge is the proof of sale, reported by the network rather than by either party. The escrow splits ${e.vendor}'s ${money(e.amount, e.currency)} fee in one transaction: `, el("b", null, `${money(e.rebate, e.currency)} to you`), `, ${money(e.outbidFee, e.currency)} to Outbid.`], kind: "released" });
       const split = el("div", "split");
       const r = el("i"); r.style.flex = String(e.rebate); r.style.background = "var(--blue)";
       const f = el("i"); f.style.flex = String(e.outbidFee); f.style.background = "var(--line2)";
@@ -628,22 +557,24 @@
       const k2 = el("span"); const i2 = el("i"); i2.style.background = "var(--line2)"; k2.append(i2, `Outbid ${money(e.outbidFee, e.currency)}`);
       keys.append(k1, k2);
       const box = el("div", "steps");
-      line(box, "Proof of sale, Airwallex transaction", el("code", null, `${e.txId.slice(0, 13)}…`));
-      line(box, "Escrow releases and splits the fee", link(e.url, e.hash));
-      c.append(el("div", "cap", "Settlement"), hero, split, keys, box);
-      state.released = step;
+      row(box, "Proof of sale, Airwallex transaction", el("code", null, `${e.txId.slice(0, 13)}…`));
+      row(box, "Escrow releases and splits the fee", link(e.url, e.hash));
+      split.style.marginTop = "0";
+      c.append(split, keys, box);
+      state.released = c;
+      state.rebates += e.rebate;
+      $("rebfig").hidden = false;
+      bump($("rebates"), money(state.rebates, e.currency));
       return;
     }
     if (e.step === "payout" && state.released) {
-      line(state.released.node.querySelector(".steps"), `Rebate ${money(e.amount, e.currency)} sent to your bank via Airwallex Payouts`, el("code", null, `${e.transferId.slice(0, 8)}… ${e.status.toLowerCase()}`));
+      row(state.released.querySelector(".steps"), `Sent to your bank via Airwallex Payouts`, el("code", null, `${e.transferId.slice(0, 8)}… ${e.status.toLowerCase()}`));
     }
   }
 
   // ─── the message to the incumbent ───
   function offer(e) {
-    const step = addStep({ title: `Outbid goes back to ${e.to}`, lead: [`${e.to} is the incumbent and ${e.from} came in lower. Outbid asks ${e.to} to match ${money(e.amount, e.currency)} per ${e.per}; if it passes, the company switches. ${e.matched ? "It matches, so nothing has to move." : "It passes, so the company switches."}`], kind: "offer" });
-    const c = step.node;
-    c.append(el("div", "cap", `Outbid to ${e.to}`));
+    const c = card({ title: `Outbid asks ${e.to} to match ${money(e.amount, e.currency)}`, lead: [`${e.to} is the incumbent and ${e.from} came in lower. ${e.matched ? `${e.to} matches, so nothing has to move.` : `${e.to} passes, so you switch.`}`], kind: "offer" });
     const m = el("div", "msg");
     const out = el("div", "bubble out", `${e.from} costs ${money(e.amount, e.currency)} per ${e.per}. Match, or the company switches.`);
     const back = el("div", "bubble in");
@@ -654,10 +585,10 @@
 
   const end = () => {
     source.close();
-    state.ended = true;
     $("dot").classList.remove("on", "live");
-    if (steps.length) last().notes.append(el("p", "say quiet", "Every step above ran against the Airwallex sandbox and Metal testnet."));
-    nav();
+    $("live").hidden = true;
+    $("status").classList.remove("live");
+    line("End of the run. Everything above ran against the Airwallex sandbox and Metal testnet.");
   };
   const handlers = { "await-intent": awaitIntent, start, cash, scene, note, deposit, ranking, approval, approved, card: cardIssued, cardStatus, charge, escrow, offer, end };
   const source = new EventSource("/events");
