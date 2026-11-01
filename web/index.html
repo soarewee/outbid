@@ -5,97 +5,169 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Outbid</title>
 <meta name="description" content="Your agent posts what it wants to buy. Vendors compete. The winning bid becomes an Airwallex card that can only pay that vendor, that amount, in that currency.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="outbid.css">
 <style>
-  .site { max-width: 980px; margin: 0 auto; padding: 0 20px 120px; }
-  .site .bar { padding-top: 24px; }
-  .menu { display: flex; gap: 22px; font-size: 14px; font-weight: 600; color: var(--ink2); flex-wrap: wrap; }
+  .site { max-width: 1040px; margin: 0 auto; padding: 0 20px 96px; }
+  .site .bar { padding-top: 22px; }
+  .menu { display: flex; gap: 24px; align-items: center; font-size: 14px; font-weight: 500; color: var(--ink2); }
   .menu a:hover { color: var(--ink); }
-  @media (max-width: 640px) { .menu { display: none; } }
+  .menu .btn { height: 36px; padding: 0 14px; font-size: 13px; }
+  @media (max-width: 720px) { .menu a:not(.btn) { display: none; } }
 
-  .hero { padding: 96px 0 72px; max-width: 820px; }
-  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--ink2); background: var(--card); border-radius: 999px; padding: 6px 12px 6px 8px; box-shadow: var(--shadow); margin-bottom: 28px; }
-  .eyebrow i { width: 8px; height: 8px; border-radius: 50%; background: var(--green); display: inline-block; }
-  h1 { font-size: 56px; line-height: 1.05; letter-spacing: -0.035em; font-weight: 800; margin: 0 0 24px; }
+  /* hero */
+  .hero-s { text-align: center; padding: 104px 0 56px; }
+  .tag { display: inline-flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ink2); background: var(--well); border-radius: 999px; padding: 6px 14px 6px 6px; margin-bottom: 34px; text-align: left; line-height: 1.3; max-width: 100%; }
+  .tag code { font-size: 11px; background: var(--ink); color: var(--plane); border-radius: 999px; padding: 3px 8px; font-weight: 500; }
+  .tag .arr { font-family: var(--mono); color: var(--ink3); }
+  h1 { font-size: 64px; line-height: 1.06; letter-spacing: -0.035em; font-weight: 500; margin: 0 auto 24px; max-width: 880px; }
+  h1 .hl { display: inline; background: var(--ink); color: var(--plane); border-radius: 14px; padding: .02em .28em; margin: 0 .04em; letter-spacing: -0.03em; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
   h1 .q { color: var(--ink3); }
-  @media (max-width: 640px) { h1 { font-size: 38px; } .hero { padding: 56px 0 48px; } }
-  .lede { font-size: 20px; line-height: 1.5; color: var(--ink2); max-width: 640px; margin: 0 0 32px; }
-  .ctas { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-  .ctas code { background: var(--card); border-radius: 12px; padding: 12px 16px; font-size: 14px; color: var(--ink2); box-shadow: var(--shadow); }
+  .lede { font-size: 19px; line-height: 1.55; color: var(--ink2); max-width: 600px; margin: 0 auto 32px; }
+  .ctas { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .fine { margin-top: 18px; font-family: var(--mono); font-size: 12.5px; color: var(--ink3); }
+  .fine b { color: var(--ink2); font-weight: 500; }
+  @media (max-width: 720px) { .hero-s { padding: 56px 0 40px; } h1 { font-size: 38px; letter-spacing: -0.03em; } h1 .hl { border-radius: 9px; } .lede { font-size: 17px; } }
 
-  section.block { padding: 56px 0 8px; }
-  .k { font-size: 13px; font-weight: 700; color: var(--blue); letter-spacing: .02em; margin-bottom: 8px; }
-  h2 { font-size: 34px; line-height: 1.15; letter-spacing: -0.03em; font-weight: 800; margin: 0 0 14px; max-width: 720px; }
-  @media (max-width: 640px) { h2 { font-size: 28px; } }
-  .p { font-size: 18px; line-height: 1.55; color: var(--ink2); max-width: 680px; margin: 0 0 28px; }
-  .p b { color: var(--ink); font-weight: 600; }
+  /* the product frame */
+  .frame-wrap { position: relative; }
+  .frame-bg { background: linear-gradient(135deg, #d3dfff 0%, #ebe9f6 50%, #d4ecdf 100%); border-radius: 24px; padding: 40px 40px 0; overflow: hidden; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .frame-bg { background: linear-gradient(135deg, #1a2140 0%, #15161c 45%, #14231d 100%); } }
+  :root[data-theme="dark"] .frame-bg { background: linear-gradient(135deg, #1a2140 0%, #15161c 45%, #14231d 100%); }
+  @media (max-width: 720px) { .frame-bg { padding: 20px 14px 0; border-radius: 18px; } }
+  .frame { background: var(--card); border: 1px solid var(--line); border-bottom: 0; border-radius: 16px 16px 0 0; box-shadow: var(--shadow-lg); max-width: 760px; margin: 0 auto; min-height: 440px; }
+  .frame .chrome { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  .frame .dots i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--line2); margin-right: 6px; }
+  .frame .url { flex: 1; text-align: center; font-family: var(--mono); font-size: 12px; color: var(--ink3); }
+  .frame .url b { color: var(--ink2); font-weight: 500; }
+  .frame .body { padding: 26px 28px 30px; }
+  @media (max-width: 720px) { .frame .body { padding: 18px 16px 22px; } }
+  .panel { display: none; animation: rise .35s ease-out; }
+  .panel.on { display: block; }
+  .panel .intent { font-size: 20px; line-height: 1.3; letter-spacing: -0.02em; font-weight: 500; margin: 0 0 18px; }
+  .panel .intent .q { color: var(--ink3); }
+  .panel .cap { font-size: 13px; color: var(--ink3); margin-bottom: 12px; }
+  .panel .inner { border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; }
+  .panel .inner + .inner { margin-top: 10px; }
 
-  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-  .grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-  @media (max-width: 800px) { .grid { grid-template-columns: 1fr 1fr; } }
-  @media (max-width: 560px) { .grid, .grid2 { grid-template-columns: 1fr; } }
-  .tile { background: var(--card); border-radius: 20px; padding: 22px 24px; box-shadow: var(--shadow); margin: 0; }
-  .tile .n { font-size: 13px; font-weight: 700; color: var(--ink3); margin-bottom: 10px; }
-  .tile h3 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 8px; line-height: 1.3; }
-  .tile p { font-size: 15px; line-height: 1.5; color: var(--ink2); margin: 0; }
-  .tile p + p { margin-top: 8px; }
-  .tile code { color: var(--ink3); }
-  .tile.dark { background: var(--ink); color: var(--card); }
-  .tile.dark h3 { color: var(--card); }
-  .tile.dark p { color: var(--card); opacity: .75; }
+  /* tabs under the frame */
+  .tabs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; max-width: 760px; margin: 0 auto; padding: 18px 40px 32px; }
+  @media (max-width: 720px) { .tabs { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; padding: 14px 14px 22px; } }
+  .tab { font: inherit; background: none; border: 0; padding: 10px 0 0; cursor: pointer; text-align: left; color: var(--ink3); font-size: 13px; font-weight: 500; position: relative; }
+  .tab::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: var(--line2); border-radius: 2px; }
+  .tab::after { content: ""; position: absolute; left: 0; top: 0; height: 2px; width: 0; background: var(--ink); border-radius: 2px; }
+  .tab.on { color: var(--ink); }
+  .tab.on::after { width: 100%; transition: width var(--dur, 6s) linear; }
+  .tab.on.hold::after { width: 100%; transition: none; }
+  .tab small { display: block; font-weight: 400; color: var(--ink3); font-size: 12px; margin-top: 2px; }
+  @media (max-width: 720px) { .tab { font-size: 11px; } .tab small { display: none; } }
 
-  /* flow */
-  .flow { display: flex; align-items: stretch; gap: 0; margin: 8px 0 36px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; }
-  .flow .st { flex: 1; min-width: 118px; background: var(--card); border-radius: 16px; padding: 14px 14px 12px; box-shadow: var(--shadow); position: relative; }
-  .flow .st + .st { margin-left: 22px; }
-  .flow .st + .st::before { content: ""; position: absolute; left: -22px; top: 50%; width: 22px; height: 1.5px; background: var(--ink3); }
-  .flow .st + .st::after { content: ""; position: absolute; left: -7px; top: calc(50% - 4px); width: 6px; height: 6px; border-right: 1.5px solid var(--ink3); border-bottom: 1.5px solid var(--ink3); transform: rotate(-45deg); }
-  .flow .st .who { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; margin-bottom: 6px; }
-  .flow .st .who.b { color: var(--blue); } .flow .st .who.v { color: var(--s2); } .flow .st .who.o { color: var(--ink3); } .flow .st .who.n { color: var(--green); }
-  .flow .st .w { font-size: 14px; font-weight: 600; line-height: 1.3; }
-  .flow .st .d { font-size: 12px; color: var(--ink3); margin-top: 4px; line-height: 1.35; }
+  /* mock pieces (static copies of the console components) */
+  .mform { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; }
+  @media (max-width: 560px) { .mform { grid-template-columns: 1fr; } }
+  .mform .f { display: grid; gap: 5px; }
+  .mform .f label { font-size: 12.5px; color: var(--ink2); }
+  .mform .f div { border: 1px solid var(--line2); border-radius: 10px; padding: 9px 12px; font-size: 14px; font-weight: 500; display: flex; justify-content: space-between; }
+  .mform .f div span { color: var(--ink3); font-family: var(--mono); font-size: 12px; }
+  .policy { background: var(--well); border-radius: 12px; padding: 11px 14px; font-size: 13.5px; color: var(--ink2); margin: 14px 0; line-height: 1.5; }
+  .policy b { color: var(--ink); }
+  .bids .bid { display: grid; grid-template-columns: 1fr auto; gap: 2px 18px; padding: 13px 0; border-top: 1px solid var(--line); align-items: center; }
+  .bids .bid:first-child { border-top: 0; padding-top: 0; }
+  .bids .bid:last-child { padding-bottom: 0; }
+  .bid .name { display: flex; align-items: center; gap: 9px; font-weight: 500; font-size: 15px; white-space: nowrap; }
+  .bid .name i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .bid .price { font-size: 19px; font-weight: 500; letter-spacing: -0.02em; text-align: right; }
+  .bid .price small { font-size: 13px; font-weight: 400; color: var(--ink3); margin-left: 3px; }
+  .bid .sub { font-size: 13px; color: var(--ink2); }
+  .bid .right { text-align: right; font-size: 13px; color: var(--ink3); }
+  .bid .why { grid-column: 1 / -1; margin-top: 7px; display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ink2); flex-wrap: wrap; }
+  @media (max-width: 560px) { .bid .price { font-size: 17px; } .bid .sub, .bid .right { font-size: 12px; } }
+  .chart svg { display: block; width: 100%; height: auto; overflow: visible; font-family: var(--sans); }
+  .keys { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--ink2); margin: 0 0 8px; }
+  .keys span { display: inline-flex; align-items: center; gap: 6px; }
+  .keys i { display: inline-block; width: 14px; height: 2px; border-radius: 1px; }
+  .keys i.floor { height: 0; border-top: 1.5px dashed var(--ink3); }
+  .btns { display: flex; gap: 10px; }
+  .btns .btn { flex: 1; }
+  .cardrow { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+  .rules { flex: 1; min-width: 220px; display: grid; gap: 12px; }
+  .rule .l { font-size: 12.5px; color: var(--ink3); }
+  .rule .v { font-size: 15px; font-weight: 500; }
+  .rule .v code { font-size: 12px; color: var(--ink3); margin-left: 6px; }
+
+  /* sections */
+  section.s { padding: 112px 0 0; }
+  @media (max-width: 720px) { section.s { padding: 80px 0 0; } }
+  .center { text-align: center; }
+  .center .h2, .center .lede { margin-left: auto; margin-right: auto; }
+  section .eyebrow { margin-bottom: 14px; }
+  section .h2 { font-size: 40px; max-width: 760px; margin-bottom: 16px; }
+  section .lede { font-size: 18px; margin-bottom: 32px; max-width: 640px; }
+  @media (max-width: 720px) { section .h2 { font-size: 30px; } section .lede { font-size: 16px; } }
+  .h2 .hl { display: inline; background: var(--blue-soft); color: var(--blue); border-radius: 12px; padding: .02em .3em; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+
+  .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 800px) { .three { grid-template-columns: 1fr; } }
+  .step { background: var(--card); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; box-shadow: var(--shadow); }
+  .step .pic { height: 160px; background: var(--well); border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: center; padding: 20px; overflow: hidden; }
+  .step .txt { padding: 18px 20px 22px; }
+  .step .n { font-family: var(--mono); font-size: 12px; color: var(--ink3); margin-bottom: 8px; }
+  .step .h3 { margin-bottom: 8px; }
+  .step p { font-size: 14.5px; line-height: 1.55; color: var(--ink2); margin: 0; }
+  .mini { width: 100%; max-width: 260px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; font-size: 12.5px; box-shadow: var(--shadow); }
+  .mini .r { display: flex; justify-content: space-between; padding: 6px 0; border-top: 1px solid var(--line); }
+  .mini .r:first-child { border-top: 0; padding-top: 0; }
+  .mini .r:last-child { padding-bottom: 0; }
+  .mini .r b { font-weight: 500; }
+  .mini .r .m { color: var(--ink3); }
+  .mini .pill { font-size: 11px; padding: 2px 7px; }
+
+  /* feature rows */
+  .feat { display: grid; grid-template-columns: 5fr 6fr; gap: 48px; align-items: center; }
+  .feat + .feat { margin-top: 96px; }
+  .feat .txt .h2 { font-size: 34px; }
+  .feat .txt p { font-size: 16.5px; color: var(--ink2); line-height: 1.6; margin: 0 0 22px; }
+  .feat .txt p b { color: var(--ink); }
+  .feat .vis { background: var(--well); border: 1px solid var(--line); border-radius: 20px; padding: 24px; }
+  .feat .vis .inner { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; box-shadow: var(--shadow); }
+  .feat.flip .txt { order: 2; }
+  @media (max-width: 800px) { .feat { grid-template-columns: 1fr; gap: 24px; } .feat.flip .txt { order: 0; } .feat + .feat { margin-top: 64px; } .feat .txt .h2 { font-size: 28px; } .feat .vis { padding: 16px; } }
 
   /* who sees what */
-  table.sees { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 20px; box-shadow: var(--shadow); overflow: hidden; font-size: 15px; line-height: 1.45; }
-  table.sees th, table.sees td { text-align: left; vertical-align: top; padding: 14px 18px; border-top: 1px solid var(--line); }
-  table.sees th { font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink3); border-top: 0; padding-top: 18px; }
-  table.sees td:first-child { font-weight: 600; width: 22%; }
+  table.sees { width: 100%; border-collapse: collapse; font-size: 14.5px; line-height: 1.5; margin-top: 8px; }
+  table.sees th, table.sees td { text-align: left; vertical-align: top; padding: 16px 18px 16px 0; border-top: 1px solid var(--line); }
+  table.sees th { font-family: var(--mono); font-size: 11.5px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--ink3); border-top: 0; padding-bottom: 10px; }
+  table.sees td:first-child { font-weight: 500; width: 18%; color: var(--ink); }
   table.sees td { color: var(--ink2); }
-  table.sees td b { color: var(--ink); font-weight: 600; }
-  table.sees .hid { color: var(--ink3); font-style: italic; }
-  @media (max-width: 640px) { table.sees { font-size: 14px; } table.sees th, table.sees td { padding: 10px 12px; } }
-
-  /* sandbox evidence */
-  .ev { display: grid; gap: 0; background: var(--card); border-radius: 20px; box-shadow: var(--shadow); padding: 6px 24px; }
-  .ev .row { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; padding: 14px 0; border-top: 1px solid var(--line); align-items: center; }
-  .ev .row:first-child { border-top: 0; }
-  .ev .who { font-weight: 600; }
-  .ev .how { font-size: 14px; color: var(--ink3); }
-  .ev .amt { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; text-align: right; }
-  .ev .res { text-align: right; font-size: 14px; font-weight: 600; }
-  .ev .res.ok { color: var(--green); } .ev .res.no { color: var(--red); }
-  .ev .res code { color: var(--ink3); font-weight: 500; font-size: 12px; margin-left: 6px; }
+  table.sees td b { color: var(--ink); }
+  table.sees .hid { color: var(--ink3); }
+  @media (max-width: 640px) { table.sees { font-size: 13.5px; } table.sees th, table.sees td { padding: 12px 10px 12px 0; } table.sees td:first-child { width: 26%; } }
 
   /* stack */
-  .stack { display: flex; flex-wrap: wrap; gap: 8px; }
-  .stack span { background: var(--card); border-radius: 999px; padding: 8px 14px; font-size: 14px; font-weight: 600; box-shadow: var(--shadow); }
-  .stack span small { color: var(--ink3); font-weight: 500; margin-left: 6px; }
-  .stack span.metal { background: var(--ink); color: var(--card); }
-  .stack span.metal small { color: var(--card); opacity: .7; }
+  .stack { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .stack span { border: 1px solid var(--line); border-radius: 999px; padding: 7px 13px; font-size: 13.5px; font-weight: 500; }
+  .stack span small { color: var(--ink3); font-weight: 400; margin-left: 6px; }
+  .stack span.metal { background: var(--ink); color: var(--plane); border-color: var(--ink); }
+  .stack span.metal small { color: var(--plane); opacity: .65; }
 
   /* run it */
-  .steps-run { counter-reset: s; display: grid; gap: 12px; }
-  .steps-run .tile { display: grid; grid-template-columns: 36px 1fr; gap: 14px; align-items: start; }
-  .steps-run .tile::before { counter-increment: s; content: counter(s); width: 32px; height: 32px; border-radius: 50%; background: var(--plane); color: var(--ink2); font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; }
-  pre { margin: 10px 0 0; background: var(--plane); border-radius: 12px; padding: 12px 14px; font-size: 13.5px; line-height: 1.55; overflow-x: auto; color: var(--ink); }
-  pre .c { color: var(--ink3); }
-  .cmds { display: grid; grid-template-columns: auto 1fr; gap: 8px 18px; font-size: 15px; align-items: baseline; }
-  .cmds code { white-space: nowrap; background: var(--plane); padding: 3px 8px; border-radius: 8px; }
+  .run { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 800px) { .run { grid-template-columns: 1fr; } }
+  .run .step .txt { padding: 20px 20px 22px; }
+  .run p a { border-bottom: 1px solid var(--line2); }
+  pre { margin: 0; background: var(--ink); color: #e7e8ea; border-radius: 14px; padding: 16px 18px; font-size: 12.5px; line-height: 1.65; overflow-x: auto; font-family: var(--mono); }
+  pre .c { color: #8a8f98; }
+  pre .p { color: #8a8f98; user-select: none; }
+  .cmds { display: grid; grid-template-columns: auto 1fr; gap: 10px 22px; font-size: 14.5px; align-items: baseline; margin-top: 24px; }
+  .cmds code { white-space: nowrap; background: var(--well); padding: 3px 8px; border-radius: 7px; font-size: 12.5px; }
   .cmds span { color: var(--ink2); }
-  @media (max-width: 560px) { .cmds { grid-template-columns: 1fr; gap: 2px 0; } .cmds span { margin-bottom: 8px; } }
+  .cmds span code { background: none; padding: 0; }
+  @media (max-width: 560px) { .cmds { grid-template-columns: 1fr; gap: 2px 0; } .cmds span { margin-bottom: 10px; } }
 
-  footer { margin-top: 96px; padding-top: 24px; border-top: 1px solid var(--line); font-size: 14px; color: var(--ink3); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; line-height: 1.5; }
-  footer a { color: var(--ink2); border-bottom: 1px solid var(--line); }
+  footer { margin-top: 128px; padding-top: 28px; border-top: 1px solid var(--line); font-size: 13.5px; color: var(--ink3); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; line-height: 1.5; }
+  footer a { color: var(--ink2); border-bottom: 1px solid var(--line2); }
 </style>
 </head>
 <body>
@@ -105,96 +177,234 @@
     <nav class="menu">
       <a href="#how">How it works</a>
       <a href="#sees">Who sees what</a>
-      <a href="#card">Why a card</a>
       <a href="#run">Run it</a>
       <a href="https://github.com/soarewee/outbid" rel="noopener">GitHub</a>
+      <a class="btn dark" href="buyer.html">Open the console</a>
     </nav>
   </header>
 
-  <section class="hero">
-    <div class="eyebrow"><i></i>Airwallex Agentic Banking Hackathon · Kit 02, Intent-Bound Purchase Agent</div>
-    <h1>Your agent posts what it wants to buy. <span class="q">Vendors compete.</span> The winning bid becomes the card.</h1>
-    <p class="lede">Outbid is a purchase-intent auction for company SaaS buying. The approved bid becomes an Airwallex virtual card that can only pay that vendor, that amount, in that currency, and the vendor's acquisition fee comes back to the buyer when the charge clears.</p>
+  <section class="hero-s">
+    <a class="tag" href="#run"><code>v0.1</code> Built on the Airwallex sandbox and Metal testnet <span class="arr">→</span></a>
+    <h1>Your agent posts what it wants to buy. <span class="hl">Vendors compete.</span> The winning bid becomes the card.</h1>
+    <p class="lede">A purchase-intent auction for company software. The approved bid becomes an Airwallex virtual card that can only pay that vendor, that amount, in that currency. The vendor's acquisition fee comes back to the buyer when the charge clears.</p>
     <div class="ctas">
-      <a class="btn dark" href="buyer.html">Open the buyer console</a>
-      <a class="btn" href="vendor.html">See a vendor's console</a>
-      <code>npm run demo -- --wait</code>
+      <a class="btn dark lg" href="buyer.html">Open the buyer console <span class="arr">→</span></a>
+      <a class="btn lg" href="vendor.html">See a vendor's side</a>
+    </div>
+    <div class="fine">No build, no dependencies · <b>npm run demo -- --wait</b></div>
+  </section>
+
+  <div class="frame-wrap" id="demo">
+    <div class="frame-bg">
+      <div class="frame" aria-label="The buyer console">
+        <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="url">localhost:4780<b>/buyer</b></span><span style="width:40px"></span></div>
+        <div class="body">
+
+          <div class="panel on" data-panel="0">
+            <div class="intent"><span class="q">What does your company need?</span></div>
+            <div class="mform">
+              <div class="f"><label>Category</label><div>Design tool <span>▾</span></div></div>
+              <div class="f"><label>Seats</label><div>10</div></div>
+              <div class="f"><label>Budget per month</label><div>1500 <span>USD</span></div></div>
+              <div class="f"><label>Term</label><div>12 months <span>▾</span></div></div>
+            </div>
+            <div class="policy">Your agent will keep cash above the <b>$8,000 reserve floor</b> for the next 90 days, after what is already due ($400 contractors every week, $2,500 quarterly tax on day 45). The cheapest bid that respects that wins. Those rules are code, not a prompt.</div>
+            <button class="btn dark" style="width:100%">Post intent</button>
+          </div>
+
+          <div class="panel" data-panel="1">
+            <div class="intent"><span class="q">Your agent wants</span> a design tool, 10 seats, up to $1,500 a month, for 12 months. <span class="q">Vendors don't know who you are.</span></div>
+            <div class="inner">
+              <div class="cap">Cheapest first over 12 months, priced with Airwallex FX, then checked against the reserve</div>
+              <div class="bids">
+                <div class="bid"><div class="name"><i style="background:var(--s3)"></i>Vendor C</div><div class="price">$13,800.00<small>/yr</small></div><div class="sub">per year, prepaid</div><div class="right">$13,800 over 12 months</div><div class="why"><span class="pill bad">✕ Breaks the reserve in week 7</span>Cash would fall to $6,300 on day 45</div></div>
+                <div class="bid"><div class="name"><i style="background:var(--s2)"></i>Vendor B</div><div class="price">€1,180.00<small>/mo</small></div><div class="sub">per month · EUR at 1.1071</div><div class="right">$15,676 over 12 months</div><div class="why"><span class="pill pick">Picked</span><span class="pill good">✓ Keeps the reserve</span>Lowest cash $12,475, on day 90</div></div>
+                <div class="bid"><div class="name"><i style="background:var(--s1)"></i>Vendor A</div><div class="price">$1,350.00<small>/mo</small></div><div class="sub">per month</div><div class="right">$16,200 over 12 months</div><div class="why"><span class="pill good">✓ Keeps the reserve</span>Lowest cash $12,300, on day 90</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel" data-panel="2">
+            <div class="intent"><span class="q">Step 1 ·</span> Three vendors bid. The cheapest would break the reserve.</div>
+            <div class="inner chart">
+              <div class="cap">Cash over the next 90 days, with each bid</div>
+              <div class="keys"><span><i style="background:var(--s3)"></i>Vendor C</span><span><i style="background:var(--s2)"></i>Vendor B</span><span><i style="background:var(--s1)"></i>Vendor A</span><span><i class="floor"></i>Reserve floor $8,000</span></div>
+              <svg viewBox="0 0 640 220" role="img" aria-label="Projected cash for each bid against the reserve floor">
+                <g stroke="var(--line)" stroke-width="1"><line x1="36" x2="624" y1="196" y2="196"/><line x1="36" x2="624" y1="134.7" y2="134.7"/><line x1="36" x2="624" y1="73.3" y2="73.3"/><line x1="36" x2="624" y1="12" y2="12"/></g>
+                <g fill="var(--ink3)" font-size="11" text-anchor="end"><text x="28" y="200">0</text><text x="28" y="138.7">10K</text><text x="28" y="77.3">20K</text><text x="28" y="16">30K</text></g>
+                <g fill="var(--ink3)" font-size="11"><text x="36" y="214">today</text><text x="232" y="214" text-anchor="middle">day 30</text><text x="428" y="214" text-anchor="middle">day 60</text><text x="624" y="214" text-anchor="middle">day 90</text></g>
+                <line x1="36" x2="624" y1="146.9" y2="146.9" stroke="var(--ink3)" stroke-width="1.5" stroke-dasharray="4 4"/>
+                <text x="624" y="141" text-anchor="end" fill="var(--ink2)" font-size="11" font-weight="500">reserve floor</text>
+                <path d="M36.0,50.9H81.7V53.4H127.5V55.9H173.2V58.3H218.9V60.8H232.0V69.0H264.7V71.5H310.4V73.9H330.0V89.3H356.1V91.7H401.9V94.2H428.0V102.5H447.6V104.9H493.3V107.4H539.1V109.8H584.8V112.3H624.0V120.6" fill="none" stroke="var(--s1)" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M36.0,50.7H81.7V53.1H127.5V55.6H173.2V58.0H218.9V60.5H232.0V68.5H264.7V71.0H310.4V73.4H330.0V88.7H356.1V91.2H401.9V93.7H428.0V101.7H447.6V104.1H493.3V106.6H539.1V109.0H584.8V111.5H624.0V119.5" fill="none" stroke="var(--s2)" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M36.0,127.3H81.7V129.8H127.5V132.2H173.2V134.7H218.9V137.1H264.7V139.6H310.4V142.0H330.0V157.4H356.1V159.8H401.9V162.3H447.6V164.7H493.3V167.2H539.1V169.6H584.8V172.1H624.0" fill="none" stroke="var(--s3)" stroke-width="2" stroke-linejoin="round"/>
+                <circle cx="624" cy="120.6" r="4" fill="var(--s1)"/><circle cx="624" cy="119.5" r="4" fill="var(--s2)"/><circle cx="624" cy="172.1" r="4" fill="var(--s3)"/>
+                <circle cx="330" cy="157.4" r="7" fill="var(--card)"/><circle cx="330" cy="157.4" r="5" fill="var(--red)"/>
+                <text x="342" y="173" fill="var(--red)" font-size="12" font-weight="500">$6,300 on day 45</text>
+              </svg>
+              <div class="cap" style="margin:12px 0 0">Vendor C's prepay would take cash to $6,300 on day 45, under the $8,000 floor. The rule lives in code; the agent only explains it.</div>
+            </div>
+          </div>
+
+          <div class="panel" data-panel="3">
+            <div class="intent"><span class="q">Step 2 ·</span> One approval becomes the card.</div>
+            <div class="inner">
+              <div class="cap">You approve exactly this. Nothing broader.</div>
+              <div class="terms">
+                <div><div class="l">Vendor</div><div class="v">Vendor B</div></div>
+                <div><div class="l">Amount</div><div class="v">€1,180.00 per month</div></div>
+                <div><div class="l">Currency</div><div class="v">EUR</div></div>
+                <div><div class="l">Merchant</div><div class="v">Only software vendors</div></div>
+              </div>
+              <div class="btns"><button class="btn">Decline</button><button class="btn dark">Approve</button></div>
+            </div>
+            <div class="inner">
+              <div class="cap">The approved terms are the card's controls, enforced by the network before money moves.</div>
+              <div class="cardrow">
+                <div class="vcard"><div class="t"><span>Airwallex · virtual</span><span class="state">ACTIVE</span></div><div class="n">•••• •••• •••• 0990</div><div class="b"><div class="for">pays only <b>Vendor B</b></div><span class="brand">VISA</span></div></div>
+                <div class="rules">
+                  <div class="rule"><div class="l">Per charge, at most</div><div class="v">€1,180.00</div></div>
+                  <div class="rule"><div class="l">Only in</div><div class="v">EUR</div></div>
+                  <div class="rule"><div class="l">Only at</div><div class="v">software vendors<code>MCC 5734</code></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel" data-panel="4">
+            <div class="intent"><span class="q">Step 3 ·</span> The cleared charge releases the vendor's fee.</div>
+            <div class="inner">
+              <div class="cap">Charges on the card, decided by Airwallex Issuing</div>
+              <div class="receipt">
+                <div class="line"><div class="who">Vendor B</div><div class="amt">€1,180.00</div><div class="how">Agreed charge · 01a1956f</div><div class="res approved">✓ Approved</div></div>
+                <div class="line"><div class="who">Corner Bistro</div><div class="amt">€100.00</div><div class="how">Wrong merchant</div><div class="res declined">✕ Declined · not a software vendor <code>MERCHANT_CATEGORY_NOT_ALLOWED</code></div></div>
+                <div class="line"><div class="who">Vendor B</div><div class="amt">€1,440.00</div><div class="how">Renewal at +22%</div><div class="res declined">✕ Declined · more than the approved amount <code>LIMIT_EXCEEDED</code></div></div>
+              </div>
+            </div>
+            <div class="inner">
+              <div class="cap">Settlement</div>
+              <div class="hero" style="font-size:30px">$20.00 back to you<small>The cleared charge is the proof of sale. The escrow splits Vendor B's $25.00 fee in one transaction, and Airwallex Payouts sends the rebate to your bank.</small></div>
+              <div class="split"><i style="flex:20;background:var(--blue)"></i><i style="flex:5;background:var(--line2)"></i></div>
+              <div class="split-keys"><span><i style="background:var(--blue)"></i>Your rebate $20.00</span><span><i style="background:var(--line2)"></i>Outbid $5.00</span></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <div class="tabs" role="tablist">
+      <button class="tab on" data-tab="0">Post the intent<small>Anonymous</small></button>
+      <button class="tab" data-tab="1">Bids come in<small>Ranked on cost</small></button>
+      <button class="tab" data-tab="2">Reserve check<small>Above the floor</small></button>
+      <button class="tab" data-tab="3">Approve<small>Becomes the card</small></button>
+      <button class="tab" data-tab="4">Charges and rebate<small>Network decides</small></button>
+    </div>
+  </div>
+
+  <section class="s center" id="how">
+    <div class="eyebrow">How it works</div>
+    <h2 class="h2">One intent, three bids, one card.</h2>
+    <p class="lede">Companies buy software at list price while vendors spend a fortune finding them. When an agent does the buying, it already knows exactly what it needs. Let vendors compete for it, and turn their acquisition budget into the buyer's discount.</p>
+    <div class="three" style="text-align:left">
+      <div class="step">
+        <div class="pic"><div class="mini"><div class="r"><b>Design tool</b><span class="m">10 seats</span></div><div class="r"><b>Up to $1,500</b><span class="m">per month</span></div><div class="r"><b>12 months</b><span class="m">pays by card</span></div><div class="r"><span class="m">Buyer</span><span class="pill quiet">anonymous</span></div></div></div>
+        <div class="txt"><div class="n">1</div><h3 class="h3">The buyer's agent posts an intent</h3><p>Category, seats, budget and term. No company name, no balance. Every vendor's agent sees the same four fields and nothing else.</p></div>
+      </div>
+      <div class="step">
+        <div class="pic"><div class="mini"><div class="r"><b>Vendor C</b><span>$13,800<span class="m">/yr</span></span></div><div class="r"><b>Vendor B</b><span>€1,180<span class="m">/mo</span></span></div><div class="r"><b>Vendor A</b><span>$1,350<span class="m">/mo</span></span></div><div class="r"><span class="m">Cheapest that keeps $8,000</span><span class="pill pick">Vendor B</span></div></div></div>
+        <div class="txt"><div class="n">2</div><h3 class="h3">Vendors bid, the agent ranks against cash</h3><p>Each bid is priced with Airwallex FX and ranked on total cost. Then the agent reads the live balance and what's already due: the cheapest bid loses if it would push cash under the reserve floor.</p></div>
+      </div>
+      <div class="step">
+        <div class="pic"><div class="vcard" style="width:220px;padding:14px 16px"><div class="t"><span>Airwallex · virtual</span><span class="state">ACTIVE</span></div><div class="n" style="font-size:13px">•••• •••• •••• 0990</div><div class="b"><div class="for">pays only <b>Vendor B</b></div><span class="brand">VISA</span></div></div></div>
+        <div class="txt"><div class="n">3</div><h3 class="h3">The approval becomes the card</h3><p>The human approves one thing: this vendor, this amount, this currency. The card's controls are derived from that alone, and the network enforces them on every charge.</p></div>
+      </div>
     </div>
   </section>
 
-  <section class="block" id="why">
-    <div class="k">The problem</div>
-    <h2>Companies buy software at list price. Vendors spend a fortune to find those same companies.</h2>
-    <p class="p">When agents do the buying, that's backwards. The agent already knows exactly what it needs: the category, the seats, the budget, the term. Let vendors compete for it, and turn their acquisition budget into the buyer's discount.</p>
+  <section class="s" id="reserve">
+    <div class="feat">
+      <div class="txt">
+        <div class="eyebrow">Reserve check</div>
+        <h2 class="h2">The cheapest bid <span class="hl">doesn't automatically win</span></h2>
+        <p>The agent reads the company's Airwallex balance and upcoming obligations, then projects cash for every bid. If the annual prepay would push cash under the floor in week seven, the best monthly bid wins and a reconsider date is recorded.</p>
+        <p>When a customer payment lands later, the agent re-runs the same decision on the new balance. The annual deal comes back, with a fresh approval and a fresh card.</p>
+        <a class="btn" href="buyer.html">See it in the buyer console <span class="arr">→</span></a>
+      </div>
+      <div class="vis"><div class="inner chart">
+        <div class="keys"><span><i style="background:var(--s3)"></i>Annual prepay</span><span><i style="background:var(--s2)"></i>Monthly</span><span><i class="floor"></i>Floor</span></div>
+        <svg viewBox="0 0 640 220" role="img" aria-label="Cash projection: the annual prepay crosses the reserve floor on day 45">
+          <g stroke="var(--line)" stroke-width="1"><line x1="36" x2="624" y1="196" y2="196"/><line x1="36" x2="624" y1="134.7" y2="134.7"/><line x1="36" x2="624" y1="73.3" y2="73.3"/><line x1="36" x2="624" y1="12" y2="12"/></g>
+          <g fill="var(--ink3)" font-size="11" text-anchor="end"><text x="28" y="200">0</text><text x="28" y="138.7">10K</text><text x="28" y="77.3">20K</text><text x="28" y="16">30K</text></g>
+          <g fill="var(--ink3)" font-size="11"><text x="36" y="214">today</text><text x="232" y="214" text-anchor="middle">day 30</text><text x="428" y="214" text-anchor="middle">day 60</text><text x="624" y="214" text-anchor="middle">day 90</text></g>
+          <line x1="36" x2="624" y1="146.9" y2="146.9" stroke="var(--ink3)" stroke-width="1.5" stroke-dasharray="4 4"/>
+          <path d="M36.0,50.7H81.7V53.1H127.5V55.6H173.2V58.0H218.9V60.5H232.0V68.5H264.7V71.0H310.4V73.4H330.0V88.7H356.1V91.2H401.9V93.7H428.0V101.7H447.6V104.1H493.3V106.6H539.1V109.0H584.8V111.5H624.0V119.5" fill="none" stroke="var(--s2)" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M36.0,127.3H81.7V129.8H127.5V132.2H173.2V134.7H218.9V137.1H264.7V139.6H310.4V142.0H330.0V157.4H356.1V159.8H401.9V162.3H447.6V164.7H493.3V167.2H539.1V169.6H584.8V172.1H624.0" fill="none" stroke="var(--s3)" stroke-width="2" stroke-linejoin="round"/>
+          <circle cx="330" cy="157.4" r="7" fill="var(--card)"/><circle cx="330" cy="157.4" r="5" fill="var(--red)"/>
+          <text x="342" y="173" fill="var(--red)" font-size="12" font-weight="500">$6,300 on day 45</text>
+        </svg>
+      </div></div>
+    </div>
+
+    <div class="feat flip">
+      <div class="txt">
+        <div class="eyebrow">Why a card</div>
+        <h2 class="h2">A bid is a promise. <span class="hl">The card is the enforcement.</span></h2>
+        <p>The vendor's billing system decides what actually gets charged, and an agent holding the company card is a blank check. One virtual card per winning bid closes both gaps: <b>the vendor can't overcharge</b>, <b>the agent can't overspend</b>, and nobody can fake a sale, because every settled charge is reported by the network, not by either party.</p>
+        <p>Almost every software vendor already takes cards, so it needs no vendor integration.</p>
+      </div>
+      <div class="vis"><div class="inner">
+        <div class="receipt">
+          <div class="line"><div class="who">Vendor B</div><div class="amt">€1,180.00</div><div class="how">The agreed charge</div><div class="res approved">✓ Approved</div></div>
+          <div class="line"><div class="who">Vendor B</div><div class="amt">€1,440.00</div><div class="how">Renewal hike, +22%</div><div class="res declined">✕ Declined <code>LIMIT_EXCEEDED</code></div></div>
+          <div class="line"><div class="who">Corner Bistro</div><div class="amt">€100.00</div><div class="how">Wrong merchant</div><div class="res declined">✕ Declined <code>MERCHANT_CATEGORY_NOT_ALLOWED</code></div></div>
+          <div class="line"><div class="who">Vendor B, old card</div><div class="amt">€1,200.04</div><div class="how">After the buyer switched</div><div class="res declined">✕ Declined <code>CARD_INACTIVE</code></div></div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="feat">
+      <div class="txt">
+        <div class="eyebrow">Vendors pay only for closed deals</div>
+        <h2 class="h2">The fee is prepaid, and <span class="hl">the charge releases it</span></h2>
+        <p>The winning vendor prepays an acquisition fee into an escrow on Metal. The first cleared charge on the card is the proof of sale: the escrow splits the fee in one transaction, most of it back to the buyer through Airwallex Payouts, the rest to Outbid. No charge by the deadline, and the fee returns to the vendor.</p>
+        <p>At renewal, a price hike is declined by the same limit that was approved. Outbid reopens the auction and goes back to the incumbent: match the best new price, or the company switches.</p>
+      </div>
+      <div class="vis"><div class="inner">
+        <div class="hero" style="font-size:30px">$20.00 back to the buyer<small>From Vendor B's $25.00 prepaid fee, released by the cleared charge.</small></div>
+        <div class="split"><i style="flex:20;background:var(--blue)"></i><i style="flex:5;background:var(--line2)"></i></div>
+        <div class="split-keys"><span><i style="background:var(--blue)"></i>Buyer rebate $20.00</span><span><i style="background:var(--line2)"></i>Outbid $5.00</span></div>
+        <div class="steps">
+          <div class="s"><span>Vendor B funds the escrow (USDZ)</span><code>0x53ed54dd… on Metal</code></div>
+          <div class="s"><span>Proof of sale, Airwallex transaction</span><code>01a1956f-cf8b…</code></div>
+          <div class="s"><span>Escrow releases and splits the fee</span><code>0x0a300c42… on Metal</code></div>
+          <div class="s"><span>Rebate sent via Airwallex Payouts</span><code>a1bfc60e… scheduled</code></div>
+        </div>
+      </div></div>
+    </div>
   </section>
 
-  <section class="block" id="how">
-    <div class="k">How it works</div>
-    <h2>One intent, three bids, one card.</h2>
-    <div class="flow" aria-label="Flow from intent to rebate">
-      <div class="st"><div class="who b">Buyer's agent</div><div class="w">Posts the intent</div><div class="d">Design tool, 10 seats, up to $1,500/month. Anonymous.</div></div>
-      <div class="st"><div class="who v">Vendor agents</div><div class="w">Bid</div><div class="d">$1,350 monthly, €1,180 monthly, $13,800 a year prepaid.</div></div>
-      <div class="st"><div class="who o">Outbid</div><div class="w">Ranks and checks the reserve</div><div class="d">FX-priced total cost. Live balance minus what's due must stay above the floor.</div></div>
-      <div class="st"><div class="who b">Human</div><div class="w">Approves the terms</div><div class="d">This vendor, this amount, this currency, this cycle.</div></div>
-      <div class="st"><div class="who n">Airwallex</div><div class="w">Issues the card</div><div class="d">Controls = the approved terms. Enforced at authorization.</div></div>
-      <div class="st"><div class="who n">Network</div><div class="w">Charge clears</div><div class="d">The transaction is the proof of sale.</div></div>
-      <div class="st"><div class="who o">Escrow</div><div class="w">Splits the fee</div><div class="d">Vendor's prepaid fee → buyer rebate + Outbid fee. Rebate paid out by Airwallex.</div></div>
+  <section class="s" id="sees">
+    <div class="center">
+      <div class="eyebrow">Who sees what</div>
+      <h2 class="h2">Two consoles. The buyer never shows its hand; the vendor never guesses.</h2>
+      <p class="lede">The <b>buyer console</b> is where the company's agent starts: it posts the intent, watches the bids and gives approvals. Each vendor has its own <b>vendor console</b>, where its agent sees the intent, its own bid and, when it wins, the card and the fee. Both fill in live from the same run.</p>
     </div>
-    <div class="grid">
-      <div class="tile"><div class="n">01</div><h3>Post the intent</h3><p>The company's agent publishes an anonymous purchase intent. No company name, no balance. Vendors see the category, the seats, the budget and the term.</p></div>
-      <div class="tile"><div class="n">02</div><h3>Vendors bid</h3><p>Vendor agents answer against the list price, each in its own currency and billing cycle. Outbid prices every bid with Airwallex FX and ranks total cost over the term.</p></div>
-      <div class="tile"><div class="n">03</div><h3>The cheapest doesn't automatically win</h3><p>The agent reads the company's Airwallex balance and upcoming obligations. If the annual prepay would push cash under the reserve floor in week seven, the best monthly bid wins and a reconsider date is recorded. The rules are code; the model only explains them.</p></div>
-      <div class="tile"><div class="n">04</div><h3>Approval is bound to the terms</h3><p>The human approves one thing: this vendor, this amount, this currency, this cycle. Nothing broader. The card's controls are derived from that approval alone, so the agent cannot widen them.</p></div>
-      <div class="tile"><div class="n">05</div><h3>The winning bid becomes the card</h3><p>An Airwallex virtual card with a per-transaction limit at the approved amount, a currency allowlist and the vendor's merchant category, funded from the company's Global Account.</p></div>
-      <div class="tile"><div class="n">06</div><h3>Vendors pay only for closed deals</h3><p>The winning vendor prepays an acquisition fee into an escrow on Metal. When the first charge clears, the escrow splits it: most goes back to the buyer through Airwallex Payouts, the rest is Outbid's fee.</p></div>
-    </div>
-  </section>
-
-  <section class="block" id="sees">
-    <div class="k">Who sees what</div>
-    <h2>Two consoles. The buyer never shows its hand; the vendor never guesses.</h2>
-    <p class="p">The <b>buyer console</b> is where the company's agent starts: it posts the intent, watches the bids and gives approvals. Each vendor has its own <b>vendor console</b>, where its agent sees the intent, its own bid and, when it wins, the card and the fee. Both fill in live from the same run.</p>
     <table class="sees">
       <tr><th>Step</th><th>Buyer sees</th><th>Each vendor sees</th></tr>
-      <tr><td>Intent posted</td><td>The form: category, seats, budget, term, and the reserve policy the agent will hold to.</td><td>The intent, with an anonymous buyer. <span class="hid">Not the name, not the cash.</span></td></tr>
-      <tr><td>Bids in</td><td>Every bid ranked by FX-priced total cost, with a cash projection for each against the reserve floor and why each fits or doesn't.</td><td>Its own price and its rank on cost. <span class="hid">Not the other bids.</span></td></tr>
-      <tr><td>Approval</td><td>The exact terms to approve, with Approve and Decline buttons.</td><td><b>Picked</b> or <b>Passed over</b>.</td></tr>
-      <tr><td>Card issued</td><td>The virtual card and its three controls: amount per charge, currency, merchant category.</td><td>The deal: what it can charge, in what currency, from which merchant category. The card's last four digits.</td></tr>
+      <tr><td>Intent posted</td><td>The form: category, seats, budget, term, and the reserve policy the agent will hold to.</td><td>The intent, from an anonymous buyer. <span class="hid">Not the name, not the cash.</span></td></tr>
+      <tr><td>Bids in</td><td>Every bid ranked by FX-priced total cost, a cash projection for each against the reserve floor, and why each fits or doesn't.</td><td>Its own price and its rank on cost. <span class="hid">Not the other bids.</span></td></tr>
+      <tr><td>Approval</td><td>The exact terms, with Approve and Decline.</td><td><b>Picked</b> or <b>Passed over</b>.</td></tr>
+      <tr><td>Card issued</td><td>The virtual card and its three controls: amount per charge, currency, merchant category.</td><td>The deal: what it can charge, in what currency, from which merchant category, and the card's last four digits.</td></tr>
       <tr><td>Charges</td><td>Every charge with the reason Airwallex Issuing gave: approved, or declined and why.</td><td>Its own charges: cleared, or declined because it billed above what the buyer approved.</td></tr>
-      <tr><td>Fee</td><td>The vendor's prepaid fee split into the rebate and Outbid's fee, with the Metal transaction and the Airwallex payout.</td><td>Its fee in escrow, then released against the cleared charge. Both transactions on the Metal explorer.</td></tr>
+      <tr><td>Fee</td><td>The prepaid fee split into the rebate and Outbid's fee, with the Metal transaction and the Airwallex payout.</td><td>Its fee in escrow, then released against the cleared charge. Both transactions on the Metal explorer.</td></tr>
       <tr><td>Renewal</td><td>The hike declined, the auction reopened, and the message Outbid sent the incumbent.</td><td>If it is the incumbent: "A competing bid is at €1,200. Match it, or the buyer switches." If it loses, its card is frozen.</td></tr>
     </table>
   </section>
 
-  <section class="block" id="changes">
-    <div class="k">The decision keeps changing as the facts do</div>
-    <h2>Balances, deadlines and prices move. So does the pick.</h2>
-    <div class="grid2">
-      <div class="tile"><h3>A price hike is declined, then negotiated</h3><p>At renewal the vendor charges 22% more. The card declines it with <code>LIMIT_EXCEEDED</code>, the same policy that set the limit. Outbid reopens the auction and goes back to the incumbent with the best new price: match, or the company switches. Any change of terms means a new card, and the old one is frozen.</p></div>
-      <div class="tile"><h3>Cash recovers, so the annual bid comes back</h3><p>A customer payment lands in the Global Account. The agent re-runs the same decision on the new balance. The annual prepay now stays above the reserve, so it asks the human to approve the switch, issues a new card, and freezes the old one, which then declines.</p></div>
-    </div>
-  </section>
-
-  <section class="block" id="card">
-    <div class="k">Why a card, not just a bid</div>
-    <h2>A bid is a promise. The card is the enforcement.</h2>
-    <p class="p">The vendor's own billing system decides what actually gets charged, and an agent holding the company card is a blank check. One virtual card per winning bid closes three gaps at once, and almost every SaaS vendor already accepts cards, so it needs zero vendor integration.</p>
-    <div class="grid">
-      <div class="tile dark"><h3>The vendor can't overcharge</h3><p>The terms are enforced by the payment network at authorization, before money moves.</p></div>
-      <div class="tile dark"><h3>The agent can't overspend</h3><p>Its authority is scoped to exactly what the human approved. No prompt injection or hallucination can widen it.</p></div>
-      <div class="tile dark"><h3>Nobody can fake a sale</h3><p>Every settled charge on that card is the proof of sale, reported by the network rather than by either party. That is what makes "vendors pay only for closed deals" enforceable.</p></div>
-    </div>
-  </section>
-
-  <section class="block" id="live">
-    <div class="k">Already working in the sandbox</div>
-    <h2>Three charges on a card issued for a $1,350 winning bid.</h2>
-    <div class="ev">
-      <div class="row"><div><div class="who">Software vendor</div><div class="how">The agreed charge · MCC 5734</div></div><div><div class="amt">$1,350.00</div><div class="res ok">Approved</div></div></div>
-      <div class="row"><div><div class="who">Software vendor</div><div class="how">Renewal hike</div></div><div><div class="amt">$1,650.00</div><div class="res no">Declined<code>LIMIT_EXCEEDED</code></div></div></div>
-      <div class="row"><div><div class="who">Restaurant</div><div class="how">Wrong merchant · MCC 5812</div></div><div><div class="amt">$100.00</div><div class="res no">Declined<code>MERCHANT_CATEGORY_NOT_ALLOWED</code></div></div></div>
-    </div>
-    <p class="p" style="margin-top:16px">The decline reasons come straight from Airwallex Issuing and match the policy that set the card's controls. The full demo runs every scene above end to end against the sandbox and the Metal testnet, and each run saves its request log.</p>
+  <section class="s center" id="live">
+    <div class="eyebrow">Built on</div>
+    <h2 class="h2">Every step runs against the Airwallex sandbox and the Metal testnet.</h2>
+    <p class="lede">Balances for the reserve check, FX for cross-currency bids, Issuing for the card controls, card transactions as proof of sale, Global Accounts for funding and Payouts for the rebate. Metal holds the one thing Airwallex doesn't: the fee escrow. Each run saves its request log.</p>
     <div class="stack">
       <span>Balances<small>reserve check</small></span>
       <span>FX<small>cross-currency bids</small></span>
@@ -206,31 +416,53 @@
     </div>
   </section>
 
-  <section class="block" id="run">
-    <div class="k">Run it</div>
-    <h2>No build, no dependencies. Node 20 and two sandboxes.</h2>
-    <div class="steps-run">
-      <div class="tile"><div><h3>Get the code</h3><pre>git clone https://github.com/soarewee/outbid
-cd outbid</pre></div></div>
-      <div class="tile"><div><h3>Create an Airwallex sandbox account</h3><p>At <a href="https://sandbox.airwallex.com" rel="noopener">sandbox.airwallex.com</a>, register the business in the <b>United States</b> and name it <code>Sandbox Business</code> so it skips review; card issuing is rejected for businesses in unsupported regions. Then create a Client ID and API key under Account → Developer → API keys.</p></div></div>
-      <div class="tile"><div><h3>Get a Metal testnet endpoint and a funded test key</h3><p>An RPC endpoint from the Metal testnet console, and a disposable key (<code>cast wallet new</code>) with USDZ from the faucet. The escrow contract is already deployed; the key only funds the vendors' prepaid fees.</p></div></div>
-      <div class="tile"><div><h3>Configure and run</h3><pre>cp .env.example .env     <span class="c"># fill in the Airwallex and Metal keys; never commit it</span>
-npm run demo -- --wait   <span class="c"># then open http://localhost:4780/buyer and post the intent</span></pre><p style="margin-top:10px">The buyer console asks what to buy and the story plays from there. Open <code>/vendor</code> beside it to watch the vendors' side. Approvals can be given on the page or in the terminal.</p></div></div>
+  <section class="s" id="run">
+    <div class="center">
+      <div class="eyebrow">Run it</div>
+      <h2 class="h2">Three steps to a running auction</h2>
+      <p class="lede">Node 20, no build, no dependencies. You need an Airwallex sandbox account and a Metal testnet key; both are free.</p>
     </div>
-    <h3 style="margin:36px 0 12px;font-size:18px;letter-spacing:-0.02em">Commands</h3>
+    <div class="run">
+      <div class="step"><div class="txt"><div class="n">1</div><h3 class="h3">Get the code</h3><p>Clone the repository and copy the example environment file. Nothing to install.</p><pre style="margin-top:14px"><span class="p">$ </span>git clone https://github.com/soarewee/outbid
+<span class="p">$ </span>cd outbid
+<span class="p">$ </span>cp .env.example .env</pre></div></div>
+      <div class="step"><div class="txt"><div class="n">2</div><h3 class="h3">Add the two sandboxes</h3><p>At <a href="https://sandbox.airwallex.com" rel="noopener">sandbox.airwallex.com</a>, register the business in the <b>United States</b> and name it <code>Sandbox Business</code> so it skips review. Create a Client ID and API key under Account → Developer.</p><p style="margin-top:10px">For Metal, an RPC endpoint from the testnet console and a disposable key (<code>cast wallet new</code>) with USDZ from the faucet. Put all of it in <code>.env</code>, and never commit it.</p></div></div>
+      <div class="step"><div class="txt"><div class="n">3</div><h3 class="h3">Run, then post the intent</h3><p>Start the demo and open the buyer console. It asks what to buy, and the story plays from there. Open the vendor console beside it to watch the other side.</p><pre style="margin-top:14px"><span class="p">$ </span>npm run demo -- --wait
+<span class="c">→ http://localhost:4780/buyer</span>
+<span class="c">→ http://localhost:4780/vendor</span></pre></div></div>
+    </div>
     <div class="cmds">
       <code>npm run demo</code><span>The whole story with the intent in <code>data/intent.json</code>. <code>-- --yes</code> approves every step; <code>-- --wait</code> lets the buyer post the intent from the page.</span>
       <code>npm run demo:replay -- out/demo-&lt;time&gt;.json</code><span>Replays a saved run on the pages with the original pacing, without touching the sandbox. <code>--speed 2</code> to hurry.</span>
       <code>npm run auction</code><span>One auction: intent → bids → ranking → reserve check → approval → card → first charge.</span>
-      <code>npm run spike</code><span>The three sandbox charges above, on a fresh card.</span>
+      <code>npm run spike</code><span>Three sandbox charges on a fresh card: the agreed amount, an overcharge, a wrong merchant.</span>
       <code>cd contracts &amp;&amp; forge test</code><span>Tests for the <code>FeeEscrow</code> contract.</span>
     </div>
   </section>
 
   <footer>
-    <div>Outbid is a solo entry in the <a href="https://airwallex.hackerearth.com/" rel="noopener">Airwallex Agentic Banking Hackathon</a>. Sandbox and testnet only; no real money moves.</div>
+    <div>Outbid is a solo entry in the <a href="https://airwallex.hackerearth.com/" rel="noopener">Airwallex Agentic Banking Hackathon</a>, Kit 02: Intent-Bound Purchase Agent. Sandbox and testnet only; no real money moves.</div>
     <div><a href="https://github.com/soarewee/outbid" rel="noopener">github.com/soarewee/outbid</a></div>
   </footer>
 </div>
+
+<script>
+(() => {
+  // The product frame cycles through the buyer's flow. A click pins a panel; the cycle resumes after a while.
+  const panels = [...document.querySelectorAll(".panel")], tabs = [...document.querySelectorAll(".tab")];
+  const DUR = 6000;
+  let i = 0, timer = null, pinned = false;
+  const show = (n) => {
+    i = n;
+    panels.forEach((p, k) => p.classList.toggle("on", k === n));
+    tabs.forEach((t, k) => { t.classList.remove("on", "hold"); if (k === n) { void t.offsetWidth; t.classList.add("on"); if (pinned) t.classList.add("hold"); } });
+  };
+  const next = () => show((i + 1) % panels.length);
+  const start = () => { clearInterval(timer); timer = setInterval(next, DUR); };
+  document.documentElement.style.setProperty("--dur", `${DUR}ms`);
+  tabs.forEach((t, k) => t.addEventListener("click", () => { pinned = true; show(k); clearInterval(timer); setTimeout(() => { pinned = false; start(); next(); }, DUR * 3); }));
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) start(); else { pinned = true; show(1); }
+})();
+</script>
 </body>
 </html>

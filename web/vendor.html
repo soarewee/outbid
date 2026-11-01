@@ -4,35 +4,38 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Outbid · Vendor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="outbid.css">
 <style>
-  .top { padding: 40px 0 8px; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-  .top h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.2; margin: 0; display: flex; align-items: center; gap: 12px; }
-  .top h1 i { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
-  .top .sub { color: var(--ink3); font-size: 15px; margin-top: 4px; }
-  .switch { display: flex; gap: 2px; background: var(--card); border-radius: 999px; padding: 3px; box-shadow: var(--shadow); }
-  .switch button { font: inherit; font-size: 13px; font-weight: 600; color: var(--ink3); padding: 7px 14px; border-radius: 999px; border: 0; background: none; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
+  .top { padding: 48px 0 8px; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .top h1 { font-size: 28px; font-weight: 500; letter-spacing: -0.03em; line-height: 1.2; margin: 0; display: flex; align-items: center; gap: 12px; }
+  .top h1 i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .top .sub { color: var(--ink2); font-size: 15px; margin-top: 6px; max-width: 520px; }
+  .switch { display: flex; gap: 2px; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
+  .switch button { font: inherit; font-size: 13px; font-weight: 500; color: var(--ink2); padding: 7px 14px; border-radius: 999px; border: 0; background: none; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
   .switch button i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-  .switch button.on { background: var(--ink); color: var(--card); }
-  .section { margin-top: 36px; }
+  .switch button.on { background: var(--ink); color: var(--plane); }
+  .section { margin-top: 44px; }
   .section[hidden] { display: none; }
-  .section h2 { font-size: 13px; font-weight: 700; color: var(--ink3); letter-spacing: .04em; text-transform: uppercase; margin: 0 0 4px 4px; }
+  .section h2 { font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--ink3); letter-spacing: .14em; text-transform: uppercase; margin: 0 0 6px 2px; }
 
-  .intent-card .big { font-size: 26px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.2; margin-bottom: 14px; }
+  .intent-card .big { font-size: 24px; font-weight: 500; letter-spacing: -0.03em; line-height: 1.2; margin-bottom: 14px; }
   .facts { display: flex; gap: 8px; flex-wrap: wrap; }
   .mine { display: grid; grid-template-columns: 1fr auto; gap: 2px 18px; padding: 16px 0; border-top: 1px solid var(--line); align-items: center; animation: rise .3s ease-out; }
   .mine:first-of-type { border-top: 0; padding-top: 2px; }
   .mine:last-of-type { padding-bottom: 2px; }
-  .mine .t { font-weight: 600; font-size: 16px; }
-  .mine .price { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; text-align: right; }
-  .mine .price small { font-size: 14px; font-weight: 500; color: var(--ink3); margin-left: 3px; }
+  .mine .t { font-weight: 500; font-size: 15px; }
+  .mine .price { font-size: 20px; font-weight: 500; letter-spacing: -0.02em; text-align: right; }
+  .mine .price small { font-size: 13px; font-weight: 400; color: var(--ink3); margin-left: 3px; }
   .mine .sub { font-size: 14px; color: var(--ink2); }
   .mine .right { text-align: right; font-size: 14px; color: var(--ink3); }
   .mine .state { grid-column: 1 / -1; margin-top: 8px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 14px; color: var(--ink2); }
   .deal .head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
   .deal .head .cap { margin: 0; }
   .deal .note { font-size: 14px; color: var(--ink2); margin-top: 4px; }
-  .log .row { display: grid; grid-template-columns: 52px 1fr; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); font-size: 15px; animation: rise .3s ease-out; }
+  .log .row { display: grid; grid-template-columns: 52px 1fr; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); font-size: 14.5px; animation: rise .3s ease-out; }
   .log .row:first-of-type { border-top: 0; padding-top: 2px; }
   .log .row:last-of-type { padding-bottom: 2px; }
   .log .at { font-family: var(--mono); font-size: 12px; color: var(--ink3); padding-top: 4px; }

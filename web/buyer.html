@@ -4,27 +4,30 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Outbid · Buyer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="outbid.css">
 <style>
-  .top { padding: 44px 0 8px; }
-  .intent { font-size: 30px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.2; margin: 0 0 20px; }
-  .intent .q { color: var(--ink3); font-weight: 600; }
+  .top { padding: 48px 0 8px; }
+  .intent { font-size: 28px; font-weight: 500; letter-spacing: -0.03em; line-height: 1.2; margin: 0 0 22px; }
+  .intent .q { color: var(--ink3); }
   .figures { display: flex; gap: 36px; flex-wrap: wrap; }
-  .figure .l { font-size: 13px; color: var(--ink3); font-weight: 500; }
-  .figure .v { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; transition: color .4s; }
+  .figure .l { font-family: var(--mono); font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); }
+  .figure .v { font-size: 24px; font-weight: 500; letter-spacing: -0.02em; transition: color .4s; margin-top: 2px; }
   .figure .v.bump { color: var(--green); }
-  .scene { padding-top: 56px; }
-  .scene .step { font-size: 13px; font-weight: 700; color: var(--blue); letter-spacing: .02em; }
-  .scene h2 { font-size: 24px; font-weight: 800; letter-spacing: -0.025em; margin: 4px 0 16px; line-height: 1.25; }
-  .say { font-size: 17px; font-weight: 600; margin: 22px 0 8px; animation: rise .3s ease-out; }
-  .say.quiet { font-weight: 500; color: var(--ink2); font-size: 15px; margin-top: 4px; }
+  .scene { padding-top: 64px; }
+  .scene .step { font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--ink3); letter-spacing: .14em; text-transform: uppercase; }
+  .scene h2 { font-size: 24px; font-weight: 500; letter-spacing: -0.025em; margin: 8px 0 16px; line-height: 1.25; }
+  .say { font-size: 16px; font-weight: 500; margin: 22px 0 8px; animation: rise .3s ease-out; }
+  .say.quiet { font-weight: 400; color: var(--ink2); font-size: 15px; margin-top: 4px; }
 
   /* the intent form */
   .post { margin-top: 8px; }
   .post .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; margin-bottom: 16px; }
   @media (max-width: 520px) { .post .grid { grid-template-columns: 1fr; } }
-  .post .policy { background: var(--plane); border-radius: 14px; padding: 12px 16px; font-size: 14px; color: var(--ink2); margin-bottom: 16px; line-height: 1.5; }
-  .post .policy b { color: var(--ink); font-weight: 600; }
+  .post .policy { background: var(--well); border-radius: 12px; padding: 12px 16px; font-size: 14px; color: var(--ink2); margin-bottom: 16px; line-height: 1.5; }
+  .post .policy b { color: var(--ink); }
   .post .err { color: var(--red); font-size: 14px; margin-top: 10px; display: none; }
   .post .btn.primary { width: 100%; }
 
@@ -32,10 +35,10 @@
   .bids .bid { display: grid; grid-template-columns: 1fr auto; gap: 2px 18px; padding: 16px 0; border-top: 1px solid var(--line); align-items: center; }
   .bids .bid:first-of-type { border-top: 0; padding-top: 4px; }
   .bids .bid:last-of-type { padding-bottom: 4px; }
-  .bid .name { display: flex; align-items: center; gap: 9px; font-weight: 600; font-size: 16px; }
-  .bid .name i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
-  .bid .price { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; text-align: right; }
-  .bid .price small { font-size: 14px; font-weight: 500; color: var(--ink3); margin-left: 3px; }
+  .bid .name { display: flex; align-items: center; gap: 9px; font-weight: 500; font-size: 15px; }
+  .bid .name i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .bid .price { font-size: 20px; font-weight: 500; letter-spacing: -0.02em; text-align: right; }
+  .bid .price small { font-size: 13px; font-weight: 400; color: var(--ink3); margin-left: 3px; }
   .bid .sub { font-size: 14px; color: var(--ink2); }
   .bid .right { text-align: right; font-size: 14px; color: var(--ink3); }
   .bid .why { grid-column: 1 / -1; margin-top: 8px; display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--ink2); flex-wrap: wrap; }
@@ -46,8 +49,8 @@
   .keys { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--ink2); margin: 0 0 10px; }
   .keys span { display: inline-flex; align-items: center; gap: 6px; }
   .keys i { display: inline-block; width: 14px; height: 2px; border-radius: 1px; }
-  .keys i.floor { height: 0; border-top: 1.5px solid var(--ink3); }
-  .tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--card); border-radius: 12px; padding: 10px 12px; font-size: 13px; display: none; min-width: 170px; box-shadow: var(--shadow); }
+  .keys i.floor { height: 0; border-top: 1.5px dashed var(--ink3); }
+  .tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--plane); border-radius: 12px; padding: 10px 12px; font-size: 13px; display: none; min-width: 170px; box-shadow: var(--shadow); }
   .tip .d { opacity: .7; font-size: 12px; margin-bottom: 4px; }
   .tip .r { display: flex; justify-content: space-between; gap: 14px; }
   .tip .r i { display: inline-block; width: 10px; height: 2px; margin-right: 6px; vertical-align: middle; }
@@ -60,7 +63,7 @@
   /* approval */
   .btns { display: flex; gap: 10px; }
   .btns .btn { flex: 1; }
-  .decided { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 16px; padding: 12px 0 2px; }
+  .decided { display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 15px; padding: 12px 0 2px; }
   .decided svg { width: 18px; height: 18px; }
   .decided.yes { color: var(--green); }
   .decided.no { color: var(--red); }
@@ -68,9 +71,9 @@
   /* the card */
   .cardrow { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
   .rules { flex: 1; min-width: 240px; display: grid; gap: 14px; }
-  .rule .l { font-size: 13px; color: var(--ink3); font-weight: 500; }
-  .rule .v { font-size: 17px; font-weight: 600; }
-  .rule .v code { font-family: var(--mono); font-size: 13px; color: var(--ink3); font-weight: 500; margin-left: 6px; }
+  .rule .l { font-size: 13px; color: var(--ink3); }
+  .rule .v { font-size: 16px; font-weight: 500; }
+  .rule .v code { font-family: var(--mono); font-size: 12px; color: var(--ink3); margin-left: 6px; }
 </style>
 </head>
 <body>
@@ -287,7 +290,7 @@
     const x = (d) => m.l + (d / horizon) * (W - m.l - m.r);
     const y = (v) => m.t + (1 - v / top) * (H - m.t - m.b);
     const chart = el("div", "chart");
-    const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Projected cash for each bid against the reserve floor" });
+    const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, "font-family": "var(--sans)", role: "img", "aria-label": "Projected cash for each bid against the reserve floor" });
     for (let v = 0; v <= top; v += step) {
       svg.append(svgEl("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), stroke: "var(--line)", "stroke-width": 1 }));
       const t = svgEl("text", { x: m.l - 8, y: y(v) + 4, "text-anchor": "end", fill: "var(--ink3)", "font-size": 11 });
@@ -297,7 +300,7 @@
       const t = svgEl("text", { x: x(d), y: H - 6, "text-anchor": d === 0 ? "start" : "middle", fill: "var(--ink3)", "font-size": 11 });
       t.textContent = d === 0 ? "today" : `day ${d}`; svg.append(t);
     }
-    svg.append(svgEl("line", { x1: m.l, x2: W - m.r, y1: y(e.floor), y2: y(e.floor), stroke: "var(--ink3)", "stroke-width": 1.5 }));
+    svg.append(svgEl("line", { x1: m.l, x2: W - m.r, y1: y(e.floor), y2: y(e.floor), stroke: "var(--ink3)", "stroke-width": 1.5, "stroke-dasharray": "4 4" }));
     const fl = svgEl("text", { x: W - m.r, y: y(e.floor) - 6, "text-anchor": "end", fill: "var(--ink2)", "font-size": 11, "font-weight": 600 });
     fl.textContent = "reserve floor"; svg.append(fl);
     for (const bid of bids) {
