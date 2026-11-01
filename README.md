@@ -30,11 +30,15 @@ Node 20 or later, no dependencies, no build.
 
 - `/` (`web/index.html`) is the site: what Outbid does, how it works, who sees what, why a card, the sandbox
   evidence, and how to run it. It also opens straight from the file.
-- `/buyer` (`web/buyer.html`) is the **buyer console**, where the company's agent starts. With `--wait` it opens on
-  the intent form (category, seats, budget, term, with the reserve policy the agent will hold to); posting it
-  starts the auction. Then: every bid ranked by FX-priced total cost with a cash projection against the reserve
-  floor, the exact terms to approve with Approve and Decline buttons, the card and its controls, every charge
-  with the reason Issuing gave, the escrow split and the rebate payout.
+- `/buyer` (`web/buyer.html`) is the **buyer console**, where the company's agent starts. It shows the run one
+  step at a time: a title, a sentence that says why, and the thing itself, with Back and Next (or the arrow
+  keys) and a rail of the scenes at the top. With `--wait` it opens on the intent form (category, seats,
+  budget, term, with the reserve policy the agent will hold to); posting it starts the auction. Then: the bids
+  ranked by FX-priced total cost; what each bid does to cash over 90 days against the reserve floor (the chart
+  and the three numbers that decide it); the exact terms to approve with Approve and Decline buttons; the card
+  and its controls; every charge with the reason Issuing gave; the escrow split and the rebate payout. The run
+  keeps going behind the reader and lights up Next; a step the reader acted on (posted, approved) advances by
+  itself.
 - `/vendor` (`web/vendor.html`) is a **vendor console**, one vendor at a time (switch at the top, or `?v=Vendor%20B`).
   Its agent sees the anonymous intent, its own bid and rank, whether it was picked, the deal the buyer's card is
   bound to, its own charges (cleared, or declined for billing above what the buyer approved), its fee in escrow
