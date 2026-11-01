@@ -22,14 +22,14 @@
   .tag { display: inline-flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ink2); background: var(--well); border-radius: 999px; padding: 6px 14px 6px 6px; margin-bottom: 34px; text-align: left; line-height: 1.3; max-width: 100%; }
   .tag code { font-size: 11px; background: var(--ink); color: var(--plane); border-radius: 999px; padding: 3px 8px; font-weight: 500; }
   .tag .arr { font-family: var(--mono); color: var(--ink3); }
-  h1 { font-size: 64px; line-height: 1.06; letter-spacing: -0.035em; font-weight: 500; margin: 0 auto 24px; max-width: 880px; }
-  h1 .hl { display: inline; background: var(--ink); color: var(--plane); border-radius: 14px; padding: .02em .28em; margin: 0 .04em; letter-spacing: -0.03em; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+  h1 { font-size: 64px; line-height: 1.12; letter-spacing: -0.035em; font-weight: 500; margin: 0 auto 24px; max-width: 880px; }
+  h1 .hl { display: inline-block; background: var(--ink); color: var(--plane); border-radius: 14px; padding: 0 .26em; margin: 0 .05em; line-height: 1.04; letter-spacing: -0.03em; vertical-align: baseline; }
   h1 .q { color: var(--ink3); }
   .lede { font-size: 19px; line-height: 1.55; color: var(--ink2); max-width: 600px; margin: 0 auto 32px; }
   .ctas { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
   .fine { margin-top: 18px; font-family: var(--mono); font-size: 12.5px; color: var(--ink3); }
   .fine b { color: var(--ink2); font-weight: 500; }
-  @media (max-width: 720px) { .hero-s { padding: 56px 0 40px; } h1 { font-size: 38px; letter-spacing: -0.03em; } h1 .hl { border-radius: 9px; } .lede { font-size: 17px; } }
+  @media (max-width: 720px) { .hero-s { padding: 56px 0 40px; } h1 { font-size: 38px; letter-spacing: -0.03em; line-height: 1.16; } h1 .hl { display: inline; border-radius: 9px; padding: .02em .26em; -webkit-box-decoration-break: clone; box-decoration-break: clone; } .lede { font-size: 17px; } }
 
   /* the product frame */
   .frame-wrap { position: relative; }
@@ -103,7 +103,7 @@
   .center { text-align: center; }
   .center .h2, .center .lede { margin-left: auto; margin-right: auto; }
   section .eyebrow { margin-bottom: 14px; }
-  section .h2 { font-size: 40px; max-width: 760px; margin-bottom: 16px; }
+  section .h2 { font-size: 40px; line-height: 1.22; max-width: 760px; margin-bottom: 16px; }
   section .lede { font-size: 18px; margin-bottom: 32px; max-width: 640px; }
   @media (max-width: 720px) { section .h2 { font-size: 30px; } section .lede { font-size: 16px; } }
   .h2 .hl { display: inline; background: var(--blue-soft); color: var(--blue); border-radius: 12px; padding: .02em .3em; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
