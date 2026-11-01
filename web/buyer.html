@@ -9,76 +9,100 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="outbid.css">
 <style>
-  .wrap { max-width: 720px; }
+  /* One screen. The purchase at the top, the current moment in the middle, the chapters at the bottom.
+     Nothing scrolls; the moments replace each other as the run goes on. */
+  html { scroll-behavior: auto; }
+  body { height: 100vh; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; }
+  .wrap { max-width: 760px; width: 100%; padding: 0 20px; margin: 0 auto; display: flex; flex-direction: column; flex: 1; min-height: 0; }
+  .bar { flex: none; }
 
-  /* the purchase, as one ticket at the top */
-  .ticket { padding: 40px 0 28px; border-bottom: 1px solid var(--line); }
-  .ticket .status { margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
-  .ticket .status .pill { font-size: 13px; padding: 5px 11px; }
+  .ticket { flex: none; padding: 22px 0 16px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 1fr auto; gap: 6px 24px; align-items: center; }
+  .ticket .status { display: flex; align-items: center; gap: 10px; }
+  .ticket .status .pill { font-size: 13px; padding: 5px 11px; transition: background .3s, color .3s; }
   .ticket .status .pill i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; display: inline-block; }
   .ticket .status .pill.live i { animation: pulse 1.6s infinite; }
-  .intent { font-size: 26px; font-weight: 500; letter-spacing: -0.025em; line-height: 1.25; margin: 0 0 20px; }
+  .intent { font-size: 19px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.3; margin: 0; }
   .intent .q { color: var(--ink3); }
-  .figures { display: flex; gap: 32px; flex-wrap: wrap; }
-  .figure .l { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); }
-  .figure .v { font-size: 20px; font-weight: 500; letter-spacing: -0.02em; transition: color .4s; margin-top: 2px; }
-  .figure .v small { font-size: 13px; font-weight: 400; color: var(--ink3); margin-left: 4px; }
+  .figures { grid-column: 1 / -1; display: flex; gap: 28px; flex-wrap: wrap; margin-top: 8px; }
+  .figure .l { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); }
+  .figure .v { font-size: 17px; font-weight: 500; letter-spacing: -0.02em; transition: color .4s; }
+  .figure .v small { font-size: 12px; font-weight: 400; color: var(--ink3); margin-left: 3px; }
   .figure .v.bump { color: var(--green); }
+  @media (max-width: 560px) { .ticket { grid-template-columns: 1fr; } .intent { font-size: 17px; } .figures { gap: 18px; } }
 
-  /* the feed: everything that happens, as it happens */
-  .feed { padding-top: 8px; }
-  .chapter { display: flex; align-items: center; gap: 14px; margin: 40px 0 10px; animation: rise .4s ease-out; }
-  .chapter .k { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink3); white-space: nowrap; }
-  .chapter .t { font-size: 15px; font-weight: 500; color: var(--ink); }
-  .chapter::after { content: ""; flex: 1; height: 1px; background: var(--line); }
-  .feed .card { margin: 12px 0; }
-  .card .title { font-size: 20px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.3; margin: 0 0 6px; }
-  .card .lead { font-size: 15px; line-height: 1.55; color: var(--ink2); margin: 0 0 18px; }
+  /* the stage */
+  .stage { flex: 1; min-height: 0; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; padding: 18px 0; }
+  .moment { position: relative; max-height: 100%; overflow: auto; scrollbar-width: none; animation: enter .5s cubic-bezier(.2,.7,.2,1) both; border-radius: 16px; }
+  .moment::-webkit-scrollbar { display: none; }
+  .moment.out { position: absolute; left: 0; right: 0; animation: leave .28s ease-in both; pointer-events: none; }
+  @keyframes enter { from { opacity: 0; transform: translateY(18px) scale(.985); } to { opacity: 1; transform: none; } }
+  @keyframes leave { to { opacity: 0; transform: translateY(-14px) scale(.99); } }
+  .moment > .card { margin: 0; animation: none; }
+  .card .title { font-size: 22px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.25; margin: 0 0 6px; }
+  .card .lead { font-size: 15px; line-height: 1.55; color: var(--ink2); margin: 0 0 16px; }
   .card .lead b { color: var(--ink); }
   .card .lead:last-child { margin-bottom: 0; }
-  .card.now { border-color: var(--line2); box-shadow: var(--shadow-lg); }
-  .ev { display: flex; gap: 12px; align-items: baseline; padding: 8px 4px; font-size: 14.5px; color: var(--ink2); animation: rise .35s ease-out; line-height: 1.5; }
-  .ev::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--line2); flex: none; position: relative; top: -1px; }
-  .ev b { color: var(--ink); font-weight: 500; }
-  .ev a, .ev code { font-family: var(--mono); font-size: 12px; color: var(--ink3); }
-  .ev a { border-bottom: 1px solid var(--line2); }
-  .live { display: flex; align-items: center; gap: 10px; padding: 18px 4px 0; font-size: 14px; color: var(--ink3); }
-  .live i { width: 7px; height: 7px; border-radius: 50%; background: var(--ink3); animation: pulse 1.6s infinite; }
-  .newer { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 5; box-shadow: var(--shadow-lg); display: none; }
-  .newer.show { display: inline-flex; animation: rise .3s ease-out; }
-  details.more { margin-top: 14px; }
-  details.more summary { cursor: pointer; font-size: 14px; font-weight: 500; color: var(--ink2); list-style: none; display: inline-flex; align-items: center; gap: 8px; }
-  details.more summary::-webkit-details-marker { display: none; }
-  details.more summary::before { content: "+"; font-family: var(--mono); color: var(--ink3); }
-  details.more[open] summary::before { content: "–"; }
-  details.more > :not(summary) { margin-top: 14px; }
+  .in { animation: rise .45s cubic-bezier(.2,.7,.2,1) both; }
+  .pop { animation: pop .4s cubic-bezier(.2,.9,.3,1.3) both; }
+  @keyframes pop { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: none; } }
+
+  /* the subtitle under the stage, and the chapters */
+  .caption { flex: none; min-height: 44px; display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--ink2); padding: 0 4px; line-height: 1.45; }
+  .caption::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--line2); flex: none; }
+  .caption:empty::before { display: none; }
+  .caption b { color: var(--ink); font-weight: 500; }
+  .caption a, .caption code { font-family: var(--mono); font-size: 12px; color: var(--ink3); }
+  .caption a { border-bottom: 1px solid var(--line2); }
+  .caption.in { animation: rise .4s ease-out both; }
+  .chapters { flex: none; display: flex; gap: 8px; padding: 14px 0 22px; border-top: 1px solid var(--line); }
+  .chapters button { flex: 1; min-width: 0; border: 0; background: none; padding: 0; text-align: left; cursor: pointer; font: inherit; color: var(--ink3); }
+  .chapters button i { display: block; height: 3px; border-radius: 2px; background: var(--line2); margin-bottom: 8px; transition: background .3s; }
+  .chapters button.past i { background: var(--ink3); }
+  .chapters button.on i { background: var(--ink); }
+  .chapters button.on { color: var(--ink); }
+  .chapters button .k { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; display: block; }
+  .chapters button .t { font-size: 12.5px; font-weight: 500; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+  @media (max-width: 640px) { .chapters button .t { display: none; } }
+
+  /* waiting for bids */
+  .waiting .slot { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-top: 1px solid var(--line); font-size: 15px; }
+  .waiting .slot:first-of-type { border-top: 0; }
+  .waiting .slot i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
+  .waiting .slot .who { font-weight: 500; min-width: 90px; }
+  .waiting .slot .what { color: var(--ink3); }
+  .waiting .slot .what.pulse { animation: pulse 1.4s infinite; }
+  .waiting .slot .amt { margin-left: auto; font-size: 18px; font-weight: 500; letter-spacing: -0.02em; }
+  .waiting .slot .amt small { font-size: 13px; font-weight: 400; color: var(--ink3); margin-left: 3px; }
 
   /* the intent form */
-  .post .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; margin-bottom: 16px; }
+  .post .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; margin-bottom: 14px; }
   @media (max-width: 520px) { .post .grid { grid-template-columns: 1fr; } }
-  .post .policy { background: var(--well); border-radius: 12px; padding: 12px 16px; font-size: 14px; color: var(--ink2); margin-bottom: 16px; line-height: 1.5; }
+  .post .policy { background: var(--well); border-radius: 12px; padding: 11px 14px; font-size: 14px; color: var(--ink2); margin-bottom: 14px; line-height: 1.5; }
   .post .policy b { color: var(--ink); }
   .post .err { color: var(--red); font-size: 14px; margin-top: 10px; display: none; }
   .post .btn.primary { width: 100%; }
 
   /* bids */
-  .bids .bid { display: grid; grid-template-columns: 1fr auto; gap: 2px 18px; padding: 14px 0; border-top: 1px solid var(--line); align-items: center; }
+  .bids .bid { display: grid; grid-template-columns: 1fr auto; gap: 1px 18px; padding: 12px 0; border-top: 1px solid var(--line); align-items: center; animation: rise .45s cubic-bezier(.2,.7,.2,1) both; }
   .bids .bid:first-of-type { border-top: 0; padding-top: 2px; }
   .bids .bid:last-of-type { padding-bottom: 2px; }
   .bid .name { display: flex; align-items: center; gap: 9px; font-weight: 500; font-size: 15px; white-space: nowrap; }
   .bid .name i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-  .bid .price { font-size: 19px; font-weight: 500; letter-spacing: -0.02em; text-align: right; }
+  .bid .price { font-size: 18px; font-weight: 500; letter-spacing: -0.02em; text-align: right; }
   .bid .price small { font-size: 13px; font-weight: 400; color: var(--ink3); margin-left: 3px; }
-  .bid .sub { font-size: 14px; color: var(--ink2); }
-  .bid .right { text-align: right; font-size: 14px; color: var(--ink3); }
+  .bid .sub { font-size: 13.5px; color: var(--ink2); }
+  .bid .right { text-align: right; font-size: 13.5px; color: var(--ink3); }
   .bid .right b { color: var(--ink); font-weight: 500; }
-  .bid .why { grid-column: 1 / -1; margin-top: 6px; display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--ink2); flex-wrap: wrap; }
+  .bid .why { grid-column: 1 / -1; margin-top: 6px; display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: var(--ink2); flex-wrap: wrap; }
+  .bid .why .pill { animation: pop .4s cubic-bezier(.2,.9,.3,1.3) both; }
   .bid .rank { font-family: var(--mono); font-size: 11px; color: var(--ink3); margin-right: 2px; }
 
   /* chart */
-  .chart { position: relative; margin-top: 6px; }
+  .chart { position: relative; margin-top: 4px; }
   .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
-  .keys { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--ink2); margin: 0 0 10px; }
+  .chart path.draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 1.4s ease-out forwards; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  .keys { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--ink2); margin: 0 0 8px; }
   .keys span { display: inline-flex; align-items: center; gap: 6px; }
   .keys i { display: inline-block; width: 14px; height: 2px; border-radius: 1px; }
   .keys i.floor { height: 0; border-top: 1.5px dashed var(--ink3); }
@@ -86,32 +110,44 @@
   .tip .d { opacity: .7; font-size: 12px; margin-bottom: 4px; }
   .tip .r { display: flex; justify-content: space-between; gap: 14px; }
   .tip .r i { display: inline-block; width: 10px; height: 2px; margin-right: 6px; vertical-align: middle; }
-  table.path { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 14px; }
-  table.path th { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); font-weight: 500; text-align: right; padding: 0 0 8px; }
-  table.path th:first-child, table.path td:first-child { text-align: left; }
-  table.path td { text-align: right; padding: 8px 0; border-top: 1px solid var(--line); }
-  table.path td:first-child { font-weight: 500; white-space: nowrap; }
-  table.path td:first-child i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
-  table.path td.under { color: var(--red); font-weight: 500; }
-  table.path td.over { color: var(--green); }
-  @media (max-width: 560px) { table.path { font-size: 13px; } .card .title { font-size: 18px; } .intent { font-size: 22px; } }
+  details.more { margin-top: 12px; }
+  details.more summary { cursor: pointer; font-size: 14px; font-weight: 500; color: var(--ink2); list-style: none; display: inline-flex; align-items: center; gap: 8px; }
+  details.more summary::-webkit-details-marker { display: none; }
+  details.more summary::before { content: "+"; font-family: var(--mono); color: var(--ink3); }
+  details.more[open] summary::before { content: "–"; }
+  details.more > :not(summary) { margin-top: 12px; }
+  .chartwrap { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
 
   /* approval */
   .btns { display: flex; gap: 10px; }
   .btns .btn { flex: 1; }
-  .decided { display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 15px; padding: 10px 0 0; }
+  .decided { display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 15px; padding: 8px 0 0; }
   .decided svg { width: 18px; height: 18px; }
   .decided.yes { color: var(--green); }
   .decided.no { color: var(--red); }
 
   /* the card */
   .cardrow { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
-  .rules { flex: 1; min-width: 240px; display: grid; gap: 14px; }
+  .cardrow .vcard { animation: flip .7s cubic-bezier(.2,.7,.2,1) both; animation-delay: .15s; }
+  @keyframes flip { from { opacity: 0; transform: perspective(900px) rotateY(-28deg) translateX(-12px); } to { opacity: 1; transform: none; } }
+  .rules { flex: 1; min-width: 220px; display: grid; gap: 12px; }
+  .rule { animation: rise .45s ease-out both; }
   .rule .l { font-size: 13px; color: var(--ink3); }
   .rule .v { font-size: 16px; font-weight: 500; }
   .rule .v code { font-family: var(--mono); font-size: 12px; color: var(--ink3); margin-left: 6px; }
+  .receipt { margin-top: 16px; padding-top: 6px; border-top: 1px solid var(--line); }
+  .receipt:empty { display: none; }
+  .receipt .line { padding: 11px 0; }
+  @media (max-width: 560px) { .receipt .res { grid-column: 1 / -1; justify-content: flex-start; margin-top: 4px; } .receipt .how { white-space: nowrap; } }
 
-  .deposit .hero { font-size: 32px; }
+  /* big numbers */
+  .big .hero { font-size: 44px; }
+  .big .hero small { margin-top: 10px; }
+  .split i { transform-origin: left; animation: grow .9s cubic-bezier(.2,.7,.2,1) both; animation-delay: .4s; }
+  @keyframes grow { from { transform: scaleX(0); } }
+  .declined-big { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  .declined-big .amt { font-size: 40px; font-weight: 500; letter-spacing: -0.03em; color: var(--red); }
+  .declined-big .pill { font-size: 13px; }
 </style>
 </head>
 <body>
@@ -121,8 +157,8 @@
     <nav class="nav"><a href="/buyer" class="on">Buyer</a><a href="/vendor">Vendors</a><a href="/">About</a></nav>
   </header>
   <div class="ticket">
-    <div class="status"><span class="pill quiet" id="status"><i></i>Waiting for the agent</span></div>
     <h1 class="intent" id="intent"><span class="q">Nothing to buy yet.</span></h1>
+    <div class="status"><span class="pill quiet" id="status"><i></i>Waiting for the agent</span></div>
     <div class="figures" id="figures" hidden>
       <div class="figure"><div class="l">Available cash</div><div class="v num" id="cash">—</div></div>
       <div class="figure"><div class="l">Reserve floor</div><div class="v num" id="floor">—</div></div>
@@ -130,11 +166,12 @@
       <div class="figure" id="rebfig" hidden><div class="l">Rebates</div><div class="v num" id="rebates">—</div></div>
     </div>
   </div>
-  <div class="empty" id="empty">Run <code>npm run demo -- --wait</code> and post your intent here, or <code>npm run demo</code> to post the one in <code>data/intent.json</code>. Then watch: everything the agent does shows up here as it happens, and the only thing it asks of you is an approval.</div>
-  <div class="feed" id="feed"></div>
-  <div class="live" id="live" hidden><i></i><span>Live</span></div>
+  <div class="stage" id="stage">
+    <div class="empty" id="empty">Run <code>npm run demo -- --wait</code> and post your intent here, or <code>npm run demo</code> to post the one in <code>data/intent.json</code>. Then just watch. The only thing you are asked for is an approval.</div>
+  </div>
+  <div class="caption" id="caption"></div>
+  <div class="chapters" id="chapters" hidden></div>
 </div>
-<button class="btn dark newer" id="newer">New activity <span class="arr">↓</span></button>
 
 <script>
 (() => {
@@ -172,44 +209,84 @@
   const cycleWord = (cycle) => (cycle === "annual" ? "per year, prepaid" : "per month");
   const perShort = (cycle) => (cycle === "annual" ? "/yr" : "/mo");
   const duesOf = (obligations, cur) => (obligations ?? []).map((o) => `${whole(o.amount, cur)} ${o.label.toLowerCase()}${o.everyDays ? ` every ${o.everyDays === 7 ? "week" : `${o.everyDays} days`}` : ` on day ${o.firstDay}`}`);
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // A number that counts up to its value, for the moments that are about one number.
+  const countUp = (node, to, fmt, ms = 900) => {
+    if (reduced) { node.textContent = fmt(to); return; }
+    const t0 = performance.now();
+    const tick = (t) => { const p = Math.min(1, (t - t0) / ms); const k = 1 - Math.pow(1 - p, 3); node.textContent = fmt(to * k); if (p < 1) requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+  };
 
-  const state = { slot: {}, currency: "USD", term: 12, cash: 0, floor: 0, dues: "", scene: 0, cards: {}, escrows: {}, receipt: null, released: null, rebates: 0, approvals: 0 };
+  const state = { slot: {}, vendors: [], currency: "USD", term: 12, cash: 0, floor: 0, dues: "", scene: 0, sceneTitle: "", cards: {}, lastCard: null, released: null, rebates: 0, approvals: 0 };
   const colorOf = (vendor) => `var(--s${state.slot[vendor] ?? 1})`;
 
-  // ─── the feed ───
-  // Everything the agent does is appended as it happens and the page follows along, like a chat. The
-  // reader never has to click: the only buttons are Post intent and Approve. If they scroll up to look at
-  // something, the page stops following and offers a way back down.
-  const feed = $("feed");
-  const nearBottom = () => innerHeight + scrollY >= document.documentElement.scrollHeight - 240;
-  let following = true;
-  // Only a deliberate move up stops the page from following; reaching the bottom again resumes it. A
-  // burst of events can outrun the smooth scroll, so the scroll position alone is not a signal.
-  const stop = () => { following = false; };
-  addEventListener("wheel", (ev) => { if (ev.deltaY < 0) stop(); }, { passive: true });
-  addEventListener("touchmove", stop, { passive: true });
-  addEventListener("keydown", (ev) => { if (["ArrowUp", "PageUp", "Home"].includes(ev.key)) stop(); });
-  addEventListener("scroll", () => { if (nearBottom()) { following = true; $("newer").classList.remove("show"); } }, { passive: true });
-  $("newer").onclick = () => { following = true; scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" }); $("newer").classList.remove("show"); };
-  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  function append(node) {
-    $("empty").hidden = true;
-    feed.querySelector(".card.now")?.classList.remove("now");
-    if (node.classList.contains("card")) node.classList.add("now");
-    feed.append(node);
-    if (following) requestAnimationFrame(() => scrollTo({ top: document.documentElement.scrollHeight, behavior: reduced ? "auto" : "smooth" }));
-    else $("newer").classList.add("show");
-    return node;
-  }
-  function card({ title, lead, kind }) {
+  // ─── the stage ───
+  // The run is a sequence of moments. Each one takes the whole stage, stays at least long enough to be
+  // read, and is replaced by the next. Small things in between are captions under the stage, and things
+  // that belong to the moment on stage (a charge, a decision) land inside it. The reader just watches.
+  const moments = [];
+  let shown = -1, shownAt = 0, timer = null;
+  function moment({ title, lead, kind, dwell = 4500 }) {
+    const node = el("div", "moment");
     const c = el("div", `card ${kind ?? ""}`);
     if (title) c.append(el("h2", "title", title));
     if (lead?.length) { const p = el("p", "lead"); p.append(...lead); c.append(p); }
-    return append(c);
+    node.append(c);
+    const m = { node, card: c, scene: state.scene, sceneTitle: state.sceneTitle, dwell, onShow: [], shownAt: 0 };
+    moments.push(m);
+    $("empty")?.remove();
+    schedule();
+    return m;
   }
-  function line(...parts) { const l = el("div", "ev"); const s = el("span"); s.append(...parts); l.append(s); return append(l); }
-  function chapter(n, title) { const c = el("div", "chapter"); c.append(el("span", "k", `Part ${n}`), el("span", "t", title)); return append(c); }
-  const more = (summary, body) => { const d = el("details", "more"); d.append(el("summary", null, summary), body); return d; };
+  // Run something once the moment is on stage (plus a beat), or now if it already is.
+  const whenShown = (m, fn, delay = 0) => {
+    if (m.shownAt) setTimeout(fn, Math.max(0, m.shownAt + delay - Date.now()));
+    else m.onShow.push(() => setTimeout(fn, delay));
+  };
+  function schedule() {
+    clearTimeout(timer);
+    if (shown >= moments.length - 1) return;
+    const wait = shown < 0 ? 0 : Math.max(0, shownAt + moments[shown].dwell - Date.now());
+    timer = setTimeout(() => show(shown + 1), wait);
+  }
+  function show(i) {
+    const stage = $("stage");
+    for (const old of stage.querySelectorAll(".moment:not(.out)")) { old.classList.add("out"); setTimeout(() => old.remove(), 300); }
+    const m = moments[i];
+    shown = i; shownAt = Date.now(); m.shownAt = shownAt;
+    m.node.classList.remove("out"); m.node.scrollTop = 0;
+    stage.append(m.node);
+    $("caption").replaceChildren();
+    for (const fn of m.onShow) fn();
+    m.onShow = [];
+    chapters(m.scene);
+    schedule();
+  }
+  // The caption is the small thing that happened just now, under the stage.
+  // ... and it lands a beat after the moment it belongs to is on stage, like everything else.
+  const onStage = (fn, delay = 1500) => { const m = moments[moments.length - 1]; if (m) whenShown(m, fn, delay); else fn(); };
+  function caption(...parts) {
+    onStage(() => {
+      const c = $("caption");
+      const span = el("span"); span.append(...parts);
+      c.replaceChildren(span);
+      c.classList.remove("in"); void c.offsetWidth; c.classList.add("in");
+    });
+  }
+  const scenes = [];
+  function chapters(current) {
+    const box = $("chapters");
+    box.hidden = !scenes.length;
+    box.replaceChildren();
+    scenes.forEach((s, i) => {
+      const b = el("button", s.n === current ? "on" : s.n < current ? "past" : "");
+      b.append(el("i"), el("span", "k", `Part ${s.n}`), el("span", "t", s.title));
+      b.title = s.title;
+      b.onclick = () => { const j = moments.findIndex((m) => m.scene === s.n); if (j >= 0) show(j); };
+      box.append(b);
+    });
+  }
   function status(text, cls, live) {
     const p = $("status");
     p.className = `pill ${cls} ${live ? "live" : ""}`;
@@ -227,7 +304,8 @@
     status("Draft", "quiet");
     const d = e.defaults, p = e.company.policy, cur_ = e.company.currency;
     const dues = duesOf(e.company.obligations, cur_).join(", ");
-    const c = card({ title: "Post a purchase intent", lead: ["Vendors see exactly these four fields and nothing else: not your name, not your cash. Your agent will hold to the reserve policy below while it picks."], kind: "post" });
+    const m = moment({ title: "Post a purchase intent", lead: ["Vendors see exactly these four fields and nothing else: not your name, not your cash. Your agent will hold to the reserve policy below while it picks."], kind: "post", dwell: 0 });
+    const c = m.card;
     const grid = el("div", "grid");
     const field = (label, input, unit) => {
       const f = el("div", "field"); f.append(el("label", null, label));
@@ -261,36 +339,58 @@
     c.append(grid, policy, post, err);
   }
 
-  // ─── the ticket ───
+  // ─── the ticket, and waiting for bids ───
+  let waiting = null;
   function start(e) {
+    state.vendors = e.vendors;
     e.vendors.forEach((v, i) => (state.slot[v] = i + 1));
     state.currency = e.company.currency;
     state.term = e.intent.termMonths;
     state.floor = e.company.policy.reserveFloor;
     state.dues = duesOf(e.company.obligations, state.currency).join(" and ");
     const { intent } = e;
-    $("intent").replaceChildren(
-      `${categoryName(intent.category)}, ${intent.seats} seats, up to ${whole(intent.budget.amount, intent.budget.currency)} a ${intent.budget.per}, for ${intent.termMonths} months`,
-      el("span", "q", ". Posted anonymously."),
-    );
+    $("intent").replaceChildren(`${categoryName(intent.category)}, ${intent.seats} seats, up to ${whole(intent.budget.amount, intent.budget.currency)} a ${intent.budget.per}, for ${intent.termMonths} months`, el("span", "q", ". Posted anonymously."));
     $("floor").textContent = whole(state.floor, state.currency);
     $("figures").hidden = false;
-    $("live").hidden = false;
     $("dot").classList.add("live");
     status("Vendors are bidding", "info", true);
-    const post = feed.querySelector(".post .btn.primary"); if (post) { post.disabled = true; post.textContent = "Posted"; }
+    waiting = moment({ title: "Your intent is out. Vendors are looking at it.", lead: ["They see the category, the seats, the budget and the term. Not who you are, not your cash, not each other's bids."], kind: "waiting", dwell: 3500 });
+    waiting.slots = {};
+    for (const v of e.vendors) {
+      const s = el("div", "slot"); const i = el("i"); i.style.background = colorOf(v);
+      s.append(i, el("span", "who", v), el("span", "what pulse", "reading the intent…"));
+      waiting.card.append(s);
+      waiting.slots[v] = s;
+    }
   }
-  function cash(e) { state.cash = e.available; bump($("cash"), whole(e.available, state.currency)); }
-  function scene(e) { state.scene = e.n; chapter(e.n, e.title); }
+  let bidsIn = 0;
+  function vendor(e) {
+    const m = e.text.match(/Bids (\S+?)([\d,.]+) (monthly|annual)/);
+    const s = waiting?.slots[e.vendor];
+    if (!m || !s) return;
+    const k = bidsIn++;
+    whenShown(waiting, () => {
+      s.querySelector(".what").replaceWith(el("span", "what", "bid"));
+      const amt = el("span", "amt num pop"); amt.append(`${m[1]}${m[2]}`, el("small", null, perShort(m[3])));
+      s.append(amt);
+    }, 1200 + k * 700);
+    waiting.dwell = Math.max(waiting.dwell, 1200 + k * 700 + 2200);
+  }
+  function cash(e) { state.cash = e.available; onStage(() => bump($("cash"), whole(e.available, state.currency)), 400); }
+  function scene(e) { state.scene = e.n; state.sceneTitle = e.title; scenes.push({ n: e.n, title: e.title }); chapters(moments[shown]?.scene ?? e.n); }
   function note(e) {
-    if (/^Pick: /.test(e.text)) return; // the ranking already says who was picked
+    if (/^Pick: /.test(e.text)) return; // the ranking already shows who was picked
     const m = e.text.match(/^Switch: (.*) → (.*)$/);
-    if (m) { line("Switching from ", el("b", null, m[1]), " to ", el("b", null, m[2]), "."); return; }
-    line(e.text);
+    if (m) { caption("Switching from ", el("b", null, m[1]), " to ", el("b", null, m[2]), "."); return; }
+    caption(e.text);
   }
   function deposit(e) {
-    const c = card({ title: `+${whole(e.amount, e.currency)} from ${e.payer}`, lead: [`A customer payment lands in the company's Global Account. Nothing about the intent changed, but cash goes from ${whole(state.cash, state.currency)} to ${whole(state.cash + e.amount, state.currency)}, so the agent re-runs the same rules on the new number.`], kind: "deposit" });
-    status("Rechecking the deal", "info", true);
+    const from = state.cash, to = state.cash + e.amount;
+    const m = moment({ title: `${e.payer} just paid`, lead: [`A customer payment lands in the company's Global Account. Nothing about the intent changed, but cash goes from ${whole(from, e.currency)} to ${whole(to, e.currency)}, so the agent re-runs the same rules on the new number.`], kind: "big", dwell: 4500 });
+    const hero = el("div", "hero num", `+${whole(0, e.currency)}`);
+    m.card.append(hero);
+    whenShown(m, () => countUp(hero, e.amount, (n) => `+${whole(n, e.currency)}`, 1100), 300);
+    whenShown(m, () => status("Rechecking the deal", "info", true));
   }
 
   // ─── bids ───
@@ -303,34 +403,36 @@
     const fits = withPath.filter((x) => x.cashPath.ok);
 
     // The agent's explanation, built from the numbers: who wins, and what rules out the cheaper one.
-    const lead = [];
-    if (e.key === "opening") lead.push(`${bids.length} bids came in, priced over ${state.term} months with Airwallex FX. `);
+    const lead = [], why = [];
+    if (e.key === "opening") lead.push(`Ranked by total cost over ${state.term} months, priced with Airwallex FX. `);
     else if (e.key === "reopened") lead.push(`The incumbent's new price goes back into the auction against fresh bids, on today's balance of ${whole(e.cash, e.currency)}. `);
     else lead.push(`Same rules, re-run on ${whole(e.cash, e.currency)}. `);
     if (winner) lead.push(el("b", null, `${winner.vendor} ${e.key === "reopened" ? "is now lowest" : "wins"} at ${money(winner.price.amount, winner.price.currency)} ${cycleWord(winner.billing)}`), ` (${whole(winner.total, e.currency)} in total). `);
     if (breaker && winner && breaker.vendor !== winner.vendor) {
-      lead.push(`${breaker.vendor} is cheaper in total, but it takes ${whole(breaker.total, e.currency)} up front: with ${state.dues || "the bills already due"}, cash would be down to ${whole(breaker.cashPath.balance, e.currency)} by day ${breaker.cashPath.breachDay}, under your ${whole(e.floor, e.currency)} floor. `);
-      if (fits.length) lead.push(`Paying monthly never drops below ${whole(Math.min(...fits.map((x) => x.cashPath.low.balance)), e.currency)}.`);
+      why.push(`${breaker.vendor} takes ${whole(breaker.total, e.currency)} on day one. With ${state.dues || "the bills already due"}, cash would be down to `, el("b", null, `${whole(breaker.cashPath.balance, e.currency)} by day ${breaker.cashPath.breachDay}`), `, under your ${whole(e.floor, e.currency)} floor. `);
+      if (fits.length) why.push(`Paying monthly spreads the same spend out and never drops below ${whole(Math.min(...fits.map((x) => x.cashPath.low.balance)), e.currency)}. `);
+      why.push("So the cheapest bid loses, and the cheapest one that keeps the floor wins. The rule is code; the agent only explains it.");
     } else if (winner && cheapest.vendor === winner.vendor && e.key === "recheck") {
-      lead.push(`The annual prepay that broke the reserve before now fits, and it is the cheapest, so it wins.`);
+      why.push("The annual prepay that broke the reserve before now fits, and it is the cheapest, so it wins.");
     } else if (winner && cheapest.vendor === winner.vendor) {
-      lead.push(`It is the cheapest, and it keeps cash above the ${whole(e.floor, e.currency)} floor for ${e.horizonDays ?? 90} days.`);
+      why.push(`It is the cheapest, and it keeps cash above the ${whole(e.floor, e.currency)} floor.`);
     }
-    const title = { opening: e.winner ? `${bids.length} bids in. ${e.winner} wins.` : `${bids.length} bids in. None fits.`, reopened: `Re-auctioned: ${e.winner} is now lowest`, recheck: `Rechecked: ${e.winner} fits now` }[e.key] ?? e.title;
-    const c = card({ title, lead, kind: "ranking" });
-
+    if (e.key !== "opening") lead.push(...why);
+    const title = { opening: e.winner ? `${bids.length} bids. ${e.winner} wins.` : `${bids.length} bids. None fits.`, reopened: `Re-auctioned: ${e.winner} is now lowest`, recheck: `Rechecked: ${e.winner} fits now` }[e.key] ?? e.title;
+    const m = moment({ title, lead, kind: "ranking", dwell: e.key === "opening" ? 7000 : 6500 });
+    const c = m.card;
     const list = el("div", "bids");
     bids.forEach((bid, i) => {
-      const row = el("div", "bid");
+      const row = el("div", "bid"); row.style.animationDelay = `${0.25 + i * 0.18}s`;
       const name = el("div", "name"); const dot = el("i"); dot.style.background = colorOf(bid.vendor);
       name.append(el("span", "rank", `#${i + 1}`), dot, bid.vendor);
       const price = el("div", "price num");
       price.append(money(bid.price.amount, bid.price.currency), el("small", null, perShort(bid.billing)));
       const fx = bid.price.currency === e.currency ? "" : ` · ${bid.price.currency} at ${bid.fx.toFixed(4)}`;
       const sub = el("div", "sub", bid.billing === "annual" ? `${whole(bid.total, e.currency)} up front, then nothing for ${state.term} months${fx}` : `${state.term} payments of ${whole(bid.perMonth, e.currency)}${fx}`);
-      const right = el("div", "right num"); right.append(el("b", null, whole(bid.total, e.currency)), ` total`);
+      const right = el("div", "right num"); right.append(el("b", null, whole(bid.total, e.currency)), " total");
       const why = el("div", "why");
-      const pill = el("span", "pill");
+      const pill = el("span", "pill"); pill.style.animationDelay = `${1 + i * 0.25}s`;
       if (bid.verdict === "fits") {
         pill.classList.add("good"); pill.append(icon("check"), "Keeps the reserve");
         why.append(pill, `Lowest cash ${whole(bid.cashPath.low.balance, e.currency)}, on day ${bid.cashPath.low.day}`);
@@ -341,28 +443,30 @@
         pill.classList.add("bad"); pill.append(icon("cross"), "Over budget");
         why.append(pill, e.budget ? `${whole(bid.perMonth, e.currency)} a month against a ${whole(e.budget, e.currency)} budget` : `${whole(bid.perMonth, e.currency)} a month`);
       }
-      if (bid.vendor === e.winner) why.prepend(el("span", "pill pick", "Picked"));
+      if (bid.vendor === e.winner) { const p = el("span", "pill pick", "Picked"); p.style.animationDelay = "1.9s"; why.prepend(p); }
       row.append(name, price, sub, right, why);
       list.append(row);
     });
     c.append(list);
     if (!withPath.length) return;
     const horizon = withPath[0].cashPath.path.length - 1;
-    const chart = cashChart(e, withPath);
-    // The cash forecast is the whole argument the first time; afterwards it is there for whoever wants it.
-    if (e.key === "opening") { const d = more(`Cash over the next ${horizon} days, under each bid`, chart); d.open = true; c.append(d); }
-    else c.append(more(`Cash over the next ${horizon} days, under each bid`, chart));
-    if (e.key === "opening") status("Picking", "info", true);
+    // The cash forecast is the whole argument the first time, so it gets its own beat and draws itself.
+    // Afterwards it is there for whoever wants it.
+    if (e.key === "opening") {
+      const w = moment({ title: breaker ? `Why not ${breaker.vendor}? Cash.` : "Every bid keeps the reserve", lead: why, kind: "why", dwell: 9000 });
+      w.card.append(cashChart(e, withPath, 0.5));
+      whenShown(m, () => status("Picking", "info", true));
+    } else c.append((() => { const d = el("details", "more"); d.append(el("summary", null, `Cash over the next ${horizon} days, under each bid`), cashChart(e, withPath, 0)); return d; })());
   }
 
-  function cashChart(e, bids) {
+  function cashChart(e, bids, delay) {
     const wrap = el("div");
     const keys = el("div", "keys");
     for (const bid of bids) { const s = el("span"); const i = el("i"); i.style.background = colorOf(bid.vendor); s.append(i, bid.vendor); keys.append(s); }
     const f = el("span"); f.append(el("i", "floor"), `Reserve floor ${whole(e.floor, e.currency)}`); keys.append(f);
     wrap.append(keys);
 
-    const W = 640, H = 200, m = { t: 12, r: 16, b: 24, l: 36 };
+    const W = 640, H = 170, m = { t: 12, r: 16, b: 24, l: 36 };
     const horizon = Math.max(...bids.map((x) => x.cashPath.path.length)) - 1;
     const ymax = Math.max(e.cash, ...bids.flatMap((x) => x.cashPath.path));
     const step = ymax > 40000 ? 20000 : ymax > 16000 ? 10000 : 5000;
@@ -383,20 +487,24 @@
     svg.append(svgEl("line", { x1: m.l, x2: W - m.r, y1: y(e.floor), y2: y(e.floor), stroke: "var(--ink3)", "stroke-width": 1.5, "stroke-dasharray": "4 4" }));
     const fl = svgEl("text", { x: W - m.r, y: y(e.floor) - 6, "text-anchor": "end", fill: "var(--ink2)", "font-size": 11, "font-weight": 500 });
     fl.textContent = "reserve floor"; svg.append(fl);
-    for (const bid of bids) {
-      const d = bid.cashPath.path.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join("");
-      svg.append(svgEl("path", { d, fill: "none", stroke: colorOf(bid.vendor), "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }));
+    bids.forEach((bid, i) => {
+      const d = bid.cashPath.path.map((v, j) => `${j ? "L" : "M"}${x(j).toFixed(1)},${y(v).toFixed(1)}`).join("");
+      const p = svgEl("path", { d, fill: "none", stroke: colorOf(bid.vendor), "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round", pathLength: "1" });
+      if (delay && !reduced) { p.classList.add("draw"); p.style.animationDelay = `${delay + i * 0.2}s`; }
+      svg.append(p);
       const lastI = bid.cashPath.path.length - 1;
-      svg.append(svgEl("circle", { cx: x(lastI), cy: y(bid.cashPath.path[lastI]), r: 6, fill: "var(--card)" }));
-      svg.append(svgEl("circle", { cx: x(lastI), cy: y(bid.cashPath.path[lastI]), r: 4, fill: colorOf(bid.vendor) }));
+      const dots = svgEl("g", { class: delay ? "in" : "" }); dots.style.animationDelay = `${delay + 1.3}s`;
+      dots.append(svgEl("circle", { cx: x(lastI), cy: y(bid.cashPath.path[lastI]), r: 6, fill: "var(--card)" }));
+      dots.append(svgEl("circle", { cx: x(lastI), cy: y(bid.cashPath.path[lastI]), r: 4, fill: colorOf(bid.vendor) }));
       if (!bid.cashPath.ok) {
         const bx = x(bid.cashPath.breachDay), by = y(bid.cashPath.balance);
-        svg.append(svgEl("circle", { cx: bx, cy: by, r: 7, fill: "var(--card)" }));
-        svg.append(svgEl("circle", { cx: bx, cy: by, r: 5, fill: "var(--red)" }));
+        dots.append(svgEl("circle", { cx: bx, cy: by, r: 7, fill: "var(--card)" }));
+        dots.append(svgEl("circle", { cx: bx, cy: by, r: 5, fill: "var(--red)" }));
         const t = svgEl("text", { x: bx + 12, y: by + 16, fill: "var(--red)", "font-size": 12, "font-weight": 500 });
-        t.textContent = `${whole(bid.cashPath.balance, e.currency)} on day ${bid.cashPath.breachDay}`; svg.append(t);
+        t.textContent = `${whole(bid.cashPath.balance, e.currency)} on day ${bid.cashPath.breachDay}`; dots.append(t);
       }
-    }
+      svg.append(dots);
+    });
     const cross = svgEl("line", { y1: m.t, y2: H - m.b, stroke: "var(--ink3)", "stroke-width": 1, visibility: "hidden" });
     svg.append(cross);
     const hit = svgEl("rect", { x: m.l, y: 0, width: W - m.l - m.r, height: H, fill: "transparent" });
@@ -422,21 +530,6 @@
     });
     hit.addEventListener("pointerleave", () => { cross.setAttribute("visibility", "hidden"); tip.style.display = "none"; });
     wrap.append(chart);
-
-    // The three numbers that decide it, per bid: cash after day one, the lowest point, the verdict.
-    const t = el("table", "path");
-    const head = el("tr"); for (const h of ["Bid", "Cash after day 1", "Lowest point", "Floor"]) head.append(el("th", null, h));
-    t.append(head);
-    for (const bid of bids) {
-      const tr = el("tr");
-      const name = el("td"); const i = el("i"); i.style.background = colorOf(bid.vendor); name.append(i, bid.vendor);
-      const min = Math.min(...bid.cashPath.path);
-      const low = bid.cashPath.ok ? bid.cashPath.low : { balance: min, day: bid.cashPath.path.indexOf(min) };
-      const verdict = el("td", bid.cashPath.ok ? "over" : "under", bid.cashPath.ok ? "Kept" : `Broken on day ${bid.cashPath.breachDay}`);
-      tr.append(name, el("td", "num", whole(bid.cashPath.path[0], e.currency)), el("td", "num", `${whole(low.balance, e.currency)} on day ${low.day}`), verdict);
-      t.append(tr);
-    }
-    wrap.append(t);
     return wrap;
   }
 
@@ -444,10 +537,10 @@
   const pending = {};
   function approval(e) {
     const first = !state.approvals++;
-    const c = card({
+    const m = moment({
       title: `Approve ${e.terms.vendor} at ${money(e.terms.amount, e.terms.currency)} ${cycleWord(e.terms.cycle)}?`,
       lead: [first ? "This is all you are asked to do. The card will only be able to pay exactly this: this vendor, this amount, this currency, nothing broader." : "New terms mean a new card with these exact controls. The old card is frozen the moment it is issued."],
-      kind: "approval",
+      kind: "approval", dwell: 4000,
     });
     const terms = el("div", "terms");
     for (const [l, v] of [
@@ -461,25 +554,29 @@
     const answer = (approved) => fetch("/approve", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: e.id, approved }) });
     yes.onclick = () => answer(true); no.onclick = () => answer(false);
     btns.append(no, yes);
-    c.append(terms, btns);
-    pending[e.id] = btns;
-    status("Needs your approval", "warn");
+    m.card.append(terms, btns);
+    pending[e.id] = { btns, m };
+    whenShown(m, () => status("Needs your approval", "warn"));
   }
   function approved(e) {
-    const btns = pending[e.id];
-    if (!btns) return;
-    const d = el("div", `decided ${e.approved ? "yes" : "no"}`);
-    d.append(icon(e.approved ? "check" : "cross"), e.approved ? "Approved" : "Declined");
-    btns.replaceWith(d);
-    status(e.approved ? "Issuing the card" : "Not approved", e.approved ? "info" : "quiet", e.approved);
+    const p = pending[e.id];
+    if (!p) return;
+    // The decision lands a beat after the question is on stage, so it reads as a decision.
+    whenShown(p.m, () => {
+      const d = el("div", `decided ${e.approved ? "yes" : "no"} pop`);
+      d.append(icon(e.approved ? "check" : "cross"), e.approved ? "Approved" : "Declined");
+      p.btns.replaceWith(d);
+      status(e.approved ? "Issuing the card" : "Not approved", e.approved ? "info" : "quiet", e.approved);
+    }, 1800);
+    p.m.dwell = 4200;
   }
 
   // ─── the card ───
   function cardIssued(e) {
-    const c = card({
+    const m = moment({
       title: e.replaces ? `A new card, for ${e.approval.vendor}` : `Your card for ${e.approval.vendor}`,
-      lead: [e.replaces ? "Issued with the new terms as its controls. The old card is frozen; anything billed to it from now on is declined by the network." : "An Airwallex virtual card whose controls are the approved terms: a per-charge limit at the approved amount, a currency allowlist and the vendor's merchant category. Enforced at authorization, before money moves."],
-      kind: "card",
+      lead: [e.replaces ? "Issued with the new terms as its controls. The old card is frozen; anything billed to it from now on is declined by the network." : "An Airwallex virtual card whose controls are the approved terms. Enforced at authorization, before money moves."],
+      kind: "card", dwell: 5000,
     });
     const row = el("div", "cardrow");
     const v = el("div", "vcard");
@@ -489,42 +586,35 @@
     b.append(fr, el("span", "brand", e.brand ?? ""));
     v.append(t, n, b);
     const rules = el("div", "rules");
-    for (const [l, val, code] of [
+    [
       ["Per charge, at most", money(e.approval.amount, e.approval.currency)],
       ["Only in", e.approval.currency],
       ["Only at", MCC[e.approval.merchantCategory] ?? "the vendor's category", `MCC ${e.approval.merchantCategory}`],
-    ]) { const r = el("div", "rule"); const vv = el("div", "v", val); if (code) vv.append(el("code", null, code)); r.append(el("div", "l", l), vv); rules.append(r); }
+    ].forEach(([l, val, code], i) => { const r = el("div", "rule"); r.style.animationDelay = `${0.7 + i * 0.22}s`; const vv = el("div", "v", val); if (code) vv.append(el("code", null, code)); r.append(el("div", "l", l), vv); rules.append(r); });
     row.append(v, rules);
-    c.append(row);
-    state.cards[e.id] = { vcard: v, st, last4: (e.number ?? "").slice(-4) };
-    state.receipt = null;
-    const pay = $("paying"); pay.replaceChildren(`${e.approval.vendor} ${money(e.approval.amount, e.approval.currency)}`, el("small", null, perShort(e.approval.cycle)));
-    $("payfig").hidden = false;
-    status(`Active · paying ${e.approval.vendor}`, "good", true);
+    const receipt = el("div", "receipt");
+    m.card.append(row, receipt);
+    state.cards[e.id] = { vcard: v, st, last4: (e.number ?? "").slice(-4), m, receipt };
+    state.lastCard = state.cards[e.id];
+    whenShown(m, () => {
+      const pay = $("paying"); pay.replaceChildren(`${e.approval.vendor} ${money(e.approval.amount, e.approval.currency)}`, el("small", null, perShort(e.approval.cycle)));
+      $("payfig").hidden = false;
+      status(`Active · paying ${e.approval.vendor}`, "good", true);
+    }, 600);
   }
   function cardStatus(e) {
     const c = state.cards[e.id];
     if (!c) return;
-    c.st.textContent = e.status === "ACTIVE" ? "ACTIVE" : "FROZEN";
-    c.vcard.classList.toggle("frozen", e.status !== "ACTIVE");
-    if (e.status !== "ACTIVE") line("The old card ", el("b", null, `•••• ${c.last4}`), " is frozen.");
+    onStage(() => {
+      c.st.textContent = e.status === "ACTIVE" ? "ACTIVE" : "FROZEN";
+      c.vcard.classList.toggle("frozen", e.status !== "ACTIVE");
+    }, 1200);
+    if (e.status !== "ACTIVE") caption("The old card ", el("b", null, `•••• ${c.last4}`), " is frozen.");
   }
 
-  // ─── charges, as a receipt ───
+  // ─── charges ───
   function charge(e) {
     const hike = e.outcome === "declined" && e.detail === "LIMIT_EXCEEDED";
-    if (hike) {
-      const c = card({ title: `${e.merchant} billed ${money(e.amount, e.currency)}. Declined.`, lead: [`The card is approved for less, so Issuing declined the renewal hike with the limit the approval set. Nobody had to notice. Outbid takes that as a reopened auction.`], kind: "receipt" });
-      c.append(el("div", "receipt"));
-      state.receipt = c;
-      status("Renewal: price went up", "warn", true);
-    } else if (!state.receipt || state.receipt.dataset.scene !== String(state.scene)) {
-      const c = card({ title: "Charges on the card", lead: ["Every charge is decided by Airwallex Issuing against the card's controls. Approved means the terms were met; declined says which control stopped it."], kind: "receipt" });
-      c.append(el("div", "receipt"));
-      state.receipt = c;
-    }
-    state.receipt.dataset.scene = String(state.scene);
-    const receipt = state.receipt.querySelector(".receipt");
     const l = el("div", "line");
     const who = el("div", "who", e.merchant);
     const how = el("div", "how", `${e.label}${e.txId ? ` · ${e.txId.slice(0, 8)}` : ""}`);
@@ -534,8 +624,19 @@
     if (e.outcome === "approved") res.append("Approved");
     else { res.append(`Declined · ${REASON[e.detail] ?? e.detail}`, " ", el("code", null, e.detail)); }
     l.append(who, amt, how, res);
-    receipt.append(l);
-    if (state.receipt !== feed.lastElementChild) append(state.receipt); // bring the receipt back to the bottom when a charge arrives later
+    if (hike) {
+      const m = moment({ title: `${e.merchant} billed ${money(e.amount, e.currency)}. The card said no.`, lead: ["It is approved for less, so Airwallex Issuing declined the renewal hike with the limit the approval set. Nobody had to notice. Outbid takes that as a reopened auction."], kind: "receipt", dwell: 5500 });
+      const r = el("div", "receipt"); r.append(l); m.card.append(r);
+      whenShown(m, () => status("Renewal: price went up", "warn", true));
+      return;
+    }
+    // A charge lands on the card it was made on. If that card's moment has passed, bring it back.
+    const card = state.cards[e.cardId] ?? state.lastCard;
+    if (!card) return;
+    card.receipt.append(l);
+    const i = moments.indexOf(card.m);
+    if (i !== shown) { if (i < shown) { card.m.dwell = 4500; moments.splice(i, 1); moments.push(card.m); shown--; } schedule(); }
+    else { shownAt = Date.now(); card.m.dwell = 4500; schedule(); }
   }
 
   // ─── escrow ───
@@ -543,14 +644,15 @@
     const link = (url, hash) => { const a = el("a", null, `${hash.slice(0, 10)}… on Metal`); a.href = url; a.target = "_blank"; a.rel = "noopener"; return a; };
     const row = (box, left, right, cls) => { const s = el("div", `s ${cls ?? ""}`); s.append(el("span", null, left), right); box.append(s); };
     if (e.step === "prepaid") {
-      line(el("b", null, e.vendor), ` put its ${money(e.amount, e.currency)} acquisition fee in escrow. It is released only when a charge clears on your card. `, link(e.url, e.hash));
+      caption(el("b", null, e.vendor), ` put its ${money(e.amount, e.currency)} acquisition fee in escrow. It is released only when a charge clears on your card. `, link(e.url, e.hash));
       return;
     }
     if (e.step === "released") {
-      const c = card({ title: `${money(e.rebate, e.currency)} back to you`, lead: [`The cleared charge is the proof of sale, reported by the network rather than by either party. The escrow splits ${e.vendor}'s ${money(e.amount, e.currency)} fee in one transaction: `, el("b", null, `${money(e.rebate, e.currency)} to you`), `, ${money(e.outbidFee, e.currency)} to Outbid.`], kind: "released" });
+      const m = moment({ title: `${money(e.rebate, e.currency)} back to you`, lead: [`The cleared charge is the proof of sale, reported by the network rather than by either party. The escrow splits ${e.vendor}'s ${money(e.amount, e.currency)} fee in one transaction: `, el("b", null, `${money(e.rebate, e.currency)} to you`), `, ${money(e.outbidFee, e.currency)} to Outbid.`], kind: "big", dwell: 6000 });
+      const hero = el("div", "hero num", money(0, e.currency));
       const split = el("div", "split");
       const r = el("i"); r.style.flex = String(e.rebate); r.style.background = "var(--blue)";
-      const f = el("i"); f.style.flex = String(e.outbidFee); f.style.background = "var(--line2)";
+      const f = el("i"); f.style.flex = String(e.outbidFee); f.style.background = "var(--line2)"; f.style.animationDelay = ".9s";
       split.append(r, f);
       const keys = el("div", "split-keys");
       const k1 = el("span"); const i1 = el("i"); i1.style.background = "var(--blue)"; k1.append(i1, `Your rebate ${money(e.rebate, e.currency)}`);
@@ -559,38 +661,35 @@
       const box = el("div", "steps");
       row(box, "Proof of sale, Airwallex transaction", el("code", null, `${e.txId.slice(0, 13)}…`));
       row(box, "Escrow releases and splits the fee", link(e.url, e.hash));
-      split.style.marginTop = "0";
-      c.append(split, keys, box);
-      state.released = c;
+      m.card.append(hero, split, keys, box);
+      whenShown(m, () => countUp(hero, e.rebate, (n) => money(n, e.currency)), 300);
+      state.released = m;
       state.rebates += e.rebate;
-      $("rebfig").hidden = false;
-      bump($("rebates"), money(state.rebates, e.currency));
+      whenShown(m, () => { $("rebfig").hidden = false; bump($("rebates"), money(state.rebates, e.currency)); }, 900);
       return;
     }
     if (e.step === "payout" && state.released) {
-      row(state.released.querySelector(".steps"), `Sent to your bank via Airwallex Payouts`, el("code", null, `${e.transferId.slice(0, 8)}… ${e.status.toLowerCase()}`));
+      row(state.released.card.querySelector(".steps"), "Sent to your bank via Airwallex Payouts", el("code", null, `${e.transferId.slice(0, 8)}… ${e.status.toLowerCase()}`));
     }
   }
 
   // ─── the message to the incumbent ───
   function offer(e) {
-    const c = card({ title: `Outbid asks ${e.to} to match ${money(e.amount, e.currency)}`, lead: [`${e.to} is the incumbent and ${e.from} came in lower. ${e.matched ? `${e.to} matches, so nothing has to move.` : `${e.to} passes, so you switch.`}`], kind: "offer" });
-    const m = el("div", "msg");
+    const m = moment({ title: `Outbid asks ${e.to} to match ${money(e.amount, e.currency)}`, lead: [`${e.to} is the incumbent and ${e.from} came in lower. ${e.matched ? `${e.to} matches, so nothing has to move.` : `${e.to} passes, so you switch.`}`], kind: "offer", dwell: 5000 });
+    const box = el("div", "msg");
     const out = el("div", "bubble out", `${e.from} costs ${money(e.amount, e.currency)} per ${e.per}. Match, or the company switches.`);
-    const back = el("div", "bubble in");
+    const back = el("div", "bubble in"); back.style.animationDelay = "1.4s";
     back.append(el("span", "from", e.to), e.matched ? `We match: ${money(e.matched.amount, e.matched.currency)} per ${e.per}.` : "We pass.");
-    m.append(out, back);
-    c.append(m);
+    box.append(out, back);
+    m.card.append(box);
   }
 
   const end = () => {
     source.close();
-    $("dot").classList.remove("on", "live");
-    $("live").hidden = true;
-    $("status").classList.remove("live");
-    line("End of the run. Everything above ran against the Airwallex sandbox and Metal testnet.");
+    onStage(() => { $("dot").classList.remove("on", "live"); $("status").classList.remove("live"); }, 2500);
+    caption("End of the run. Everything above ran against the Airwallex sandbox and Metal testnet.");
   };
-  const handlers = { "await-intent": awaitIntent, start, cash, scene, note, deposit, ranking, approval, approved, card: cardIssued, cardStatus, charge, escrow, offer, end };
+  const handlers = { "await-intent": awaitIntent, start, vendor, cash, scene, note, deposit, ranking, approval, approved, card: cardIssued, cardStatus, charge, escrow, offer, end };
   const source = new EventSource("/events");
   source.onopen = () => $("dot").classList.add("on");
   source.onerror = () => $("dot").classList.remove("on");

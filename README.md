@@ -30,14 +30,16 @@ Node 20 or later, no dependencies, no build.
 
 - `/` (`web/index.html`) is the site: what Outbid does, how it works, who sees what, why a card, the sandbox
   evidence, and how to run it. It also opens straight from the file.
-- `/buyer` (`web/buyer.html`) is the **buyer console**, where the company's agent starts. It is a feed you watch,
-  not a wizard: the purchase sits at the top (the intent, a status, available cash, the reserve floor, what the
-  card is paying, the rebates so far) and everything the agent does appears below as it happens, with the page
-  following along. The only buttons are the intent form (with `--wait`) and Approve. The bids arrive ranked by
-  FX-priced total cost with the agent's reason in one paragraph and the cash forecast under it; the approval is
-  a card that says exactly what the buyer is agreeing to; then the card and its controls, each charge with the
-  reason Issuing gave, the fee escrow and the rebate payout, and at renewal the declined hike, the reopened
-  auction and the message to the incumbent.
+- `/buyer` (`web/buyer.html`) is the **buyer console**, where the company's agent starts. It plays like a
+  film, not a wizard: one screen, the purchase at the top (the intent, a status, available cash, the reserve
+  floor, what the card pays, the rebates so far), and the moment that is happening now in the middle, each one
+  replacing the last as the run goes on. Nothing to click; the only buttons are the intent form (with
+  `--wait`) and Approve. The beats: vendors reading the intent and their bids landing; the bids ranked by
+  FX-priced total cost; why the cheapest loses, with the cash forecast drawing itself; the approval, which
+  says exactly what the buyer agrees to; the card and its controls, with each charge and the reason Issuing
+  gave; the rebate counting up; at renewal the declined hike, the reopened auction and the message to the
+  incumbent; the deposit and the recheck. Small things show as a caption under the stage, and the chapter
+  strip at the bottom jumps back to any part.
 - `/vendor` (`web/vendor.html`) is a **vendor console**, one vendor at a time (switch at the top, or `?v=Vendor%20B`).
   Its agent sees the anonymous intent, its own bid and rank, whether it was picked, the deal the buyer's card is
   bound to, its own charges (cleared, or declined for billing above what the buyer approved), its fee in escrow
