@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="outbid.css">
+<script src="brands.js"></script>
 <style>
   .top { padding: 48px 0 8px; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
   .top h1 { font-size: 28px; font-weight: 500; letter-spacing: -0.03em; line-height: 1.2; margin: 0; display: flex; align-items: center; gap: 12px; }
@@ -101,18 +102,17 @@
   const show = (id) => { $(id).hidden = false; $("empty").hidden = true; };
 
   function header() {
-    $("who").textContent = me;
-    $("hue").style.background = colorOf(me);
+    $("who").textContent = brandName(me);
+    $("hue").replaceWith(Object.assign(brandMark(me, 22), { id: "hue" }));
     const sw = $("switch");
     sw.replaceChildren();
     for (const v of vendors) {
       const b = el("button", v === me ? "on" : "", null);
-      const i = el("i"); i.style.background = colorOf(v);
-      b.append(i, v);
+      b.append(brandMark(v, 14), brandName(v));
       b.onclick = () => { me = v; history.replaceState(null, "", `?v=${encodeURIComponent(v)}`); render(); };
       sw.append(b);
     }
-    document.title = `Outbid · ${me}`;
+    document.title = `Outbid · ${brandName(me)}`;
   }
 
   function reset() {

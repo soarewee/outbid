@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="outbid.css">
+<script src="brands.js"></script>
 <style>
   /* One screen. The purchase at the top, the current moment in the middle, the parts at the bottom.
      Nothing scrolls; the moments replace each other inside a part, and the run stops between parts. */
@@ -43,7 +44,13 @@
   .moment > .card { margin: 0; animation: none; }
   .card .title { font-size: 22px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.25; margin: 0 0 6px; }
   .card .lead { font-size: 15px; line-height: 1.55; color: var(--ink2); margin: 0 0 16px; }
-  .card .lead b { color: var(--ink); }
+  .card .lead b { color: var(--ink); font-weight: 500; background-image: linear-gradient(var(--mark), var(--mark)); background-repeat: no-repeat; background-size: 0% 100%; background-position: 0 0; padding: .05em .15em; margin: 0 -.15em; border-radius: 4px; -webkit-box-decoration-break: clone; box-decoration-break: clone; animation: sweep .55s cubic-bezier(.2,.7,.2,1) both; }
+  @keyframes sweep { to { background-size: 100% 100%; } }
+  /* the thin bar at the top of a moment fills over the time it stays, so a pause reads as a pause */
+  .moment > .card { position: relative; }
+  .tbar { position: absolute; left: 20px; right: 20px; top: 0; height: 2px; background: var(--line); border-radius: 0 0 2px 2px; overflow: hidden; }
+  .tbar i { display: block; height: 100%; width: 0; background: var(--ink3); }
+  .tbar[hidden] { display: none; }
   .card .lead:last-child { margin-bottom: 0; }
   .in { animation: rise .45s cubic-bezier(.2,.7,.2,1) both; }
   .pop { animation: pop .4s cubic-bezier(.2,.9,.3,1.3) both; }
@@ -139,7 +146,12 @@
 
   /* the card: once, and big. Its controls lock in one by one, and it reacts to every charge. */
   .cardrow { display: flex; gap: 28px; align-items: center; flex-wrap: wrap; }
-  .cardrow .vcard { width: 300px; animation: flip .8s cubic-bezier(.2,.7,.2,1) both; animation-delay: .15s; transition: box-shadow .3s, filter .5s, opacity .5s; }
+  /* the card tilts with the pointer, and sways a little when left alone */
+  .tilt { perspective: 900px; flex: none; animation: sway 7s ease-in-out infinite; animation-delay: 1s; transform-style: preserve-3d; transition: transform .12s ease-out; }
+  .tilt.live { animation: none; }
+  @keyframes sway { 0%, 100% { transform: rotateY(-5deg) rotateX(2deg); } 50% { transform: rotateY(6deg) rotateX(-2deg); } }
+  .cardrow .vcard { width: 300px; animation: flip .8s cubic-bezier(.2,.7,.2,1) both; animation-delay: .15s; transition: box-shadow .3s, filter .5s, opacity .5s; cursor: default; }
+  @media (prefers-reduced-motion: reduce) { .tilt { animation: none; } }
   .cardrow .vcard .n { font-size: 18px; }
   .vcard.ok { box-shadow: 0 0 0 4px var(--green-soft), var(--shadow-lg); }
   .vcard.no { box-shadow: 0 0 0 4px var(--red-soft), var(--shadow-lg); animation: shake .45s; }
@@ -154,7 +166,7 @@
   .rule .v code { font-family: var(--mono); font-size: 12px; color: var(--ink3); margin-left: 6px; }
   .rule.else { display: block; font-size: 13.5px; line-height: 1.5; color: var(--ink2); padding-top: 8px; border-top: 1px solid var(--line); }
   .rule.else b { color: var(--ink); font-weight: 500; }
-  @media (max-width: 560px) { .cardrow .vcard { width: 100%; max-width: 330px; } }
+  @media (max-width: 560px) { .tilt { width: 100%; max-width: 330px; } .cardrow .vcard { width: 100%; } }
   .receipt { margin-top: 16px; padding-top: 6px; border-top: 1px solid var(--line); }
   .receipt:empty { display: none; }
   .receipt .line { padding: 9px 0; }
@@ -272,6 +284,7 @@
 
   const state = { slot: {}, vendors: [], currency: "USD", term: 12, cash: 0, floor: 0, dues: "", scene: 0, sceneTitle: "", cards: {}, lastCard: null, released: null, rebates: 0, approvals: 0, later: false, done: false, replay: false, finale: null };
   const colorOf = (vendor) => `var(--s${state.slot[vendor] ?? 1})`;
+  const B = brandName; // "Vendor B" is the id the run uses; the page shows its brand
 
   // ─── the stage ───
   // The run is a sequence of moments. Each one takes the whole stage, stays at least long enough to be
@@ -287,6 +300,7 @@
     const c = el("div", `card ${kind ?? ""}`);
     if (title) c.append(el("h2", "title", title));
     if (lead?.length) { const p = el("p", "lead"); p.append(...lead); c.append(p); }
+    const tbar = el("div", "tbar"); tbar.append(el("i")); tbar.hidden = true; c.prepend(tbar);
     node.append(c);
     const m = { node, card: c, scene: state.scene, sceneTitle: state.sceneTitle, later: state.later, dwell, hold: false, onShow: [], shownAt: 0 };
     moments.push(m);
@@ -302,11 +316,21 @@
   function schedule() {
     clearTimeout(timer);
     const cur = moments[shown], next = moments[shown + 1];
+    if (cur?.hold) tbar(cur, 0);
     if (!next || cur?.hold) { hideNext(); return; } // nothing to move on to yet, or a question still open
     const wait = cur ? Math.max(0, shownAt + cur.dwell - Date.now()) : 0;
+    if (cur) tbar(cur, wait);
     if (cur && next.scene !== cur.scene && !cur.open) { timer = setTimeout(() => offerNext(cur, next), Math.min(wait, 4000)); return; }
     hideNext();
     timer = setTimeout(() => show(shown + 1), wait);
+  }
+  function tbar(m, wait) {
+    const bar = m.card.querySelector(".tbar"), i = bar.firstChild;
+    bar.hidden = m.hold || m.dwell <= 0;
+    if (bar.hidden) return;
+    const elapsed = Date.now() - shownAt, total = Math.max(1, elapsed + wait);
+    i.style.transition = "none"; i.style.width = `${Math.min(100, (elapsed / total) * 100)}%`;
+    requestAnimationFrame(() => requestAnimationFrame(() => { i.style.transition = `width ${wait}ms linear`; i.style.width = "100%"; }));
   }
   // The Continue button, between parts. It names what comes next; at the end of the purchase it says so.
   let offered = null;
@@ -334,6 +358,7 @@
     const m = moments[i];
     shown = i; shownAt = Date.now(); m.shownAt = shownAt;
     m.node.classList.remove("out"); m.node.scrollTop = 0;
+    if (!m.swept) { m.swept = true; m.node.querySelectorAll(".lead b").forEach((b, k) => (b.style.animationDelay = `${0.7 + k * 0.9}s`)); }
     stage.append(m.node);
     const more = () => stage.classList.toggle("more", m.node.scrollHeight - m.node.scrollTop > m.node.clientHeight + 6);
     m.node.onscroll = more;
@@ -439,11 +464,11 @@
     $("figures").hidden = false;
     $("dot").classList.add("live");
     status("Vendors are bidding", "info", true);
-    waiting = moment({ title: "Your intent is out. Vendors are looking at it.", lead: ["They see the category, the seats, the budget and the term. Not who you are, not your cash, not each other's bids."], kind: "waiting", dwell: 3500 });
+    waiting = moment({ title: "Your intent is out. Vendors are looking at it.", lead: ["They see the category, the seats, the budget and the term. ", el("b", null, "Not who you are, not your cash"), ", not each other's bids."], kind: "waiting", dwell: 3500 });
     waiting.slots = {};
     for (const v of e.vendors) {
       const s = el("div", "slot"); const i = el("i"); i.style.background = colorOf(v);
-      s.append(i, el("span", "who", v), el("span", "what pulse", "reading the intent…"));
+      s.append(brandMark(v, 16), el("span", "who", B(v)), el("span", "what pulse", "reading the intent…"));
       waiting.card.append(s);
       waiting.slots[v] = s;
     }
@@ -475,12 +500,12 @@
   function note(e) {
     if (/^Pick: /.test(e.text)) return; // the ranking already shows who was picked
     const m = e.text.match(/^Switch: (.*) → (.*)$/);
-    if (m) { caption("Switching from ", el("b", null, m[1]), " to ", el("b", null, m[2]), "."); return; }
-    caption(e.text);
+    if (m) { caption("Switching from ", el("b", null, B(m[1])), " to ", el("b", null, B(m[2])), "."); return; }
+    caption(e.text.replace(/Vendor [A-Z]/g, B));
   }
   function deposit(e) {
     const from = state.cash, to = state.cash + e.amount;
-    const m = moment({ title: `${e.payer} just paid`, lead: [`A customer payment lands in the company's Global Account. Nothing about the intent changed, but cash goes from ${whole(from, e.currency)} to ${whole(to, e.currency)}, so the agent re-runs the same rules on the new number.`], kind: "big", dwell: 4500 });
+    const m = moment({ title: `${e.payer} just paid`, lead: [`A customer payment lands in the company's Global Account. Nothing about the intent changed, but cash goes from ${whole(from, e.currency)} to ${whole(to, e.currency)}, so `, el("b", null, "the agent re-runs the same rules"), " on the new number."], kind: "big", dwell: 4500 });
     const hero = el("div", "hero num", `+${whole(0, e.currency)}`);
     m.card.append(hero);
     whenShown(m, () => countUp(hero, e.amount, (n) => `+${whole(n, e.currency)}`, 1100), 300);
@@ -494,7 +519,7 @@
     const c = state.lastCard?.approval, cur = state.currency;
     const m = moment({
       title: "That's the purchase.",
-      lead: [c ? `Three bids, one approval, and a card that can only pay ${c.vendor} ${money(c.amount, c.currency)} ${cycleWord(c.cycle)} at a software vendor. ${money(state.rebates, cur)} came back from the vendor's fee. Nothing else for you to do.` : "Nothing else for you to do."],
+      lead: [c ? `Three bids, one approval, and a card that can only pay ${B(c.vendor)} ${money(c.amount, c.currency)} ${cycleWord(c.cycle)} at a software vendor. ${money(state.rebates, cur)} came back from the vendor's fee. Nothing else for you to do.` : "Nothing else for you to do."],
       kind: "finale", dwell: 0,
     });
     m.hold = true;
@@ -502,7 +527,7 @@
     [
       ["Intent posted anonymously"],
       [`${state.vendors.length} bids, ranked on total cost and the reserve`],
-      c && [`Approved: ${c.vendor}, ${money(c.amount, c.currency)} ${cycleWord(c.cycle)}`],
+      c && [`Approved: ${B(c.vendor)}, ${money(c.amount, c.currency)} ${cycleWord(c.cycle)}`],
       state.lastCard && [`Card •••• ${state.lastCard.last4}, its controls enforced by the network`],
       state.rebates && [`${money(state.rebates, cur)} back, from the vendor's prepaid fee`],
     ].filter(Boolean).forEach(([t], i) => { const r = el("div", "r"); r.style.animationDelay = `${0.3 + i * 0.18}s`; const ic = el("span", "ic"); ic.append(icon("check")); r.append(ic, el("b", null, t)); recap.append(r); });
@@ -516,7 +541,7 @@
     edge.append(list, play);
     m.card.append(recap, edge);
     m.list = list;
-    whenShown(m, () => status(c ? `Done · paying ${c.vendor}` : "Done", "good"));
+    whenShown(m, () => status(c ? `Done · paying ${B(c.vendor)}` : "Done", "good"));
     state.finale = m;
   }
 
@@ -534,9 +559,9 @@
     if (e.key === "opening") lead.push(`Ranked by total cost over ${state.term} months, priced with Airwallex FX. `);
     else if (e.key === "reopened") lead.push(`The incumbent's new price goes back into the auction against fresh bids, on today's balance of ${whole(e.cash, e.currency)}. `);
     else lead.push(`Same rules, re-run on ${whole(e.cash, e.currency)}. `);
-    if (winner) lead.push(el("b", null, `${winner.vendor} ${e.key === "reopened" ? "is now lowest" : "wins"} at ${money(winner.price.amount, winner.price.currency)} ${cycleWord(winner.billing)}`), ` (${whole(winner.total, e.currency)} in total). `);
+    if (winner) lead.push(el("b", null, `${B(winner.vendor)} ${e.key === "reopened" ? "is now lowest" : "wins"} at ${money(winner.price.amount, winner.price.currency)} ${cycleWord(winner.billing)}`), ` (${whole(winner.total, e.currency)} in total). `);
     if (breaker && winner && breaker.vendor !== winner.vendor) {
-      why.push(`${breaker.vendor} takes ${whole(breaker.total, e.currency)} on day one. With ${state.dues || "the bills already due"}, cash would be down to `, el("b", null, `${whole(breaker.cashPath.balance, e.currency)} by day ${breaker.cashPath.breachDay}`), `, under your ${whole(e.floor, e.currency)} floor. `);
+      why.push(`${B(breaker.vendor)} takes ${whole(breaker.total, e.currency)} on day one. With ${state.dues || "the bills already due"}, cash would be down to `, el("b", null, `${whole(breaker.cashPath.balance, e.currency)} by day ${breaker.cashPath.breachDay}`), `, under your ${whole(e.floor, e.currency)} floor. `);
       if (fits.length) why.push(`Paying monthly spreads the same spend out and never drops below ${whole(Math.min(...fits.map((x) => x.cashPath.low.balance)), e.currency)}. `);
       why.push("So the cheapest bid loses, and the cheapest one that keeps the floor wins. The rule is code; the agent only explains it.");
     } else if (winner && cheapest.vendor === winner.vendor && e.key === "recheck") {
@@ -551,8 +576,7 @@
     const list = el("div", "bids");
     bids.forEach((bid, i) => {
       const row = el("div", "bid"); row.style.animationDelay = `${0.25 + i * 0.18}s`;
-      const name = el("div", "name"); const dot = el("i"); dot.style.background = colorOf(bid.vendor);
-      name.append(el("span", "rank", `#${i + 1}`), dot, bid.vendor);
+      const name = el("div", "name"); name.append(el("span", "rank", `#${i + 1}`), brandMark(bid.vendor, 16), B(bid.vendor));
       const price = el("div", "price num");
       price.append(money(bid.price.amount, bid.price.currency), el("small", null, perShort(bid.billing)));
       const fx = bid.price.currency === e.currency ? "" : ` · ${bid.price.currency} at ${bid.fx.toFixed(4)}`;
@@ -580,7 +604,7 @@
     // The cash forecast is the whole argument the first time, so it gets its own beat and draws itself.
     // Afterwards it is there for whoever wants it.
     if (e.key === "opening") {
-      const w = moment({ title: breaker ? `Why not ${breaker.vendor}? Cash.` : "Every bid keeps the reserve", lead: why, kind: "why", dwell: 9000 });
+      const w = moment({ title: breaker ? `Why not ${B(breaker.vendor)}? Cash.` : "Every bid keeps the reserve", lead: why, kind: "why", dwell: 9000 });
       w.card.append(cashChart(e, withPath, 0.5));
       whenShown(m, () => status("Picking", "info", true));
     } else c.append((() => { const d = el("details", "more"); d.append(el("summary", null, `Cash over the next ${horizon} days, under each bid`), cashChart(e, withPath, 0)); return d; })());
@@ -589,7 +613,7 @@
   function cashChart(e, bids, delay) {
     const wrap = el("div");
     const keys = el("div", "keys");
-    for (const bid of bids) { const s = el("span"); const i = el("i"); i.style.background = colorOf(bid.vendor); s.append(i, bid.vendor); keys.append(s); }
+    for (const bid of bids) { const s = el("span"); const i = el("i"); i.style.background = colorOf(bid.vendor); s.append(i, B(bid.vendor)); keys.append(s); }
     const f = el("span"); f.append(el("i", "floor"), `Reserve floor ${whole(e.floor, e.currency)}`); keys.append(f);
     wrap.append(keys);
 
@@ -646,7 +670,7 @@
       tip.replaceChildren(el("div", "d", day === 0 ? "today" : `day ${day}`));
       for (const bid of bids) {
         const r = el("div", "r"); const i = el("i"); i.style.background = colorOf(bid.vendor);
-        const name = el("span"); name.append(i, bid.vendor);
+        const name = el("span"); name.append(i, B(bid.vendor));
         r.append(name, el("b", "num", whole(bid.cashPath.path[Math.min(day, bid.cashPath.path.length - 1)], e.currency)));
         tip.append(r);
       }
@@ -665,14 +689,14 @@
   function approval(e) {
     const first = !state.approvals++;
     const m = moment({
-      title: `Approve ${e.terms.vendor} at ${money(e.terms.amount, e.terms.currency)} ${cycleWord(e.terms.cycle)}?`,
-      lead: [first ? "This is all you are asked to do. The card will only be able to pay exactly this: this vendor, this amount, this currency, nothing broader." : "New terms mean a new card with these exact controls. The old card is frozen the moment it is issued."],
+      title: `Approve ${B(e.terms.vendor)} at ${money(e.terms.amount, e.terms.currency)} ${cycleWord(e.terms.cycle)}?`,
+      lead: first ? ["This is all you are asked to do. The card will only be able to pay ", el("b", null, "exactly this"), ": this vendor, this amount, this currency, nothing broader."] : ["New terms mean a new card with these exact controls. ", el("b", null, "The old card is frozen"), " the moment it is issued."],
       kind: "approval", dwell: 2600,
     });
     m.hold = true; // nothing moves on until the decision is in
     const terms = el("div", "terms");
     for (const [l, v] of [
-      ["Vendor", e.terms.vendor],
+      ["Vendor", B(e.terms.vendor)],
       ["Amount", `${money(e.terms.amount, e.terms.currency)} ${cycleWord(e.terms.cycle)}`],
       ["Currency", e.terms.currency],
       ["Merchant", `Only ${MCC[e.terms.merchantCategory] ?? `category ${e.terms.merchantCategory}`}`],
@@ -733,7 +757,7 @@
     if (old) {
       m = moment({
         title: "New terms, new card.",
-        lead: [`${a.vendor} at ${money(a.amount, a.currency)} ${cycleWord(a.cycle)}${old.approval ? `, instead of ${money(old.approval.amount, old.approval.currency)}` : ""}. The new card's controls are the new terms. The old card is frozen, so anything still billed to it is declined by the network.`],
+        lead: [`${B(a.vendor)} at ${money(a.amount, a.currency)} ${cycleWord(a.cycle)}${old.approval ? `, instead of ${money(old.approval.amount, old.approval.currency)}` : ""}. The new card's controls are the new terms. The old card is frozen, so anything still billed to it is declined by the network.`],
         kind: "cardswap", dwell: 5000,
       });
       const row = el("div", "swap");
@@ -747,14 +771,14 @@
     } else {
       m = moment({
         title: "Your approval, issued as a card.",
-        lead: ["An Airwallex virtual card whose controls are exactly the terms you approved, checked by the network on every charge before money moves. Not a policy to follow: a card that cannot be used any other way."],
+        lead: ["An Airwallex virtual card whose controls are exactly the terms you approved, ", el("b", null, "checked by the network on every charge"), ", before money moves. Not a policy to follow: ", el("b", null, "a card that cannot be used any other way"), "."],
         kind: "card", dwell: 6000,
       });
       const row = el("div", "cardrow");
       const v = el("div", "vcard");
       const t = el("div", "t"); const st = el("span", "state", e.status); t.append(el("span", null, "Airwallex · virtual"), st);
       const n = el("div", "n", (e.number ?? "****************").replace(/\*{4}/g, "•••• ").trim());
-      const b = el("div", "b"); const fr = el("div", "for"); fr.append("pays only ", el("b", null, a.vendor));
+      const b = el("div", "b"); const fr = el("div", "for"); const nm = el("b"); nm.append(brandMark(a.vendor, 15), " ", B(a.vendor)); fr.append("pays only ", nm);
       b.append(fr, el("span", "brand", e.brand ?? ""));
       v.append(t, n, b);
       card.nodes.push(v); card.sts.push(st);
@@ -773,16 +797,24 @@
       const rest = el("div", "rule else"); rest.style.animationDelay = "1.9s";
       rest.append("Anything else, ", el("b", null, "declined by the network"), ", with the reason. A higher bill, another currency, another kind of merchant.");
       rules.append(rest);
-      row.append(v, rules);
+      const tilt = el("div", "tilt"); tilt.append(v);
+      tilt.addEventListener("pointermove", (ev) => {
+        const r = tilt.getBoundingClientRect(), px = (ev.clientX - r.left) / r.width, py = (ev.clientY - r.top) / r.height;
+        tilt.classList.add("live");
+        tilt.style.transform = `rotateY(${(px - 0.5) * 22}deg) rotateX(${(0.5 - py) * 16}deg)`;
+        v.style.setProperty("--mx", `${px * 100}%`); v.style.setProperty("--my", `${py * 100}%`);
+      });
+      tilt.addEventListener("pointerleave", () => { tilt.style.transform = ""; v.style.removeProperty("--mx"); v.style.removeProperty("--my"); setTimeout(() => tilt.classList.remove("live"), 300); });
+      row.append(tilt, rules);
       m.card.append(row, receipt);
     }
     card.m = m;
     state.cards[e.id] = card;
     state.lastCard = card;
     whenShown(m, () => {
-      const pay = $("paying"); pay.replaceChildren(`${a.vendor} ${money(a.amount, a.currency)}`, el("small", null, perShort(a.cycle)));
+      const pay = $("paying"); pay.replaceChildren(`${B(a.vendor)} ${money(a.amount, a.currency)}`, el("small", null, perShort(a.cycle)));
       $("payfig").hidden = false;
-      status(`Active · paying ${a.vendor}`, "good", true);
+      status(`Active · paying ${B(a.vendor)}`, "good", true);
     }, 600);
   }
   function cardStatus(e) {
@@ -799,7 +831,7 @@
   function charge(e) {
     const hike = e.outcome === "declined" && e.detail === "LIMIT_EXCEEDED";
     const l = el("div", "line");
-    const who = el("div", "who", e.merchant);
+    const who = el("div", "who", B(e.merchant));
     const how = el("div", "how", `${e.label}${e.txId ? ` · ${e.txId.slice(0, 8)}` : ""}`);
     const amt = el("div", "amt num", money(e.amount, e.currency));
     const res = el("div", `res ${e.outcome}`);
@@ -813,10 +845,10 @@
     if (hike || (card && card.m.scene !== state.scene)) {
       const old = !hike && card !== state.lastCard;
       const m = moment({
-        title: `${e.merchant} billed ${money(e.amount, e.currency)}${old ? ` on the old card •••• ${card.last4}` : ""}. The card said ${e.outcome === "approved" ? "yes" : "no"}.`,
-        lead: [hike ? "It is approved for less, so Airwallex Issuing declined the renewal hike with the limit the approval set. Nobody had to notice. Outbid takes that as a reopened auction."
-          : e.outcome === "approved" ? "Within the approved terms, so Airwallex Issuing cleared it at authorization."
-          : `${old ? "That card was frozen when the new one was issued, so" : "So"} Airwallex Issuing declined it at authorization: ${REASON[e.detail] ?? e.detail}. Nothing to clean up.`],
+        title: `${B(e.merchant)} billed ${money(e.amount, e.currency)}${old ? ` on the old card •••• ${card.last4}` : ""}. The card said ${e.outcome === "approved" ? "yes" : "no"}.`,
+        lead: hike ? ["It is approved for less, so ", el("b", null, "Airwallex Issuing declined the renewal hike"), " with the limit the approval set. Nobody had to notice. Outbid takes that as ", el("b", null, "a reopened auction"), "."]
+          : e.outcome === "approved" ? ["Within the approved terms, so Airwallex Issuing cleared it at authorization."]
+          : [`${old ? "That card was frozen when the new one was issued, so" : "So"} Airwallex Issuing declined it at authorization: `, el("b", null, REASON[e.detail] ?? e.detail), ". Nothing to clean up."],
         kind: "receipt", dwell: 5500,
       });
       const r = el("div", "receipt"); r.append(l); m.card.append(r);
@@ -842,11 +874,11 @@
     const link = (url, hash) => { const a = el("a", null, `${hash.slice(0, 10)}… on Metal`); a.href = url; a.target = "_blank"; a.rel = "noopener"; return a; };
     const row = (box, left, right, cls) => { const s = el("div", `s ${cls ?? ""}`); s.append(el("span", null, left), right); box.append(s); };
     if (e.step === "prepaid") {
-      caption(el("b", null, e.vendor), ` put its ${money(e.amount, e.currency)} acquisition fee in escrow. It is released only when a charge clears on your card. `, link(e.url, e.hash));
+      caption(el("b", null, B(e.vendor)), ` put its ${money(e.amount, e.currency)} acquisition fee in escrow. It is released only when a charge clears on your card. `, link(e.url, e.hash));
       return;
     }
     if (e.step === "released") {
-      const m = moment({ title: `${money(e.rebate, e.currency)} back to you`, lead: [`The cleared charge is the proof of sale, reported by the network rather than by either party. The escrow splits ${e.vendor}'s ${money(e.amount, e.currency)} fee in one transaction: `, el("b", null, `${money(e.rebate, e.currency)} to you`), `, ${money(e.outbidFee, e.currency)} to Outbid.`], kind: "big", dwell: 6000 });
+      const m = moment({ title: `${money(e.rebate, e.currency)} back to you`, lead: [`The cleared charge is `, el("b", null, "the proof of sale"), `, reported by the network rather than by either party. The escrow splits ${B(e.vendor)}'s ${money(e.amount, e.currency)} fee in one transaction: `, el("b", null, `${money(e.rebate, e.currency)} to you`), `, ${money(e.outbidFee, e.currency)} to Outbid.`], kind: "big", dwell: 6000 });
       const hero = el("div", "hero num", money(0, e.currency));
       const split = el("div", "split");
       const r = el("i"); r.style.flex = String(e.rebate); r.style.background = "var(--blue)";
@@ -874,11 +906,11 @@
 
   // ─── the message to the incumbent ───
   function offer(e) {
-    const m = moment({ title: `Outbid asks ${e.to} to match ${money(e.amount, e.currency)}`, lead: [`${e.to} is the incumbent and ${e.from} came in lower. ${e.matched ? `${e.to} matches, so nothing has to move.` : `${e.to} passes, so you switch.`}`], kind: "offer", dwell: 5000 });
+    const m = moment({ title: `Outbid asks ${B(e.to)} to match ${money(e.amount, e.currency)}`, lead: [`${B(e.to)} is the incumbent and ${B(e.from)} came in lower. ${e.matched ? `${B(e.to)} matches, so nothing has to move.` : `${B(e.to)} passes, so you switch.`}`], kind: "offer", dwell: 5000 });
     const box = el("div", "msg");
-    const out = el("div", "bubble out", `${e.from} costs ${money(e.amount, e.currency)} per ${e.per}. Match, or the company switches.`);
+    const out = el("div", "bubble out", `${B(e.from)} costs ${money(e.amount, e.currency)} per ${e.per}. Match, or the company switches.`);
     const back = el("div", "bubble in"); back.style.animationDelay = "1.4s";
-    back.append(el("span", "from", e.to), e.matched ? `We match: ${money(e.matched.amount, e.matched.currency)} per ${e.per}.` : "We pass.");
+    back.append(el("span", "from", B(e.to)), e.matched ? `We match: ${money(e.matched.amount, e.matched.currency)} per ${e.per}.` : "We pass.");
     box.append(out, back);
     m.card.append(box);
   }

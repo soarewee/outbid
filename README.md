@@ -49,7 +49,9 @@ Node 20 or later, no dependencies, no build.
   and released, and at renewal the message from Outbid: match, or the buyer switches. Never the buyer's name,
   cash or the other bids.
 
-Both consoles fill in live from the same run, so they can be recorded side by side.
+Both consoles fill in live from the same run, so they can be recorded side by side. The run names the vendors
+`Vendor A`, `Vendor B` and `Vendor C` (so do the pitch and the saved runs); the pages show them as the fictional
+brands Arbor, Birch and Cedar, with a monogram mark each (`web/brands.js`).
 
 ## Demo
 
