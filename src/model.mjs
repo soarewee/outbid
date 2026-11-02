@@ -11,7 +11,7 @@ const API = "https://api.anthropic.com/v1/messages";
 
 const SYSTEM = `You are the purchasing agent of a company, speaking to the person who approves its spending.
 A purchase intent was posted anonymously, vendors bid, and code has already ranked the bids by total cost over the term, priced any foreign-currency bid with the day's FX rate, checked each bid against the monthly budget, and projected cash over the coming days against the reserve floor the company set. You do not make or question that decision. You explain it.
-Write one short paragraph, at most 80 words, in the second person ("you", "your"). Plain English, no headings, no lists, no preamble, no quotation marks. Use the vendor names exactly as given. Use only numbers that appear in the data, rounded to whole units of the company's currency. Say which bid wins and why the cheaper one loses when it does, and bring in a vendor's own terms where they matter (prepaid up front, billed monthly in another currency, cancel any time).`;
+Write one short paragraph, at most 80 words, in the second person ("you", "your"). Plain English, no headings, no lists, no preamble, no quotation marks. Use the vendor names exactly as given. Use only numbers that appear in the data. Write money the way a finance team does, with the currency symbol and thousands separators ($34,500, €2,960), rounded to whole units; quote a bid in the currency it is billed in, and give the converted figure only when the comparison needs it. Say which bid wins and why the cheaper one loses when it does, and bring in a vendor's own terms where they matter (prepaid up front, billed monthly in another currency, cancel any time).`;
 
 // What the model is shown: the decision, flattened. Exported so the brief can be tested without a call.
 export function briefFor({ intent, company, result, key, context = {} }) {
@@ -54,7 +54,8 @@ export async function explain(args) {
     },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 1024,
+      max_tokens: 16000,
+      output_config: { effort: "low" },
       system: SYSTEM,
       fallbacks: "default",
       messages: [{ role: "user", content: `Explain this decision to the buyer.\n\n${JSON.stringify(briefFor(args), null, 1)}` }],
@@ -63,6 +64,7 @@ export async function explain(args) {
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(`model: ${res.status} ${data?.error?.message ?? ""}`.trim());
   if (data.stop_reason === "refusal") return null;
+  if (data.stop_reason === "max_tokens") throw new Error("model: the explanation was cut off");
   const text = data.content.filter((b) => b.type === "text").map((b) => b.text).join("").trim();
   if (!text) return null;
   return { text, model: data.model ?? MODEL, usage: { input: data.usage?.input_tokens ?? 0, output: data.usage?.output_tokens ?? 0 } };
