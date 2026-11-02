@@ -9,6 +9,7 @@ import { decide } from "./auction.mjs";
 import { available } from "./funds.mjs";
 import { approvalFor } from "./approval.mjs";
 import { approve, cardFor, chargeAndPrint, load, money, printRanking } from "./cli.mjs";
+import { explain } from "./model.mjs";
 
 const intent = load("intent");
 const company = load("company");
@@ -21,7 +22,7 @@ console.log(`Intent: ${intent.category}, ${intent.quantity} units, up to ${money
 console.log(`Cash: ${money(cash, company.currency)} available, reserve floor ${money(company.policy.reserveFloor, company.currency)}\n`);
 
 const result = await decide({ intent, company, cash, bids: await collectBids(intent), rate: airwallexRates(aw) });
-printRanking(result, company.currency);
+printRanking(result, company.currency, { key: "opening", explanation: await explain({ intent, company, result, key: "opening" }).catch(() => null) });
 
 if (!result.winner) {
   console.log("\nNo bid fits the budget and reserve.");

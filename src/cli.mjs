@@ -16,7 +16,7 @@ let stage = noStage;
 export const useStage = (s) => (stage = s);
 
 // One line per ranked bid: price, FX, total over the term, and why it fits or doesn't.
-export function printRanking(result, currency, { key, title } = {}) {
+export function printRanking(result, currency, { key, title, explanation = null } = {}) {
   for (const bid of result.ranked) {
     const fx = bid.price.currency === currency ? "" : ` (at ${bid.fx})`;
     const why = bid.verdict === "breaks-reserve"
@@ -24,9 +24,11 @@ export function printRanking(result, currency, { key, title } = {}) {
       : bid.verdict === "fits" ? `fits, lowest cash ${money(bid.cashPath.low.balance, currency)} on day ${bid.cashPath.low.day}` : bid.verdict;
     console.log(`${bid.vendor}: ${money(bid.price.amount, bid.price.currency)} ${bid.billing}${fx} → ${money(bid.total, currency)} over term · ${why}`);
   }
+  if (explanation) console.log(`\nAgent (${explanation.model}): ${explanation.text}`);
   stage.emit("ranking", {
     key,
     title,
+    explanation,
     currency,
     cash: result.cash,
     floor: result.floor,

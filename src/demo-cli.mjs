@@ -23,6 +23,7 @@ import { approvalFor } from "./approval.mjs";
 import { freezeCard } from "./issuing.mjs";
 import { openStage } from "./stage.mjs";
 import { approve, cardFor, chargeAndPrint, load, money, printRanking, useStage } from "./cli.mjs";
+import { MODEL, explain } from "./model.mjs";
 
 let intent = load("intent");
 const company = load("company");
@@ -44,7 +45,19 @@ if (process.argv.includes("--wait")) {
 }
 await aw.login();
 const rate = airwallexRates(aw);
-const run = { scenes: [], charges: [], settlements: [] };
+const run = { scenes: [], charges: [], settlements: [], model: process.env.ANTHROPIC_API_KEY ? MODEL : null, explanations: [] };
+// The agent explains each decision in its own words; the run goes on without it if the model is unavailable.
+async function voice(args) {
+  try {
+    const explanation = await explain(args);
+    if (explanation) run.explanations.push({ key: args.key, ...explanation });
+    else if (!run.model) console.log("(No ANTHROPIC_API_KEY, so the agent's explanation is the console's own wording.)");
+    return explanation;
+  } catch (error) {
+    console.log(`(The model is unavailable, ${error.message}; the console falls back to its own wording.)`);
+    return null;
+  }
+}
 
 // The story ends early when nothing fits or the human declines; the stage stays open either way.
 class Stop extends Error {}
@@ -114,7 +127,7 @@ async function play() {
   const bids = await collectBids(intent);
   for (const bid of bids) vendorSees(bid.vendor, `Sees the anonymous intent. Bids ${money(bid.price.amount, bid.price.currency)} ${bid.billing}.`);
   const opening = await decide({ intent, company, cash, bids, rate });
-  printRanking(opening, cur, { key: "opening", title: "Cheapest first over 12 months, priced with Airwallex FX, then checked against the reserve" });
+  printRanking(opening, cur, { key: "opening", title: "Cheapest first over 12 months, priced with Airwallex FX, then checked against the reserve", explanation: await voice({ intent, company, result: opening, key: "opening" }) });
   run.opening = opening;
   if (!opening.winner) stop("\nNo bid fits the budget and reserve.");
   say(`\nPick: ${opening.winner.vendor}`);
@@ -140,7 +153,7 @@ async function play() {
   stage.emit("cash", { available: cash });
   const renewal = await reauction({ intent, company, cash, rate, incumbent: current });
   console.log(`\nAuction reopened with ${current.vendor} at its renewal price:`);
-  printRanking(renewal.opened, cur, { key: "reopened", title: `The auction reopens with ${current.vendor} at its new price` });
+  printRanking(renewal.opened, cur, { key: "reopened", title: `The auction reopens with ${current.vendor} at its new price`, explanation: await voice({ intent, company, result: renewal.opened, key: "reopened", context: { incumbent: current.vendor, incumbentPriceBefore: current.price, incumbentPriceNow: renewal.hiked.price } }) });
   if (renewal.offer) {
     const per = current.billing === "annual" ? "year" : "month";
     const ask = `${renewal.offer.from} costs ${money(renewal.offer.amount, renewal.offer.currency)} per ${per}. Match, or the company switches.`;
@@ -167,7 +180,7 @@ async function play() {
   stage.emit("cash", { available: cash });
   // The bids standing after the renewal, including the incumbent's renewed price.
   const recheck = await decide({ intent, company, cash, bids: renewal.result.ranked, rate });
-  printRanking(recheck, cur, { key: "recheck", title: "The same rules, re-run on the new balance" });
+  printRanking(recheck, cur, { key: "recheck", title: "The same rules, re-run on the new balance", explanation: await voice({ intent, company, result: recheck, key: "recheck", context: { current: current.vendor, customerPayment: scenario.customerPayment } }) });
   run.recheck = recheck;
   if (!recheck.winner || recheck.winner.vendor === current.vendor) stop(`\nStaying with ${current.vendor}.`);
   say(`\nSwitch: ${current.vendor} → ${recheck.winner.vendor}`);

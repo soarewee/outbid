@@ -78,6 +78,16 @@ simply queued until the viewer gets there. `-- --wait` lets the buyer post the i
 saves its stage events with the request log in `out/`, and `npm run demo:replay -- out/demo-<time>.json` plays them
 back on the pages with the original pacing, without touching the sandbox (`--speed 2` to hurry).
 
+## The agent's voice
+
+The decision is code: `src/auction.mjs` ranks the bids by total cost over the term, prices foreign-currency bids
+with Airwallex FX, checks each against the monthly budget and projects cash against the reserve floor. What the
+model does is explain it. After each decision the demo sends the ranking, the cash projection and each vendor's own
+terms to Claude (`claude-opus-5-5`, over the Messages API, `src/model.mjs`) and asks for one short paragraph for
+the buyer; the buyer console shows it in the "Why not…" and re-auction moments, marked as the agent's words. Set
+`ANTHROPIC_API_KEY` in `.env` to turn it on; without it the console uses its own wording, and the decision is the
+same either way. The model never picks the winner.
+
 ## Fee escrow on Metal
 
 `contracts/` is a Foundry project with `FeeEscrow`, deployed on Metal testnet (chain 63825) at the address in
@@ -102,7 +112,8 @@ keeps projected cash (live balance minus upcoming obligations) above the reserve
 terms, it issues a virtual card whose controls are exactly those terms and simulates the first charge at the winning
 price. Add `-- --yes` to approve without a prompt. The run log is written to `out/`.
 
-Every charge outcome comes from Airwallex Issuing. An API error is reported as an error, never as a decline.
+Every charge outcome comes from Airwallex Issuing. An API error is reported as an error, never as a decline. With
+`ANTHROPIC_API_KEY` set, the agent's explanation of the ranking is written by Claude (see "The agent's voice").
 
 ## Sandbox notes
 

@@ -53,6 +53,7 @@
   .tbar[hidden] { display: none; }
   .card .lead:last-child { margin-bottom: 0; }
   .in { animation: rise .45s cubic-bezier(.2,.7,.2,1) both; }
+  .by { font-size: 12.5px; color: var(--ink3); margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--line); }
   .pop { animation: pop .4s cubic-bezier(.2,.9,.3,1.3) both; }
   @keyframes pop { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: none; } }
 
@@ -591,9 +592,15 @@
     } else if (winner && cheapest.vendor === winner.vendor) {
       why.push(`It is the cheapest, and it keeps cash above the ${whole(e.floor, e.currency)} floor.`);
     }
-    if (e.key !== "opening") lead.push(...why);
+    // The agent's own words when the model wrote them (the decision is still the code's), the template
+    // otherwise. Amounts and days in the model's text get the highlighter.
+    const spoken = e.explanation?.text ? e.explanation.text.replace(/Vendor [A-Z]/g, B).split(/([$€£][\d,.]+|\bday \d+|\bweek \d+)/).map((part, i) => (i % 2 ? el("b", null, part) : part)) : null;
+    const said = spoken ?? why;
+    const by = spoken ? el("div", "by", `In the agent's words: ${e.explanation.model}, reading the ranking and the vendors' terms. The ranking, the budget and the reserve check are code.`) : null;
+    if (e.key !== "opening") lead.push(...said);
     const title = { opening: e.winner ? `${bids.length} bids. ${e.winner} wins.` : `${bids.length} bids. None fits.`, reopened: `Re-auctioned: ${e.winner} is now lowest`, recheck: `Rechecked: ${e.winner} fits now` }[e.key] ?? e.title;
     const m = moment({ title, lead, kind: "ranking", dwell: e.key === "opening" ? 7000 : 6500 });
+    if (by && e.key !== "opening") m.card.append(by);
     const c = m.card;
     const list = el("div", "bids");
     bids.forEach((bid, i) => {
@@ -626,7 +633,8 @@
     // The cash forecast is the whole argument the first time, so it gets its own beat and draws itself.
     // Afterwards it is there for whoever wants it.
     if (e.key === "opening") {
-      const w = moment({ title: breaker ? `Why not ${B(breaker.vendor)}? Cash.` : "Every bid keeps the reserve", lead: why, kind: "why", dwell: 9000 });
+      const w = moment({ title: breaker ? `Why not ${B(breaker.vendor)}? Cash.` : "Every bid keeps the reserve", lead: said, kind: "why", dwell: 9000 });
+      if (by) w.card.append(by);
       w.card.append(cashChart(e, withPath, 0.5));
       whenShown(m, () => status("Picking", "info", true));
     } else c.append((() => { const d = el("details", "more"); d.append(el("summary", null, `Cash over the next ${horizon} days, under each bid`), cashChart(e, withPath, 0)); return d; })());
