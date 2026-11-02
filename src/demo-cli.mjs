@@ -51,10 +51,12 @@ class Stop extends Error {}
 const stop = (why) => {
   throw new Stop(why);
 };
-const scene = (n, title) => {
+// `later` marks the parts that happen months after the purchase (renewal, a deposit): the buyer console
+// plays the purchase first and offers those afterwards.
+const scene = (n, title, { later = false } = {}) => {
   console.log(`\n━━ ${n}. ${title}`);
-  run.scenes.push({ n, title });
-  stage.emit("scene", { n, title });
+  run.scenes.push({ n, title, later });
+  stage.emit("scene", { n, title, later });
 };
 const say = (text) => {
   console.log(text);
@@ -131,7 +133,7 @@ async function play() {
   scene(3, "The cleared charge releases the vendor's fee.");
   await settle(card, prepaid, run.charges[0]);
 
-  scene(4, "At renewal the price hike is declined, and re-auctioned.");
+  scene(4, "At renewal the price hike is declined, and re-auctioned.", { later: true });
   const hiked = renewalBid(current);
   run.charges.push(await chargeAt(card, `Renewal at ${money(hiked.price.amount, hiked.price.currency)}`, hiked.price.amount));
   cash = await available(aw, cur);
@@ -157,7 +159,7 @@ async function play() {
   if (current.vendor !== previous.vendor) vendorSees(previous.vendor, "Lost the renewal to a lower bid. The card is frozen.");
   run.charges.push(await chargeAt(card, "Renewed charge", card.approval.amount));
 
-  scene(5, "Cash recovers, so the annual deal comes back.");
+  scene(5, "Cash recovers, so the annual deal comes back.", { later: true });
   await deposit(aw, scenario.customerPayment.amount, scenario.customerPayment.payer);
   cash = await available(aw, cur);
   console.log(`${scenario.customerPayment.payer} paid ${money(scenario.customerPayment.amount, cur)}. Cash: ${money(cash, cur)}\n`);

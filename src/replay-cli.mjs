@@ -23,6 +23,8 @@ await stage.listening;
 console.log(`Stage: ${stage.url}/buyer and ${stage.url}/vendor  (waiting for a browser)`);
 await stage.viewer;
 
+// Tells the pages this is a replay, so the buyer console lets the reader give the recorded approvals.
+stage.emit("replay", { file, speed });
 let last = 0;
 // A replay never waits for the buyer: the intent that was posted is in the start event.
 for (const { type, t, ...data } of events.filter((e) => e.type !== "await-intent")) {
