@@ -2,7 +2,7 @@
 
 Your agent posts what it wants to buy. Vendors compete. The winning bid becomes the card.
 
-Outbid is a purchase-intent auction for company SaaS buying, built for the Airwallex Agentic Banking Hackathon
+Outbid is a purchase-intent auction for what a company buys on subscription, software or GPU capacity, built for the Airwallex Agentic Banking Hackathon
 (Kit 02: Intent-Bound Purchase Agent). A company's agent posts an anonymous intent, vendor agents bid, the agent
 picks a bid that respects the company's cash reserve, and the approved terms become an Airwallex virtual card
 that can only pay that vendor, that amount, in that currency.
@@ -57,7 +57,8 @@ brands Arbor, Birch and Cedar, with a monogram mark each (`web/brands.js`).
 
 `npm run demo` plays the whole story against the sandbox and Metal testnet. The demo first sets the USD balance to
 the scenario's starting cash (`data/scenario.json`) with a simulated deposit or a payout, so every run starts from
-the same place. Vendors price per seat, so the bids follow the seats in the intent; 10 seats gives the pitch's numbers.
+the same place. Vendors price per GPU, so the bids follow the quantity in the intent; 2 GPUs give the demo's numbers,
+and keep the annual prepay under the sandbox's card limit.
 
 1. Three vendors bid. The annual prepay is cheapest but would break the reserve in week 7, so the best monthly bid wins
    and the agent records when to reconsider.
@@ -112,6 +113,8 @@ Every charge outcome comes from Airwallex Issuing. An API error is reported as a
 - A simulated charge answers with `process_result` (`APPROVED` or `DECLINED`), `failure_reason` on a decline, and
   `card_transaction_id`, which is the proof of sale the escrow release records. Between Oct 26 and Oct 31 the
   endpoint answered every charge with `400 failed to process transaction`.
+- A card's per-transaction limit is capped per account: `GET /api/v1/issuing/config` reports `maximum: 50000` for USD
+  and EUR here, and a higher limit is rejected with `limit setting exceed max spending limit for the account`.
 - A `LOCAL` USD transfer to an ACH beneficiary has no fee and lowers the available balance as soon as it is created.
   Simulated deposits show up in the available balance right away.
 

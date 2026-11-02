@@ -1,43 +1,43 @@
 // Vendor bidding agents. Each one reads the anonymous intent and answers with a bid, or null to pass.
-// Prices are per seat, so the bid follows the seats the buyer asked for (10 seats gives the pitch's
-// numbers). At renewal the incumbent quotes its new price, and when the auction reopens it is shown
+// Prices are per GPU per billing period, so the bid follows the quantity the buyer asked for (2 GPUs
+// give the demo's numbers; the sandbox caps a card's per-transaction limit at $50,000). At renewal the incumbent quotes its new price, and when the auction reopens it is shown
 // the best competing offer and either matches it or lets the company switch.
 // They stand in for vendor-run agents; the auction only sees the bids they return.
 
 const vendors = [
   {
     name: "Vendor A",
-    sells: ["design-tool"],
-    perSeat: { amount: 135, currency: "USD" },
+    sells: ["gpu-h100"],
+    perUnit: { amount: 1700, currency: "USD" },
     billing: "monthly",
-    terms: (seats) => `${seats} seats, billed monthly, cancel any time.`,
+    terms: (n) => `${n}× H100 80GB, reserved, billed monthly, cancel any time.`,
     hike: 1650 / 1350,
-    // Matches any competing monthly cost down to its floor, per seat.
-    floorPerSeat: 125,
+    // Matches any competing monthly cost down to its floor, per GPU.
+    floorPerUnit: 1560,
   },
   {
     name: "Vendor B",
-    sells: ["design-tool"],
-    perSeat: { amount: 118, currency: "EUR" },
+    sells: ["gpu-h100"],
+    perUnit: { amount: 1480, currency: "EUR" },
     billing: "monthly",
-    terms: (seats) => `${seats} seats, billed monthly in EUR.`,
+    terms: (n) => `${n}× H100 80GB, reserved, billed monthly in EUR.`,
     hike: 1440 / 1180,
-    floorPerSeat: 110,
+    floorPerUnit: 1380,
   },
   {
     name: "Vendor C",
-    sells: ["design-tool"],
-    perSeat: { amount: 1380, currency: "USD" },
+    sells: ["gpu-h100"],
+    perUnit: { amount: 17250, currency: "USD" },
     billing: "annual",
-    terms: (seats) => `${seats} seats, 12 months prepaid up front.`,
+    terms: (n) => `${n}× H100 80GB, reserved, 12 months prepaid up front.`,
     hike: 1,
-    floorPerSeat: 1380,
+    floorPerUnit: 17250,
   },
 ];
 
 const byName = (name) => vendors.find((v) => v.name === name);
 const cents = (n) => Math.round(n * 100) / 100;
-const priceFor = (vendor, seats) => ({ amount: cents(vendor.perSeat.amount * seats), currency: vendor.perSeat.currency });
+const priceFor = (vendor, quantity) => ({ amount: cents(vendor.perUnit.amount * quantity), currency: vendor.perUnit.currency });
 
 export const vendorNames = vendors.map((v) => v.name);
 
@@ -48,10 +48,10 @@ export async function collectBids(intent) {
     bids.push({
       vendor: vendor.name,
       merchantCategory: intent.merchantCategory,
-      price: priceFor(vendor, intent.seats),
+      price: priceFor(vendor, intent.quantity),
       billing: vendor.billing,
-      terms: vendor.terms(intent.seats),
-      seats: intent.seats,
+      terms: vendor.terms(intent.quantity),
+      quantity: intent.quantity,
     });
   }
   return bids;
@@ -67,7 +67,7 @@ export function renewalBid(bid) {
 // stay at or above its floor, or passes (null).
 export async function askToMatch(bid, offer) {
   const vendor = byName(bid.vendor);
-  const floor = cents(vendor.floorPerSeat * (bid.seats ?? 10));
-  if (offer.currency !== vendor.perSeat.currency || offer.amount < floor) return null;
+  const floor = cents(vendor.floorPerUnit * (bid.quantity ?? 2));
+  if (offer.currency !== vendor.perUnit.currency || offer.amount < floor) return null;
   return { ...bid, price: { amount: offer.amount, currency: offer.currency }, terms: `Matched: ${bid.terms}` };
 }

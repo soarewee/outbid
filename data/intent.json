@@ -1,7 +1,11 @@
 {
-  "category": "design-tool",
-  "seats": 10,
-  "budget": { "amount": 1500, "currency": "USD", "per": "month" },
+  "category": "gpu-h100",
+  "quantity": 2,
+  "budget": {
+    "amount": 3750,
+    "currency": "USD",
+    "per": "month"
+  },
   "termMonths": 12,
-  "merchantCategory": "5734"
+  "merchantCategory": "7372"
 }

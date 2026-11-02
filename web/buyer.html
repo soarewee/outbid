@@ -261,15 +261,16 @@
     s.appendChild(svgEl("path", { d: kind === "check" ? "M3 8.5l3 3 7-7" : kind === "arrow" ? "M3 8h10M9 4l4 4-4 4" : "M4 4l8 8M12 4l-8 8" }));
     return s;
   };
-  const MCC = { 5734: "software vendors", 5812: "restaurants" };
+  const MCC = { 7372: "cloud and data-processing vendors", 5734: "software vendors", 5812: "restaurants" };
   const REASON = {
     LIMIT_EXCEEDED: "more than the approved amount",
-    MERCHANT_CATEGORY_NOT_ALLOWED: "not a software vendor",
+    MERCHANT_CATEGORY_NOT_ALLOWED: "not a compute vendor",
     CURRENCY_NOT_ALLOWED: "wrong currency",
     CARD_INACTIVE: "card is frozen",
   };
-  const CATEGORY = { "design-tool": "Design tool" };
-  const categoryName = (c) => CATEGORY[c] ?? c.replace(/-/g, " ");
+  const CATEGORY = { "gpu-h100": { name: "H100 GPU capacity", unit: "GPU" } };
+  const categoryName = (c) => CATEGORY[c]?.name ?? c.replace(/-/g, " ");
+  const qty = (intent) => { const u = CATEGORY[intent.category]?.unit ?? "unit"; return `${intent.quantity} ${u}${intent.quantity === 1 ? "" : "s"}`; };
   const cycleWord = (cycle) => (cycle === "annual" ? "per year, prepaid" : "per month");
   const perShort = (cycle) => (cycle === "annual" ? "/yr" : "/mo");
   const duesOf = (obligations, cur) => (obligations ?? []).map((o) => `${whole(o.amount, cur)} ${o.label.toLowerCase()}${o.everyDays ? ` every ${o.everyDays === 7 ? "week" : `${o.everyDays} days`}` : ` on day ${o.firstDay}`}`);
@@ -423,9 +424,9 @@
       f.append(box); return f;
     };
     const category = el("select"); category.name = "category";
-    for (const [v, t] of Object.entries(CATEGORY)) { const o = el("option", null, t); o.value = v; category.append(o); }
+    for (const [v, t] of Object.entries(CATEGORY)) { const o = el("option", null, t.name); o.value = v; category.append(o); }
     category.value = d.category;
-    const seats = el("input"); seats.type = "number"; seats.min = 1; seats.max = 1000; seats.value = d.seats; seats.name = "seats";
+    const quantity = el("input"); quantity.type = "number"; quantity.min = 1; quantity.max = 1000; quantity.value = d.quantity; quantity.name = "quantity";
     const budget = el("input"); budget.type = "number"; budget.min = 1; budget.step = 1; budget.value = d.budget.amount; budget.name = "budget";
     const currency = el("select"); currency.name = "currency";
     for (const v of ["USD", "EUR", "GBP"]) { const o = el("option", null, v); o.value = v; currency.append(o); }
@@ -433,7 +434,7 @@
     const term = el("select"); term.name = "term";
     for (const v of [6, 12, 24, 36]) { const o = el("option", null, `${v} months`); o.value = v; term.append(o); }
     term.value = d.termMonths;
-    grid.append(field("Category", category), field("Seats", seats), field("Budget per month", budget, currency.value), field("Currency", currency), field("Term", term));
+    grid.append(field("Category", category), field(`${CATEGORY[category.value]?.unit ?? "Unit"}s`, quantity), field("Budget per month", budget, currency.value), field("Currency", currency), field("Term", term));
     currency.onchange = () => (budget.parentElement.querySelector(".unit").textContent = currency.value);
     const policy = el("div", "policy");
     policy.append("Your agent will keep cash above the ", el("b", null, `${whole(p.reserveFloor, cur_)} reserve floor`), ` for the next ${p.horizonDays} days, after what is already due${dues ? ` (${dues})` : ""}. The cheapest bid that respects that wins. Those rules are code, not a prompt.`);
@@ -441,7 +442,7 @@
     const post = el("button", "btn primary", "Post intent");
     post.onclick = async () => {
       post.disabled = true; err.style.display = "none";
-      const body = { category: category.value, seats: Number(seats.value), budget: { amount: Number(budget.value), currency: currency.value }, termMonths: Number(term.value) };
+      const body = { category: category.value, quantity: Number(quantity.value), budget: { amount: Number(budget.value), currency: currency.value }, termMonths: Number(term.value) };
       const r = await fetch("/intent", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       if (!r.ok) { err.textContent = (await r.json()).error ?? "Could not post the intent."; err.style.display = "block"; post.disabled = false; return; }
       post.textContent = "Posted";
@@ -459,12 +460,12 @@
     state.floor = e.company.policy.reserveFloor;
     state.dues = duesOf(e.company.obligations, state.currency).join(" and ");
     const { intent } = e;
-    $("intent").replaceChildren(`${categoryName(intent.category)}, ${intent.seats} seats, up to ${whole(intent.budget.amount, intent.budget.currency)} a ${intent.budget.per}, for ${intent.termMonths} months`, el("span", "q", ". Posted anonymously."));
+    $("intent").replaceChildren(`${categoryName(intent.category)}, ${qty(intent)}, up to ${whole(intent.budget.amount, intent.budget.currency)} a ${intent.budget.per}, for ${intent.termMonths} months`, el("span", "q", ". Posted anonymously."));
     $("floor").textContent = whole(state.floor, state.currency);
     $("figures").hidden = false;
     $("dot").classList.add("live");
     status("Vendors are bidding", "info", true);
-    waiting = moment({ title: "Your intent is out. Vendors are looking at it.", lead: ["They see the category, the seats, the budget and the term. ", el("b", null, "Not who you are, not your cash"), ", not each other's bids."], kind: "waiting", dwell: 3500 });
+    waiting = moment({ title: "Your intent is out. Vendors are looking at it.", lead: ["They see the category, the quantity, the budget and the term. ", el("b", null, "Not who you are, not your cash"), ", not each other's bids."], kind: "waiting", dwell: 3500 });
     waiting.slots = {};
     for (const v of e.vendors) {
       const s = el("div", "slot"); const i = el("i"); i.style.background = colorOf(v);
@@ -519,7 +520,7 @@
     const c = state.lastCard?.approval, cur = state.currency;
     const m = moment({
       title: "That's the purchase.",
-      lead: [c ? `Three bids, one approval, and a card that can only pay ${B(c.vendor)} ${money(c.amount, c.currency)} ${cycleWord(c.cycle)} at a software vendor. ${money(state.rebates, cur)} came back from the vendor's fee. Nothing else for you to do.` : "Nothing else for you to do."],
+      lead: [c ? `Three bids, one approval, and a card that can only pay ${B(c.vendor)} ${money(c.amount, c.currency)} ${cycleWord(c.cycle)} at ${mccName(c.merchantCategory)}. ${money(state.rebates, cur)} came back from the vendor's fee. Nothing else for you to do.` : "Nothing else for you to do."],
       kind: "finale", dwell: 0,
     });
     m.hold = true;

@@ -17,7 +17,7 @@ const aw = createClient();
 await aw.login();
 const cash = await available(aw, company.currency);
 
-console.log(`Intent: ${intent.category}, ${intent.seats} seats, up to ${money(intent.budget.amount, intent.budget.currency)}/${intent.budget.per}, ${intent.termMonths} months`);
+console.log(`Intent: ${intent.category}, ${intent.quantity} units, up to ${money(intent.budget.amount, intent.budget.currency)}/${intent.budget.per}, ${intent.termMonths} months`);
 console.log(`Cash: ${money(cash, company.currency)} available, reserve floor ${money(company.policy.reserveFloor, company.currency)}\n`);
 
 const result = await decide({ intent, company, cash, bids: await collectBids(intent), rate: airwallexRates(aw) });

@@ -79,8 +79,9 @@
     s.appendChild(svgEl("path", { d: kind === "check" ? "M3 8.5l3 3 7-7" : "M4 4l8 8M12 4l-8 8" }));
     return s;
   };
-  const CATEGORY = { "design-tool": "Design tool" };
-  const categoryName = (c) => CATEGORY[c] ?? c.replace(/-/g, " ");
+  const CATEGORY = { "gpu-h100": { name: "H100 GPU capacity", unit: "GPU" } };
+  const categoryName = (c) => CATEGORY[c]?.name ?? c.replace(/-/g, " ");
+  const qty = (intent) => { const u = CATEGORY[intent.category]?.unit ?? "unit"; return `${intent.quantity} ${u}${intent.quantity === 1 ? "" : "s"}`; };
   const cycleWord = (cycle) => (cycle === "annual" ? "per year, prepaid" : "per month");
   const perShort = (cycle) => (cycle === "annual" ? "/yr" : "/mo");
   const clock = (t) => `${String(Math.floor(t / 60000)).padStart(2, "0")}:${String(Math.floor((t % 60000) / 1000)).padStart(2, "0")}`;
@@ -133,9 +134,9 @@
       const { intent } = e;
       const c = $("intent");
       c.append(el("div", "cap", "Anonymous buyer · posted just now"));
-      c.append(el("div", "big", `${categoryName(intent.category)}, ${intent.seats} seats, up to ${whole(intent.budget.amount, intent.budget.currency)} a ${intent.budget.per}`));
+      c.append(el("div", "big", `${categoryName(intent.category)}, ${qty(intent)}, up to ${whole(intent.budget.amount, intent.budget.currency)} a ${intent.budget.per}`));
       const facts = el("div", "facts");
-      for (const t of [`${intent.termMonths}-month term`, `Budget ${whole(intent.budget.amount, intent.budget.currency)}/${intent.budget.per}`, `${intent.seats} seats`, "Pays by card"]) facts.append(el("span", "pill quiet", t));
+      for (const t of [`${intent.termMonths}-month term`, `Budget ${whole(intent.budget.amount, intent.budget.currency)}/${intent.budget.per}`, qty(intent), "Pays by card"]) facts.append(el("span", "pill quiet", t));
       c.append(facts, el("div", "foot", "That is all you get. The buyer's name, balance and reserve stay hidden; the agent bids on the intent alone and the card tells you when you've won."));
       show("s-intent");
     },

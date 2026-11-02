@@ -1,13 +1,13 @@
 {
-  "startingCash": 25000,
+  "startingCash": 80000,
   "customerPayment": {
     "payer": "Northwind Traders",
-    "amount": 40000
+    "amount": 30000
   },
   "wrongMerchant": {
     "name": "Corner Bistro",
     "mcc": "5812",
-    "amount": 100
+    "amount": 180
   },
   "acquisitionFee": {
     "amount": 25,

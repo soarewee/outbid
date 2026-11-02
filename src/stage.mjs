@@ -117,15 +117,15 @@ export function openStage({ port = Number(process.env.OUTBID_STAGE_PORT ?? 4780)
 // What the buyer's page may post as an intent. The merchant category is not the buyer's to choose:
 // it follows the category.
 export function checkIntent(body) {
-  const seats = Number(body.seats);
+  const quantity = Number(body.quantity);
   const amount = Number(body.budget?.amount);
   const termMonths = Number(body.termMonths);
   if (typeof body.category !== "string" || !/^[a-z][a-z-]{1,40}$/.test(body.category)) throw new Error("category must be a slug like design-tool");
-  if (!Number.isInteger(seats) || seats < 1 || seats > 1000) throw new Error("seats must be a whole number from 1 to 1000");
+  if (!Number.isInteger(quantity) || quantity < 1 || quantity > 1000) throw new Error("quantity must be a whole number from 1 to 1000");
   if (!(amount > 0 && amount <= 1_000_000)) throw new Error("budget must be a positive amount");
   if (!["USD", "EUR", "GBP"].includes(body.budget?.currency)) throw new Error("budget currency must be USD, EUR or GBP");
   if (![6, 12, 24, 36].includes(termMonths)) throw new Error("term must be 6, 12, 24 or 36 months");
-  return { category: body.category, seats, budget: { amount, currency: body.budget.currency, per: "month" }, termMonths };
+  return { category: body.category, quantity, budget: { amount, currency: body.budget.currency, per: "month" }, termMonths };
 }
 
 // A stage that does nothing, for commands that run without a page.

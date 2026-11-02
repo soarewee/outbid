@@ -1,12 +1,21 @@
 {
   "currency": "USD",
   "policy": {
-    "reserveFloor": 8000,
+    "reserveFloor": 20000,
     "horizonDays": 90,
     "reconsiderAfterMonths": 3
   },
   "obligations": [
-    { "label": "Contractors", "amount": 400, "firstDay": 7, "everyDays": 7 },
-    { "label": "Quarterly tax", "amount": 2500, "firstDay": 45 }
+    {
+      "label": "Payroll",
+      "amount": 4500,
+      "firstDay": 14,
+      "everyDays": 14
+    },
+    {
+      "label": "Quarterly tax",
+      "amount": 12500,
+      "firstDay": 45
+    }
   ]
 }

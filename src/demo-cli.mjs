@@ -40,7 +40,7 @@ if (process.argv.includes("--wait")) {
   console.log(`Waiting for the buyer to post the intent at ${stage.url}/buyer …`);
   stage.emit("await-intent", { defaults: intent, company });
   intent = { ...intent, ...(await stage.intent) };
-  console.log(`Intent posted: ${intent.category}, ${intent.seats} seats, up to ${money(intent.budget.amount, intent.budget.currency)}/${intent.budget.per}, ${intent.termMonths} months`);
+  console.log(`Intent posted: ${intent.category}, ${intent.quantity} units, up to ${money(intent.budget.amount, intent.budget.currency)}/${intent.budget.per}, ${intent.termMonths} months`);
 }
 await aw.login();
 const rate = airwallexRates(aw);
@@ -107,7 +107,7 @@ async function play() {
   stage.emit("start", { intent, company, scenario, vendors: vendorNames });
 
   scene(1, "Three vendors bid. The cheapest would break the reserve.");
-  console.log(`Intent: ${intent.category}, ${intent.seats} seats, up to ${money(intent.budget.amount, intent.budget.currency)}/${intent.budget.per}, ${intent.termMonths} months`);
+  console.log(`Intent: ${intent.category}, ${intent.quantity} units, up to ${money(intent.budget.amount, intent.budget.currency)}/${intent.budget.per}, ${intent.termMonths} months`);
   let cash = await available(aw, cur);
   console.log(`Cash: ${money(cash, cur)} available, reserve floor ${money(company.policy.reserveFloor, cur)}\n`);
   stage.emit("cash", { available: cash });

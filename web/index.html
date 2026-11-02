@@ -186,7 +186,7 @@
   <section class="hero-s">
     <a class="tag" href="#run"><code>v0.1</code> Built on the Airwallex sandbox and Metal testnet <span class="arr">→</span></a>
     <h1>Your agent posts what it wants to buy. <span class="hl">Vendors compete.</span> The winning bid becomes the card.</h1>
-    <p class="lede">A purchase-intent auction for company software. The approved bid becomes an Airwallex virtual card that can only pay that vendor, that amount, in that currency. The vendor's acquisition fee comes back to the buyer when the charge clears.</p>
+    <p class="lede">A purchase-intent auction for the software and compute a company buys. The approved bid becomes an Airwallex virtual card that can only pay that vendor, that amount, in that currency. The vendor's acquisition fee comes back to the buyer when the charge clears.</p>
     <div class="ctas">
       <a class="btn dark lg" href="buyer.html">Open the buyer console <span class="arr">→</span></a>
       <a class="btn lg" href="vendor.html">See a vendor's side</a>
@@ -203,23 +203,23 @@
           <div class="panel on" data-panel="0">
             <div class="intent"><span class="q">What does your company need?</span></div>
             <div class="mform">
-              <div class="f"><label>Category</label><div>Design tool <span>▾</span></div></div>
-              <div class="f"><label>Seats</label><div>10</div></div>
-              <div class="f"><label>Budget per month</label><div>1500 <span>USD</span></div></div>
+              <div class="f"><label>Category</label><div>H100 GPU capacity <span>▾</span></div></div>
+              <div class="f"><label>GPUs</label><div>2</div></div>
+              <div class="f"><label>Budget per month</label><div>3750 <span>USD</span></div></div>
               <div class="f"><label>Term</label><div>12 months <span>▾</span></div></div>
             </div>
-            <div class="policy">Your agent will keep cash above the <b>$8,000 reserve floor</b> for the next 90 days, after what is already due ($400 contractors every week, $2,500 quarterly tax on day 45). The cheapest bid that respects that wins. Those rules are code, not a prompt.</div>
+            <div class="policy">Your agent will keep cash above the <b>$20,000 reserve floor</b> for the next 90 days, after what is already due ($4,500 payroll every 14 days, $12,500 quarterly tax on day 45). The cheapest bid that respects that wins. Those rules are code, not a prompt.</div>
             <button class="btn dark" style="width:100%">Post intent</button>
           </div>
 
           <div class="panel" data-panel="1">
-            <div class="intent"><span class="q">Your agent wants</span> a design tool, 10 seats, up to $1,500 a month, for 12 months. <span class="q">Vendors don't know who you are.</span></div>
+            <div class="intent"><span class="q">Your agent wants</span> H100 GPU capacity, 2 GPUs, up to $3,750 a month, for 12 months. <span class="q">Vendors don't know who you are.</span></div>
             <div class="inner">
               <div class="cap">Cheapest first over 12 months, priced with Airwallex FX, then checked against the reserve</div>
               <div class="bids">
-                <div class="bid"><div class="name"><i style="background:var(--s3)"></i>Cedar</div><div class="price">$13,800.00<small>/yr</small></div><div class="sub">$13,800 up front, then nothing for 12 months</div><div class="right">$13,800 over 12 months</div><div class="why"><span class="pill bad">✕ Breaks the reserve in week 7</span>Cash would fall to $6,300 on day 45</div></div>
-                <div class="bid"><div class="name"><i style="background:var(--s2)"></i>Birch</div><div class="price">€1,180.00<small>/mo</small></div><div class="sub">12 payments of $1,306 · EUR at 1.1071</div><div class="right">$15,676 over 12 months</div><div class="why"><span class="pill pick">Picked</span><span class="pill good">✓ Keeps the reserve</span>Lowest cash $12,475, on day 90</div></div>
-                <div class="bid"><div class="name"><i style="background:var(--s1)"></i>Arbor</div><div class="price">$1,350.00<small>/mo</small></div><div class="sub">12 payments of $1,350</div><div class="right">$16,200 over 12 months</div><div class="why"><span class="pill good">✓ Keeps the reserve</span>Lowest cash $12,300, on day 90</div></div>
+                <div class="bid"><div class="name"><i style="background:var(--s3)"></i>Cedar</div><div class="price">$34,500.00<small>/yr</small></div><div class="sub">$34,500 up front, then nothing for 12 months</div><div class="right">$34,500 over 12 months</div><div class="why"><span class="pill bad">✕ Breaks the reserve in week 7</span>Cash would fall to $19,500 on day 45</div></div>
+                <div class="bid"><div class="name"><i style="background:var(--s2)"></i>Birch</div><div class="price">€2,960.00<small>/mo</small></div><div class="sub">12 payments of $3,303 · EUR at 1.1157</div><div class="right">$39,630 over 12 months</div><div class="why"><span class="pill pick">Picked</span><span class="pill good">✓ Keeps the reserve</span>Lowest cash $27,290, on day 90</div></div>
+                <div class="bid"><div class="name"><i style="background:var(--s1)"></i>Arbor</div><div class="price">$3,400.00<small>/mo</small></div><div class="sub">12 payments of $3,400</div><div class="right">$40,800 over 12 months</div><div class="why"><span class="pill good">✓ Keeps the reserve</span>Lowest cash $26,900, on day 90</div></div>
               </div>
             </div>
           </div>
@@ -228,21 +228,21 @@
             <div class="intent"><span class="q">Step 1 ·</span> Three vendors bid. The cheapest would break the reserve.</div>
             <div class="inner chart">
               <div class="cap">Cash over the next 90 days, with each bid</div>
-              <div class="keys"><span><i style="background:var(--s3)"></i>Cedar</span><span><i style="background:var(--s2)"></i>Birch</span><span><i style="background:var(--s1)"></i>Arbor</span><span><i class="floor"></i>Reserve floor $8,000</span></div>
+              <div class="keys"><span><i style="background:var(--s3)"></i>Cedar</span><span><i style="background:var(--s2)"></i>Birch</span><span><i style="background:var(--s1)"></i>Arbor</span><span><i class="floor"></i>Reserve floor $20,000</span></div>
               <svg viewBox="0 0 640 220" role="img" aria-label="Projected cash for each bid against the reserve floor">
-                <g stroke="var(--line)" stroke-width="1"><line x1="36" x2="624" y1="196" y2="196"/><line x1="36" x2="624" y1="134.7" y2="134.7"/><line x1="36" x2="624" y1="73.3" y2="73.3"/><line x1="36" x2="624" y1="12" y2="12"/></g>
-                <g fill="var(--ink3)" font-size="11" text-anchor="end"><text x="28" y="200">0</text><text x="28" y="138.7">10K</text><text x="28" y="77.3">20K</text><text x="28" y="16">30K</text></g>
-                <g fill="var(--ink3)" font-size="11"><text x="36" y="214">today</text><text x="232" y="214" text-anchor="middle">day 30</text><text x="428" y="214" text-anchor="middle">day 60</text><text x="624" y="214" text-anchor="middle">day 90</text></g>
-                <line x1="36" x2="624" y1="146.9" y2="146.9" stroke="var(--ink3)" stroke-width="1.5" stroke-dasharray="4 4"/>
-                <text x="624" y="141" text-anchor="end" fill="var(--ink2)" font-size="11" font-weight="500">reserve floor</text>
-                <path d="M36.0,50.9H81.7V53.4H127.5V55.9H173.2V58.3H218.9V60.8H232.0V69.0H264.7V71.5H310.4V73.9H330.0V89.3H356.1V91.7H401.9V94.2H428.0V102.5H447.6V104.9H493.3V107.4H539.1V109.8H584.8V112.3H624.0V120.6" fill="none" stroke="var(--s1)" stroke-width="2" stroke-linejoin="round"/>
-                <path d="M36.0,50.7H81.7V53.1H127.5V55.6H173.2V58.0H218.9V60.5H232.0V68.5H264.7V71.0H310.4V73.4H330.0V88.7H356.1V91.2H401.9V93.7H428.0V101.7H447.6V104.1H493.3V106.6H539.1V109.0H584.8V111.5H624.0V119.5" fill="none" stroke="var(--s2)" stroke-width="2" stroke-linejoin="round"/>
-                <path d="M36.0,127.3H81.7V129.8H127.5V132.2H173.2V134.7H218.9V137.1H264.7V139.6H310.4V142.0H330.0V157.4H356.1V159.8H401.9V162.3H447.6V164.7H493.3V167.2H539.1V169.6H584.8V172.1H624.0" fill="none" stroke="var(--s3)" stroke-width="2" stroke-linejoin="round"/>
-                <circle cx="624" cy="120.6" r="4" fill="var(--s1)"/><circle cx="624" cy="119.5" r="4" fill="var(--s2)"/><circle cx="624" cy="172.1" r="4" fill="var(--s3)"/>
-                <circle cx="330" cy="157.4" r="7" fill="var(--card)"/><circle cx="330" cy="157.4" r="5" fill="var(--red)"/>
-                <text x="342" y="173" fill="var(--red)" font-size="12" font-weight="500">$6,300 on day 45</text>
+              <g stroke="var(--line)" stroke-width="1"><line x1="36" x2="624" y1="196.0" y2="196.0"/><line x1="36" x2="624" y1="150.0" y2="150.0"/><line x1="36" x2="624" y1="104.0" y2="104.0"/><line x1="36" x2="624" y1="58.0" y2="58.0"/><line x1="36" x2="624" y1="12.0" y2="12.0"/></g>
+              <g fill="var(--ink3)" font-size="11" text-anchor="end"><text x="28" y="200.0">0</text><text x="28" y="154.0">20K</text><text x="28" y="108.0">40K</text><text x="28" y="62.0">60K</text><text x="28" y="16.0">80K</text></g>
+              <g fill="var(--ink3)" font-size="11"><text x="36" y="214">today</text><text x="232" y="214" text-anchor="middle">day 30</text><text x="428" y="214" text-anchor="middle">day 60</text><text x="624" y="214" text-anchor="middle">day 90</text></g>
+              <line x1="36" x2="624" y1="150.0" y2="150.0" stroke="var(--ink3)" stroke-width="1.5" stroke-dasharray="4 4"/>
+              <text x="624" y="144.0" text-anchor="end" fill="var(--ink2)" font-size="11" font-weight="500">reserve floor</text>
+              <path d="M36.0,19.8H127.5V30.2H218.9V40.5H232.0V48.3H310.4V58.7H330.0V87.4H401.9V97.8H428.0V105.6H493.3V116.0H584.8V126.3H624.0V134.1H624.0" fill="none" stroke="var(--s1)" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M36.0,19.6H127.5V29.9H218.9V40.3H232.0V47.9H310.4V58.2H330.0V87.0H401.9V97.3H428.0V104.9H493.3V115.3H584.8V125.6H624.0V133.2H624.0" fill="none" stroke="var(--s2)" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M36.0,91.3H127.5V101.7H218.9V112.0H310.4V122.4H330.0V151.2H401.9V161.5H493.3V171.8H584.8V182.2H624.0" fill="none" stroke="var(--s3)" stroke-width="2" stroke-linejoin="round"/>
+              <circle cx="624" cy="134.1" r="4" fill="var(--s1)"/><circle cx="624" cy="133.2" r="4" fill="var(--s2)"/><circle cx="624" cy="182.2" r="4" fill="var(--s3)"/>
+              <circle cx="330.0" cy="151.2" r="7" fill="var(--card)"/><circle cx="330.0" cy="151.2" r="5" fill="var(--red)"/>
+              <text x="342.0" y="167.2" fill="var(--red)" font-size="12" font-weight="500">$19,500 on day 45</text>
               </svg>
-              <div class="cap" style="margin:12px 0 0">Cedar's prepay would take cash to $6,300 on day 45, under the $8,000 floor. The rule lives in code; the agent only explains it.</div>
+              <div class="cap" style="margin:12px 0 0">Cedar's prepay would take cash to $19,500 on day 45, under the $20,000 floor. The rule lives in code; the agent only explains it.</div>
             </div>
           </div>
 
@@ -252,20 +252,20 @@
               <div class="cap">You approve exactly this. Nothing broader.</div>
               <div class="terms">
                 <div><div class="l">Vendor</div><div class="v">Birch</div></div>
-                <div><div class="l">Amount</div><div class="v">€1,180.00 per month</div></div>
+                <div><div class="l">Amount</div><div class="v">€2,960.00 per month</div></div>
                 <div><div class="l">Currency</div><div class="v">EUR</div></div>
-                <div><div class="l">Merchant</div><div class="v">Only software vendors</div></div>
+                <div><div class="l">Merchant</div><div class="v">Only cloud and data-processing vendors</div></div>
               </div>
               <div class="btns"><button class="btn">Decline</button><button class="btn dark">Approve</button></div>
             </div>
             <div class="inner">
               <div class="cap">The approved terms are the card's controls, enforced by the network before money moves.</div>
               <div class="cardrow">
-                <div class="vcard"><div class="t"><span>Airwallex · virtual</span><span class="state">ACTIVE</span></div><div class="n">•••• •••• •••• 0990</div><div class="b"><div class="for">pays only <b>Birch</b></div><span class="brand">VISA</span></div></div>
+                <div class="vcard"><div class="t"><span>Airwallex · virtual</span><span class="state">ACTIVE</span></div><div class="n">•••• •••• •••• 9698</div><div class="b"><div class="for">pays only <b>Birch</b></div><span class="brand">VISA</span></div></div>
                 <div class="rules">
-                  <div class="rule"><div class="l">Per charge, at most</div><div class="v">€1,180.00</div></div>
+                  <div class="rule"><div class="l">Per charge, at most</div><div class="v">€2,960.00</div></div>
                   <div class="rule"><div class="l">Only in</div><div class="v">EUR</div></div>
-                  <div class="rule"><div class="l">Only at</div><div class="v">software vendors<code>MCC 5734</code></div></div>
+                  <div class="rule"><div class="l">Only at</div><div class="v">cloud and data-processing vendors<code>MCC 7372</code></div></div>
                 </div>
               </div>
             </div>
@@ -276,9 +276,9 @@
             <div class="inner">
               <div class="cap">Charges on the card, decided by Airwallex Issuing</div>
               <div class="receipt">
-                <div class="line"><div class="who">Birch</div><div class="amt">€1,180.00</div><div class="how">Agreed charge · 01a1956f</div><div class="res approved">✓ Approved</div></div>
-                <div class="line"><div class="who">Corner Bistro</div><div class="amt">€100.00</div><div class="how">Wrong merchant</div><div class="res declined">✕ Declined · not a software vendor <code>MERCHANT_CATEGORY_NOT_ALLOWED</code></div></div>
-                <div class="line"><div class="who">Birch</div><div class="amt">€1,440.00</div><div class="how">Renewal at +22%</div><div class="res declined">✕ Declined · more than the approved amount <code>LIMIT_EXCEEDED</code></div></div>
+                <div class="line"><div class="who">Birch</div><div class="amt">€2,960.00</div><div class="how">Agreed charge · 01a19c77</div><div class="res approved">✓ Approved</div></div>
+                <div class="line"><div class="who">Corner Bistro</div><div class="amt">€180.00</div><div class="how">Wrong merchant</div><div class="res declined">✕ Declined · not a software vendor <code>MERCHANT_CATEGORY_NOT_ALLOWED</code></div></div>
+                <div class="line"><div class="who">Birch</div><div class="amt">€3,612.20</div><div class="how">Renewal at +22%</div><div class="res declined">✕ Declined · more than the approved amount <code>LIMIT_EXCEEDED</code></div></div>
               </div>
             </div>
             <div class="inner">
@@ -307,15 +307,15 @@
     <p class="lede">Companies buy software at list price while vendors spend a fortune finding them. When an agent does the buying, it already knows exactly what it needs. Let vendors compete for it, and turn their acquisition budget into the buyer's discount.</p>
     <div class="three" style="text-align:left">
       <div class="step">
-        <div class="pic"><div class="mini"><div class="r"><b>Design tool</b><span class="m">10 seats</span></div><div class="r"><b>Up to $1,500</b><span class="m">per month</span></div><div class="r"><b>12 months</b><span class="m">pays by card</span></div><div class="r"><span class="m">Buyer</span><span class="pill quiet">anonymous</span></div></div></div>
-        <div class="txt"><div class="n">1</div><h3 class="h3">The buyer's agent posts an intent</h3><p>Category, seats, budget and term. No company name, no balance. Every vendor's agent sees the same four fields and nothing else.</p></div>
+        <div class="pic"><div class="mini"><div class="r"><b>H100 GPUs</b><span class="m">2 GPUs</span></div><div class="r"><b>Up to $3,750</b><span class="m">per month</span></div><div class="r"><b>12 months</b><span class="m">pays by card</span></div><div class="r"><span class="m">Buyer</span><span class="pill quiet">anonymous</span></div></div></div>
+        <div class="txt"><div class="n">1</div><h3 class="h3">The buyer's agent posts an intent</h3><p>Category, quantity, budget and term. No company name, no balance. Every vendor's agent sees the same four fields and nothing else.</p></div>
       </div>
       <div class="step">
-        <div class="pic"><div class="mini"><div class="r"><b>Cedar</b><span>$13,800<span class="m">/yr</span></span></div><div class="r"><b>Birch</b><span>€1,180<span class="m">/mo</span></span></div><div class="r"><b>Arbor</b><span>$1,350<span class="m">/mo</span></span></div><div class="r"><span class="m">Cheapest that keeps $8,000</span><span class="pill pick">Birch</span></div></div></div>
+        <div class="pic"><div class="mini"><div class="r"><b>Cedar</b><span>$34,500<span class="m">/yr</span></span></div><div class="r"><b>Birch</b><span>€2,960<span class="m">/mo</span></span></div><div class="r"><b>Arbor</b><span>$3,400<span class="m">/mo</span></span></div><div class="r"><span class="m">Cheapest that keeps $20,000</span><span class="pill pick">Birch</span></div></div></div>
         <div class="txt"><div class="n">2</div><h3 class="h3">Vendors bid, the agent ranks against cash</h3><p>Each bid is priced with Airwallex FX and ranked on total cost. Then the agent reads the live balance and what's already due: the cheapest bid loses if it would push cash under the reserve floor.</p></div>
       </div>
       <div class="step">
-        <div class="pic"><div class="vcard" style="width:220px;padding:14px 16px"><div class="t"><span>Airwallex · virtual</span><span class="state">ACTIVE</span></div><div class="n" style="font-size:13px">•••• •••• •••• 0990</div><div class="b"><div class="for">pays only <b>Birch</b></div><span class="brand">VISA</span></div></div></div>
+        <div class="pic"><div class="vcard" style="width:220px;padding:14px 16px"><div class="t"><span>Airwallex · virtual</span><span class="state">ACTIVE</span></div><div class="n" style="font-size:13px">•••• •••• •••• 9698</div><div class="b"><div class="for">pays only <b>Birch</b></div><span class="brand">VISA</span></div></div></div>
         <div class="txt"><div class="n">3</div><h3 class="h3">The approval is issued as the card</h3><p>The human approves one thing: this vendor, this amount, this currency. That approval is issued as a card whose controls are exactly those terms, so the network, not a policy, decides every charge.</p></div>
       </div>
     </div>
@@ -328,14 +328,14 @@
         <h2 class="h2">The approval <span class="hl">is the card.</span></h2>
         <p>You approve one thing: this vendor, this amount, this currency, this kind of merchant. Outbid issues that approval as an Airwallex virtual card whose controls are exactly those terms. No policy for anyone to follow, no prompt for an agent to obey: the network checks every charge against the approval at authorization, before money moves.</p>
         <p><b>The vendor can't overcharge.</b> A price hike is declined with the very limit that was approved. <b>The agent can't overspend.</b> It never holds the company card, only one that pays one vendor one amount. <b>Nobody can fake a sale.</b> Every settled charge is reported by the network, not by either party, and that is what releases the vendor's fee.</p>
-        <p>Almost every software vendor already takes cards, so none of it needs the vendor to integrate anything.</p>
+        <p>Almost every cloud and software vendor already takes cards, so none of it needs the vendor to integrate anything.</p>
       </div>
       <div class="vis"><div class="inner">
         <div class="receipt">
-          <div class="line"><div class="who">Birch</div><div class="amt">€1,180.00</div><div class="how">The agreed charge</div><div class="res approved">✓ Approved</div></div>
-          <div class="line"><div class="who">Birch</div><div class="amt">€1,440.00</div><div class="how">Renewal hike, +22%</div><div class="res declined">✕ Declined <code>LIMIT_EXCEEDED</code></div></div>
-          <div class="line"><div class="who">Corner Bistro</div><div class="amt">€100.00</div><div class="how">Wrong merchant</div><div class="res declined">✕ Declined <code>MERCHANT_CATEGORY_NOT_ALLOWED</code></div></div>
-          <div class="line"><div class="who">Birch, old card</div><div class="amt">€1,200.04</div><div class="how">After the buyer switched</div><div class="res declined">✕ Declined <code>CARD_INACTIVE</code></div></div>
+          <div class="line"><div class="who">Birch</div><div class="amt">€2,960.00</div><div class="how">The agreed charge</div><div class="res approved">✓ Approved</div></div>
+          <div class="line"><div class="who">Birch</div><div class="amt">€3,612.20</div><div class="how">Renewal hike, +22%</div><div class="res declined">✕ Declined <code>LIMIT_EXCEEDED</code></div></div>
+          <div class="line"><div class="who">Corner Bistro</div><div class="amt">€180.00</div><div class="how">Wrong merchant</div><div class="res declined">✕ Declined <code>MERCHANT_CATEGORY_NOT_ALLOWED</code></div></div>
+          <div class="line"><div class="who">Birch, old card</div><div class="amt">€3,016.53</div><div class="how">After the buyer switched</div><div class="res declined">✕ Declined <code>CARD_INACTIVE</code></div></div>
         </div>
       </div></div>
     </div>
@@ -351,14 +351,14 @@
       <div class="vis"><div class="inner chart">
         <div class="keys"><span><i style="background:var(--s3)"></i>Annual prepay</span><span><i style="background:var(--s2)"></i>Monthly</span><span><i class="floor"></i>Floor</span></div>
         <svg viewBox="0 0 640 220" role="img" aria-label="Cash projection: the annual prepay crosses the reserve floor on day 45">
-          <g stroke="var(--line)" stroke-width="1"><line x1="36" x2="624" y1="196" y2="196"/><line x1="36" x2="624" y1="134.7" y2="134.7"/><line x1="36" x2="624" y1="73.3" y2="73.3"/><line x1="36" x2="624" y1="12" y2="12"/></g>
-          <g fill="var(--ink3)" font-size="11" text-anchor="end"><text x="28" y="200">0</text><text x="28" y="138.7">10K</text><text x="28" y="77.3">20K</text><text x="28" y="16">30K</text></g>
-          <g fill="var(--ink3)" font-size="11"><text x="36" y="214">today</text><text x="232" y="214" text-anchor="middle">day 30</text><text x="428" y="214" text-anchor="middle">day 60</text><text x="624" y="214" text-anchor="middle">day 90</text></g>
-          <line x1="36" x2="624" y1="146.9" y2="146.9" stroke="var(--ink3)" stroke-width="1.5" stroke-dasharray="4 4"/>
-          <path d="M36.0,50.7H81.7V53.1H127.5V55.6H173.2V58.0H218.9V60.5H232.0V68.5H264.7V71.0H310.4V73.4H330.0V88.7H356.1V91.2H401.9V93.7H428.0V101.7H447.6V104.1H493.3V106.6H539.1V109.0H584.8V111.5H624.0V119.5" fill="none" stroke="var(--s2)" stroke-width="2" stroke-linejoin="round"/>
-          <path d="M36.0,127.3H81.7V129.8H127.5V132.2H173.2V134.7H218.9V137.1H264.7V139.6H310.4V142.0H330.0V157.4H356.1V159.8H401.9V162.3H447.6V164.7H493.3V167.2H539.1V169.6H584.8V172.1H624.0" fill="none" stroke="var(--s3)" stroke-width="2" stroke-linejoin="round"/>
-          <circle cx="330" cy="157.4" r="7" fill="var(--card)"/><circle cx="330" cy="157.4" r="5" fill="var(--red)"/>
-          <text x="342" y="173" fill="var(--red)" font-size="12" font-weight="500">$6,300 on day 45</text>
+        <g stroke="var(--line)" stroke-width="1"><line x1="36" x2="624" y1="196.0" y2="196.0"/><line x1="36" x2="624" y1="150.0" y2="150.0"/><line x1="36" x2="624" y1="104.0" y2="104.0"/><line x1="36" x2="624" y1="58.0" y2="58.0"/><line x1="36" x2="624" y1="12.0" y2="12.0"/></g>
+        <g fill="var(--ink3)" font-size="11" text-anchor="end"><text x="28" y="200.0">0</text><text x="28" y="154.0">20K</text><text x="28" y="108.0">40K</text><text x="28" y="62.0">60K</text><text x="28" y="16.0">80K</text></g>
+        <g fill="var(--ink3)" font-size="11"><text x="36" y="214">today</text><text x="232" y="214" text-anchor="middle">day 30</text><text x="428" y="214" text-anchor="middle">day 60</text><text x="624" y="214" text-anchor="middle">day 90</text></g>
+        <line x1="36" x2="624" y1="150.0" y2="150.0" stroke="var(--ink3)" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <path d="M36.0,19.6H127.5V29.9H218.9V40.3H232.0V47.9H310.4V58.2H330.0V87.0H401.9V97.3H428.0V104.9H493.3V115.3H584.8V125.6H624.0V133.2H624.0" fill="none" stroke="var(--s2)" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M36.0,91.3H127.5V101.7H218.9V112.0H310.4V122.4H330.0V151.2H401.9V161.5H493.3V171.8H584.8V182.2H624.0" fill="none" stroke="var(--s3)" stroke-width="2" stroke-linejoin="round"/>
+        <circle cx="330.0" cy="151.2" r="7" fill="var(--card)"/><circle cx="330.0" cy="151.2" r="5" fill="var(--red)"/>
+        <text x="342.0" y="167.2" fill="var(--red)" font-size="12" font-weight="500">$19,500 on day 45</text>
         </svg>
       </div></div>
     </div>
@@ -375,10 +375,10 @@
         <div class="split"><i style="flex:20;background:var(--blue)"></i><i style="flex:5;background:var(--line2)"></i></div>
         <div class="split-keys"><span><i style="background:var(--blue)"></i>Buyer rebate $20.00</span><span><i style="background:var(--line2)"></i>Outbid $5.00</span></div>
         <div class="steps">
-          <div class="s"><span>Birch funds the escrow (USDZ)</span><code>0x53ed54dd… on Metal</code></div>
-          <div class="s"><span>Proof of sale, Airwallex transaction</span><code>01a1956f-cf8b…</code></div>
-          <div class="s"><span>Escrow releases and splits the fee</span><code>0x0a300c42… on Metal</code></div>
-          <div class="s"><span>Rebate sent via Airwallex Payouts</span><code>a1bfc60e… scheduled</code></div>
+          <div class="s"><span>Birch funds the escrow (USDZ)</span><code>0x207db1be… on Metal</code></div>
+          <div class="s"><span>Proof of sale, Airwallex transaction</span><code>01a19c77-300f…</code></div>
+          <div class="s"><span>Escrow releases and splits the fee</span><code>0x83c3ce17… on Metal</code></div>
+          <div class="s"><span>Rebate sent via Airwallex Payouts</span><code>62b70993… scheduled</code></div>
         </div>
       </div></div>
     </div>
@@ -392,7 +392,7 @@
     </div>
     <table class="sees">
       <tr><th>Step</th><th>Buyer sees</th><th>Each vendor sees</th></tr>
-      <tr><td>Intent posted</td><td>The form: category, seats, budget, term, and the reserve policy the agent will hold to.</td><td>The intent, from an anonymous buyer. <span class="hid">Not the name, not the cash.</span></td></tr>
+      <tr><td>Intent posted</td><td>The form: category, quantity, budget, term, and the reserve policy the agent will hold to.</td><td>The intent, from an anonymous buyer. <span class="hid">Not the name, not the cash.</span></td></tr>
       <tr><td>Bids in</td><td>Every bid ranked by FX-priced total cost, a cash projection for each against the reserve floor, and why each fits or doesn't.</td><td>Its own price and its rank on cost. <span class="hid">Not the other bids.</span></td></tr>
       <tr><td>Approval</td><td>The exact terms, with Approve and Decline.</td><td><b>Picked</b> or <b>Passed over</b>.</td></tr>
       <tr><td>Card issued</td><td>The virtual card and its three controls: amount per charge, currency, merchant category.</td><td>The deal: what it can charge, in what currency, from which merchant category, and the card's last four digits.</td></tr>
