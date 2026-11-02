@@ -598,7 +598,7 @@
     const said = spoken ?? why;
     const by = spoken ? el("div", "by", `In the agent's words: ${e.explanation.model}, reading the ranking and the vendors' terms. The ranking, the budget and the reserve check are code.`) : null;
     if (e.key !== "opening") lead.push(...said);
-    const title = { opening: e.winner ? `${bids.length} bids. ${B(e.winner)} wins.` : `${bids.length} bids. None fits.`, reopened: `Re-auctioned: ${B(e.winner)} is now lowest`, recheck: `Rechecked: ${e.winner} fits now` }[e.key] ?? e.title;
+    const title = { opening: e.winner ? `${bids.length} bids. ${B(e.winner)} wins.` : `${bids.length} bids. None fits.`, reopened: `Re-auctioned: ${B(e.winner)} is now lowest`, recheck: `Rechecked: ${B(e.winner)} fits now` }[e.key] ?? e.title;
     const m = moment({ title, lead, kind: "ranking", dwell: e.key === "opening" ? 7000 : 6500 });
     if (by && e.key !== "opening") m.card.append(by);
     const c = m.card;
