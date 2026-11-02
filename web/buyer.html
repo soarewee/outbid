@@ -411,6 +411,7 @@
 
   // ─── posting the intent ───
   function awaitIntent(e) {
+    state.posted = true; // the viewer posts it here, so the run needs no opening moment
     $("intent").replaceChildren(el("span", "q", "What does your company need?"));
     status("Draft", "quiet");
     const d = e.defaults, p = e.company.policy, cur_ = e.company.currency;
@@ -460,11 +461,31 @@
     state.floor = e.company.policy.reserveFloor;
     state.dues = duesOf(e.company.obligations, state.currency).join(" and ");
     const { intent } = e;
-    $("intent").replaceChildren(`${categoryName(intent.category)}, ${qty(intent)}, up to ${whole(intent.budget.amount, intent.budget.currency)} a ${intent.budget.per}, for ${intent.termMonths} months`, el("span", "q", ". Posted anonymously."));
-    $("floor").textContent = whole(state.floor, state.currency);
-    $("figures").hidden = false;
-    $("dot").classList.add("live");
-    status("Vendors are bidding", "info", true);
+    // When the intent came from a file (no form on this page), the run opens by posting it, so the
+    // ticket at the top reads as what was just posted rather than as a given.
+    let opening = null;
+    if (!state.posted) {
+      const p = e.company.policy;
+      opening = moment({ title: "Your agent posts an intent", lead: ["Vendors will see exactly these four fields and nothing else: ", el("b", null, "not your name, not your cash"), ". Your agent holds to the reserve policy below while it picks."], kind: "post", dwell: 6500 });
+      const terms = el("div", "terms");
+      for (const [l, v] of [
+        ["Category", categoryName(intent.category)],
+        [`${CATEGORY[intent.category]?.unit ?? "Unit"}s`, String(intent.quantity)],
+        ["Budget per month", `${whole(intent.budget.amount, intent.budget.currency)} ${intent.budget.currency}`],
+        ["Term", `${intent.termMonths} months`],
+      ]) { const t = el("div"); t.append(el("div", "l", l), el("div", "v", v)); terms.append(t); }
+      const policy = el("div", "policy");
+      policy.append("Your agent will keep cash above the ", el("b", null, `${whole(p.reserveFloor, state.currency)} reserve floor`), ` for the next ${p.horizonDays} days, after what is already due${state.dues ? ` (${state.dues})` : ""}. The cheapest bid that respects that wins. Those rules are code, not a prompt.`);
+      opening.card.append(terms, policy);
+    }
+    const ticket = () => {
+      $("intent").replaceChildren(`${categoryName(intent.category)}, ${qty(intent)}, up to ${whole(intent.budget.amount, intent.budget.currency)} a ${intent.budget.per}, for ${intent.termMonths} months`, el("span", "q", ". Posted anonymously."));
+      $("floor").textContent = whole(state.floor, state.currency);
+      $("figures").hidden = false;
+      $("dot").classList.add("live");
+      status("Vendors are bidding", "info", true);
+    };
+    if (opening) whenShown(opening, ticket, 4500); else ticket();
     waiting = moment({ title: "Your intent is out. Vendors are looking at it.", lead: ["They see the category, the quantity, the budget and the term. ", el("b", null, "Not who you are, not your cash"), ", not each other's bids."], kind: "waiting", dwell: 3500 });
     waiting.slots = {};
     for (const v of e.vendors) {

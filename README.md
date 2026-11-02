@@ -34,8 +34,8 @@ Node 20 or later, no dependencies, no build.
   purchase at the top (the intent, a status, available cash, the reserve floor, what the card pays, the
   rebates so far) and the moment that is happening now in the middle. Inside a part the moments replace
   each other on their own; between parts the run stops on a Continue button, so nothing passes by
-  unread, and the approval waits for its click (in a replay too). The purchase is three parts: vendors
-  reading the intent and their bids landing, ranked by FX-priced total cost, and why the cheapest loses,
+  unread, and the approval waits for its click (in a replay too). The purchase is three parts: the intent
+  being posted (or the form, with `--wait`), vendors reading it and their bids landing, ranked by FX-priced total cost, and why the cheapest loses,
   with the cash forecast drawing itself; the approval, which says exactly what the buyer agrees to, and
   then that approval issued as the card, its controls locking in one by one and each charge landing on it
   with the reason Issuing gave; the rebate counting up. It ends on its own screen: "That's the purchase."
