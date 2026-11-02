@@ -124,6 +124,16 @@
   .mini .r .m { color: var(--ink3); }
   .mini .pill { font-size: 11px; padding: 2px 7px; }
 
+  /* the run's evidence */
+  .evidence { max-width: 860px; margin: 40px auto 0; text-align: left; }
+  .evidence .cap { font-size: 14px; color: var(--ink2); margin-bottom: 14px; line-height: 1.5; }
+  .evidence code { font-family: var(--mono); font-size: 11.5px; color: var(--ink2); background: var(--well); padding: 2px 6px; border-radius: 6px; white-space: nowrap; display: inline-block; margin: 2px 4px 2px 0; }
+  table.ev { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  table.ev th { text-align: left; font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); font-weight: 500; padding: 0 12px 10px 0; border-bottom: 1px solid var(--line); }
+  table.ev td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); vertical-align: top; line-height: 1.45; }
+  table.ev a { font-family: var(--mono); font-size: 11.5px; color: var(--ink2); border-bottom: 1px solid var(--line2); white-space: nowrap; }
+  @media (max-width: 720px) { table.ev, table.ev tr, table.ev td { display: block; } table.ev th { display: none; } table.ev td { padding: 4px 0; border: 0; } table.ev tr { padding: 10px 0; border-bottom: 1px solid var(--line); } table.ev td:first-child { font-weight: 500; } }
+
   /* feature rows */
   .feat { display: grid; grid-template-columns: 5fr 6fr; gap: 48px; align-items: center; }
   .feat + .feat { margin-top: 96px; }
@@ -414,6 +424,21 @@
       <span>Global Accounts<small>funding</small></span>
       <span>Payouts<small>rebates</small></span>
       <span class="metal">Metal testnet<small>fee escrow</small></span>
+    </div>
+    <div class="evidence">
+      <div class="cap">The run behind this page, recorded 2026-11-02. The Metal transactions are public; the Airwallex ids are in <code>evidence/2026-11-02.json</code> with the response fields that prove each step.</div>
+      <table class="ev">
+        <tr><th>Step</th><th>Airwallex</th><th>Metal</th></tr>
+        <tr><td>Birch's card, €2,960 per charge, EUR, MCC 7372</td><td><code>card 57b4fea3… •••• 2545 · ACTIVE</code></td><td><a href="https://testnet.metalntwx.com/tx/0x355940ac1437de19128090531e35f282da01b8f99ee36ce8fa97324657e87a4f" rel="noopener">fee prepaid 0x355940ac…</a></td></tr>
+        <tr><td>Agreed charge €2,960</td><td><code>01a19c9d-35d8… APPROVED</code></td><td><a href="https://testnet.metalntwx.com/tx/0x3ee60298689bb8b6146d052eac093fe17b7b64d6a851fd247f51cb11dc316b25" rel="noopener">fee released, split 0x3ee60298…</a></td></tr>
+        <tr><td>Corner Bistro €180</td><td><code>01a19c9d-4337… DECLINED · MERCHANT_CATEGORY_NOT_ALLOWED</code></td><td></td></tr>
+        <tr><td>Rebate $20 to the buyer's bank</td><td><code>transfer P261102-WVW22PU · SCHEDULED</code></td><td></td></tr>
+        <tr><td>Renewal at €3,612.20</td><td><code>01a19c9d-697e… DECLINED · LIMIT_EXCEEDED</code></td><td></td></tr>
+        <tr><td>Birch matches at €3,017.05: new card, old card frozen</td><td><code>card c4351931… •••• 1853 · ACTIVE</code> <code>57b4fea3… INACTIVE</code></td><td></td></tr>
+        <tr><td>Cedar's card after the deposit, $34,500 per charge</td><td><code>card 78fbfbbd… •••• 1283 · ACTIVE</code> <code>c4351931… INACTIVE</code></td><td><a href="https://testnet.metalntwx.com/tx/0xae4f9506e36560ddd0a244d8bd0d3616a3584acf972e16e23bad642581da9bf4" rel="noopener">fee prepaid 0xae4f9506…</a></td></tr>
+        <tr><td>First annual charge $34,500, then the old card tried</td><td><code>01a19c9e-7cce… APPROVED</code> <code>01a19c9e-8a7d… DECLINED · CARD_INACTIVE</code></td><td><a href="https://testnet.metalntwx.com/tx/0x06765e807f7f06d6a2bdc03cb91a18b38c13977392cc6bc733fad174ba14a37a" rel="noopener">fee released, split 0x06765e80…</a></td></tr>
+        <tr><td>Second rebate $20</td><td><code>transfer P261102-V562YD2 · SCHEDULED</code></td><td></td></tr>
+      </table>
     </div>
   </section>
 

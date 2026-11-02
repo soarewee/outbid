@@ -46,6 +46,7 @@
 <div class="wrap">
   <header class="bar">
     <a class="wordmark" href="/"><span class="dot" id="dot"></span>Outbid</a>
+    <span class="mode" id="mode" hidden></span>
     <nav class="nav"><a href="/buyer">Buyer</a><a href="/vendor" class="on">Vendors</a><a href="/">About</a></nav>
   </header>
   <div class="top">
@@ -125,10 +126,14 @@
     $("empty").textContent = "No open intents. When a buyer posts one, it appears here and your agent bids.";
   }
 
+  let replaying = false;
+  const mode = (text, live) => { const m = $("mode"); m.textContent = text; m.classList.toggle("live", live); m.hidden = false; };
   const handlers = {
+    replay(e) { replaying = true; mode(`Replay · recorded ${e.recorded ?? "earlier"} against the Airwallex sandbox`, false); },
     "await-intent"() { $("empty").textContent = "A buyer is writing an intent…"; },
     start(e) {
       vendors = e.vendors; e.vendors.forEach((v, i) => (state.slot[v] = i + 1));
+      if (!replaying) mode("Live · Airwallex sandbox", true);
       state.term = e.intent.termMonths;
       header();
       const { intent } = e;

@@ -59,6 +59,11 @@ b, strong { font-weight: 600; }
 .wordmark .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--line2); transition: background .3s; }
 .wordmark .dot.on { background: var(--green); }
 .wordmark .dot.live { background: var(--green); animation: pulse 1.6s infinite; }
+/* live against the sandbox, or a replay of a recorded run: the page says which */
+.mode { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); border: 1px solid var(--line2); border-radius: 999px; padding: 4px 9px; white-space: nowrap; }
+.mode.live { color: var(--green); border-color: var(--green-soft); background: var(--green-soft); }
+.mode[hidden] { display: none; }
+@media (max-width: 560px) { .mode { display: none; } }
 .nav { display: flex; gap: 2px; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
 .nav a, .nav button { font: inherit; font-size: 13px; font-weight: 500; color: var(--ink2); padding: 5px 12px; border-radius: 999px; border: 0; background: none; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
 .nav a.on, .nav button.on { background: var(--ink); color: var(--plane); }

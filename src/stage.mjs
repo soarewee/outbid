@@ -120,7 +120,7 @@ export function checkIntent(body) {
   const quantity = Number(body.quantity);
   const amount = Number(body.budget?.amount);
   const termMonths = Number(body.termMonths);
-  if (typeof body.category !== "string" || !/^[a-z][a-z-]{1,40}$/.test(body.category)) throw new Error("category must be a slug like design-tool");
+  if (typeof body.category !== "string" || !/^[a-z][a-z0-9-]{1,40}$/.test(body.category)) throw new Error("category must be a slug like gpu-h100");
   if (!Number.isInteger(quantity) || quantity < 1 || quantity > 1000) throw new Error("quantity must be a whole number from 1 to 1000");
   if (!(amount > 0 && amount <= 1_000_000)) throw new Error("budget must be a positive amount");
   if (!["USD", "EUR", "GBP"].includes(body.budget?.currency)) throw new Error("budget currency must be USD, EUR or GBP");

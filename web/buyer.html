@@ -215,6 +215,7 @@
 <div class="wrap">
   <header class="bar">
     <a class="wordmark" href="/"><span class="dot" id="dot"></span>Outbid</a>
+    <span class="mode" id="mode" hidden></span>
     <nav class="nav"><a href="/buyer" class="on">Buyer</a><a href="/vendor">Vendors</a><a href="/">About</a></nav>
   </header>
   <div class="ticket">
@@ -484,6 +485,7 @@
       $("floor").textContent = whole(state.floor, state.currency);
       $("figures").hidden = false;
       $("dot").classList.add("live");
+      if (!state.replay) mode("Live · Airwallex sandbox", true);
       status("Vendors are bidding", "info", true);
     };
     if (opening) whenShown(opening, ticket, 4500); else ticket();
@@ -950,7 +952,9 @@
     onStage(() => { $("dot").classList.remove("on", "live"); $("status").classList.remove("live"); }, 2500);
     caption("End of the run. Everything above ran against the Airwallex sandbox and Metal testnet.");
   };
-  const replay = () => (state.replay = true);
+  // The page says whether it is live against the sandbox or replaying a recorded run.
+  const mode = (text, live) => { const m = $("mode"); m.textContent = text; m.classList.toggle("live", live); m.hidden = false; };
+  const replay = (e) => { state.replay = true; mode(`Replay · recorded ${e.recorded ?? "earlier"} against the Airwallex sandbox`, false); };
   const handlers = { replay, "await-intent": awaitIntent, start, vendor, cash, scene, note, deposit, ranking, approval, approved, card: cardIssued, cardStatus, charge, escrow, offer, end };
   const source = new EventSource("/events");
   source.onopen = () => $("dot").classList.add("on");

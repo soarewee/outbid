@@ -12,6 +12,7 @@
     "auction": "node --env-file=.env src/auction-cli.mjs",
     "demo": "node --env-file=.env src/demo-cli.mjs",
     "demo:replay": "node src/replay-cli.mjs",
+    "evidence": "node src/evidence-cli.mjs",
     "escrow:deploy": "node --env-file=.env src/escrow-deploy-cli.mjs",
     "test": "node --test"
   }

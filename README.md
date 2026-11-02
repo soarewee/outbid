@@ -88,6 +88,14 @@ the buyer; the buyer console shows it in the "Why not…" and re-auction moments
 `ANTHROPIC_API_KEY` in `.env` to turn it on; without it the console uses its own wording, and the decision is the
 same either way. The model never picks the winner.
 
+## Evidence
+
+`evidence/2026-11-02.json` is a publishable copy of the run behind the site: the stage events, the Metal escrow
+transactions (public on [testnet.metalntwx.com](https://testnet.metalntwx.com)), and for each Airwallex call that
+proves a step (a card issued, a charge decided, a transfer created, an FX quote, a deposit) the response fields that
+prove it, with the ids. Credentials, cardholder and beneficiary records are left out. `npm run evidence -- out/demo-<time>.json`
+writes one for any saved run, and the consoles say whether they are live against the sandbox or replaying a recording.
+
 ## Fee escrow on Metal
 
 `contracts/` is a Foundry project with `FeeEscrow`, deployed on Metal testnet (chain 63825) at the address in
