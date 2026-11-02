@@ -95,7 +95,7 @@ export function openStage({ port = Number(process.env.OUTBID_STAGE_PORT ?? 4780)
   const url = `http://localhost:${port}`;
   const listening = new Promise((resolve, reject) => {
     server.once("error", reject);
-    server.listen(port, "127.0.0.1", resolve);
+    server.listen(port, process.env.OUTBID_STAGE_HOST ?? "127.0.0.1", resolve);
   });
 
   return {

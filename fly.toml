@@ -1,0 +1,16 @@
+# Fly.io: one small machine replaying the recorded run from evidence/, kept running so the link never
+# cold-starts. No secrets: the replay never touches the sandbox. Deploy by hand with `fly deploy`.
+app = 'outbid'
+primary_region = 'nrt'
+
+[build]
+[http_service]
+  internal_port = 4780
+  force_https = true
+  auto_stop_machines = 'off'
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[vm]]
+  size = 'shared-cpu-1x'
+  memory = '256mb'

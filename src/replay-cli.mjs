@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // Replays a saved demo run on the stage, with the original pacing, so the page can be recorded or
 // reviewed without touching the sandbox. Run: npm run demo:replay -- out/demo-<time>.json [--speed 2]
+// --now starts without waiting for a browser (for a hosted replay); late viewers get every event at
+// once and the consoles pace them anyway.
 import { readFileSync } from "node:fs";
 import { sleep } from "./airwallex.mjs";
 import { openStage } from "./stage.mjs";
@@ -20,11 +22,12 @@ if (!events?.length) {
 
 const stage = openStage();
 await stage.listening;
-console.log(`Stage: ${stage.url}/buyer and ${stage.url}/vendor  (waiting for a browser)`);
-await stage.viewer;
+const now = process.argv.includes("--now");
+console.log(`Stage: ${stage.url}/buyer and ${stage.url}/vendor${now ? "" : "  (waiting for a browser)"}`);
+if (!now) await stage.viewer;
 
 // Tells the pages this is a replay, so the buyer console lets the reader give the recorded approvals.
-const recorded = file.match(/(\d{4}-\d{2}-\d{2})T/)?.[1] ?? null;
+const recorded = file.match(/(\d{4}-\d{2}-\d{2})/)?.[1] ?? null;
 stage.emit("replay", { file, speed, recorded });
 let last = 0;
 // A replay never waits for the buyer: the intent that was posted is in the start event.

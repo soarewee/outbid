@@ -8,7 +8,9 @@ picks a bid that respects the company's cash reserve, and the approved terms bec
 that can only pay that vendor, that amount, in that currency.
 
 > The demo runs end to end against the Airwallex sandbox and Metal testnet, with a buyer console and a vendor
-> console that fill in live. Open `web/index.html` for the site.
+> console that fill in live. A replay of a recorded run is hosted at [outbid.fly.dev](https://outbid.fly.dev)
+> (site, [buyer console](https://outbid.fly.dev/buyer), [vendor console](https://outbid.fly.dev/vendor)); it never
+> touches the sandbox. `fly deploy` from the repository updates it (`Dockerfile`, `fly.toml`).
 
 ## Run it
 
