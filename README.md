@@ -37,11 +37,12 @@ Node 20 or later, no dependencies, no build.
   unread, and the approval waits for its click (in a replay too). The purchase is three parts: vendors
   reading the intent and their bids landing, ranked by FX-priced total cost, and why the cheapest loses,
   with the cash forecast drawing itself; the approval, which says exactly what the buyer agrees to, and
-  the card with its controls and each charge with the reason Issuing gave; the rebate counting up. That is
-  the whole onboarding. What happens months later (the declined renewal hike, the reopened auction and the
-  message to the incumbent; the deposit and the recheck) is offered after it, under "What happens later",
-  not played into. Small things show as a caption under the stage, and the strip at the bottom jumps to
-  any part.
+  then that approval issued as the card, its controls locking in one by one and each charge landing on it
+  with the reason Issuing gave; the rebate counting up. It ends on its own screen: "That's the purchase."
+  The edge cases (months later, the declined renewal hike, the reopened auction and the message to the
+  incumbent; the deposit and the recheck) are listed there and played only on request, under a band that
+  says so, and a card that replaces another is shown as a swap, not as another card. Small things show as
+  a caption under the stage, and the strip at the bottom jumps to any part.
 - `/vendor` (`web/vendor.html`) is a **vendor console**, one vendor at a time (switch at the top, or `?v=Vendor%20B`).
   Its agent sees the anonymous intent, its own bid and rank, whether it was picked, the deal the buyer's card is
   bound to, its own charges (cleared, or declined for billing above what the buyer approved), its fee in escrow

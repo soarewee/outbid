@@ -316,13 +316,31 @@
       </div>
       <div class="step">
         <div class="pic"><div class="vcard" style="width:220px;padding:14px 16px"><div class="t"><span>Airwallex · virtual</span><span class="state">ACTIVE</span></div><div class="n" style="font-size:13px">•••• •••• •••• 0990</div><div class="b"><div class="for">pays only <b>Vendor B</b></div><span class="brand">VISA</span></div></div></div>
-        <div class="txt"><div class="n">3</div><h3 class="h3">The approval becomes the card</h3><p>The human approves one thing: this vendor, this amount, this currency. The card's controls are derived from that alone, and the network enforces them on every charge.</p></div>
+        <div class="txt"><div class="n">3</div><h3 class="h3">The approval is issued as the card</h3><p>The human approves one thing: this vendor, this amount, this currency. That approval is issued as a card whose controls are exactly those terms, so the network, not a policy, decides every charge.</p></div>
       </div>
     </div>
   </section>
 
   <section class="s" id="reserve">
     <div class="feat">
+      <div class="txt">
+        <div class="eyebrow">Why a card</div>
+        <h2 class="h2">The approval <span class="hl">is the card.</span></h2>
+        <p>You approve one thing: this vendor, this amount, this currency, this kind of merchant. Outbid issues that approval as an Airwallex virtual card whose controls are exactly those terms. No policy for anyone to follow, no prompt for an agent to obey: the network checks every charge against the approval at authorization, before money moves.</p>
+        <p><b>The vendor can't overcharge.</b> A price hike is declined with the very limit that was approved. <b>The agent can't overspend.</b> It never holds the company card, only one that pays one vendor one amount. <b>Nobody can fake a sale.</b> Every settled charge is reported by the network, not by either party, and that is what releases the vendor's fee.</p>
+        <p>Almost every software vendor already takes cards, so none of it needs the vendor to integrate anything.</p>
+      </div>
+      <div class="vis"><div class="inner">
+        <div class="receipt">
+          <div class="line"><div class="who">Vendor B</div><div class="amt">€1,180.00</div><div class="how">The agreed charge</div><div class="res approved">✓ Approved</div></div>
+          <div class="line"><div class="who">Vendor B</div><div class="amt">€1,440.00</div><div class="how">Renewal hike, +22%</div><div class="res declined">✕ Declined <code>LIMIT_EXCEEDED</code></div></div>
+          <div class="line"><div class="who">Corner Bistro</div><div class="amt">€100.00</div><div class="how">Wrong merchant</div><div class="res declined">✕ Declined <code>MERCHANT_CATEGORY_NOT_ALLOWED</code></div></div>
+          <div class="line"><div class="who">Vendor B, old card</div><div class="amt">€1,200.04</div><div class="how">After the buyer switched</div><div class="res declined">✕ Declined <code>CARD_INACTIVE</code></div></div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="feat flip">
       <div class="txt">
         <div class="eyebrow">Reserve check</div>
         <h2 class="h2">The cheapest bid <span class="hl">doesn't automatically win</span></h2>
@@ -342,23 +360,6 @@
           <circle cx="330" cy="157.4" r="7" fill="var(--card)"/><circle cx="330" cy="157.4" r="5" fill="var(--red)"/>
           <text x="342" y="173" fill="var(--red)" font-size="12" font-weight="500">$6,300 on day 45</text>
         </svg>
-      </div></div>
-    </div>
-
-    <div class="feat flip">
-      <div class="txt">
-        <div class="eyebrow">Why a card</div>
-        <h2 class="h2">A bid is a promise. <span class="hl">The card is the enforcement.</span></h2>
-        <p>The vendor's billing system decides what actually gets charged, and an agent holding the company card is a blank check. One virtual card per winning bid closes both gaps: <b>the vendor can't overcharge</b>, <b>the agent can't overspend</b>, and nobody can fake a sale, because every settled charge is reported by the network, not by either party.</p>
-        <p>Almost every software vendor already takes cards, so it needs no vendor integration.</p>
-      </div>
-      <div class="vis"><div class="inner">
-        <div class="receipt">
-          <div class="line"><div class="who">Vendor B</div><div class="amt">€1,180.00</div><div class="how">The agreed charge</div><div class="res approved">✓ Approved</div></div>
-          <div class="line"><div class="who">Vendor B</div><div class="amt">€1,440.00</div><div class="how">Renewal hike, +22%</div><div class="res declined">✕ Declined <code>LIMIT_EXCEEDED</code></div></div>
-          <div class="line"><div class="who">Corner Bistro</div><div class="amt">€100.00</div><div class="how">Wrong merchant</div><div class="res declined">✕ Declined <code>MERCHANT_CATEGORY_NOT_ALLOWED</code></div></div>
-          <div class="line"><div class="who">Vendor B, old card</div><div class="amt">€1,200.04</div><div class="how">After the buyer switched</div><div class="res declined">✕ Declined <code>CARD_INACTIVE</code></div></div>
-        </div>
       </div></div>
     </div>
 

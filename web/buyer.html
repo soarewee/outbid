@@ -34,6 +34,9 @@
   .stage { flex: 1; min-height: 0; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; padding: 18px 0; }
   .moment { position: relative; max-height: 100%; overflow: auto; scrollbar-width: none; animation: enter .5s cubic-bezier(.2,.7,.2,1) both; border-radius: 16px; }
   .moment::-webkit-scrollbar { display: none; }
+  /* a moment taller than the stage scrolls inside it; the fade says there is more */
+  .stage::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 36px; background: linear-gradient(transparent, var(--plane)); pointer-events: none; opacity: 0; transition: opacity .3s; }
+  .stage.more::after { opacity: 1; }
   .moment.out { position: absolute; left: 0; right: 0; animation: leave .28s ease-in both; pointer-events: none; }
   @keyframes enter { from { opacity: 0; transform: translateY(18px) scale(.985); } to { opacity: 1; transform: none; } }
   @keyframes leave { to { opacity: 0; transform: translateY(-14px) scale(.99); } }
@@ -134,18 +137,55 @@
   .decided.yes { color: var(--green); }
   .decided.no { color: var(--red); }
 
-  /* the card */
-  .cardrow { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
-  .cardrow .vcard { animation: flip .7s cubic-bezier(.2,.7,.2,1) both; animation-delay: .15s; }
+  /* the card: once, and big. Its controls lock in one by one, and it reacts to every charge. */
+  .cardrow { display: flex; gap: 28px; align-items: center; flex-wrap: wrap; }
+  .cardrow .vcard { width: 300px; animation: flip .8s cubic-bezier(.2,.7,.2,1) both; animation-delay: .15s; transition: box-shadow .3s, filter .5s, opacity .5s; }
+  .cardrow .vcard .n { font-size: 18px; }
+  .vcard.ok { box-shadow: 0 0 0 4px var(--green-soft), var(--shadow-lg); }
+  .vcard.no { box-shadow: 0 0 0 4px var(--red-soft), var(--shadow-lg); animation: shake .45s; }
+  @keyframes shake { 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
   @keyframes flip { from { opacity: 0; transform: perspective(900px) rotateY(-28deg) translateX(-12px); } to { opacity: 1; transform: none; } }
-  .rules { flex: 1; min-width: 220px; display: grid; gap: 12px; }
-  .rule { animation: rise .45s ease-out both; }
+  .rules { flex: 1; min-width: 220px; display: grid; gap: 10px; }
+  .rule { display: grid; grid-template-columns: 22px 1fr; gap: 0 10px; align-items: start; animation: rise .45s ease-out both; }
+  .rule .ic { width: 20px; height: 20px; border-radius: 50%; background: var(--green-soft); color: var(--green); display: flex; align-items: center; justify-content: center; margin-top: 7px; animation: pop .4s cubic-bezier(.2,.9,.3,1.3) both; }
+  .rule .ic svg { width: 11px; height: 11px; }
   .rule .l { font-size: 13px; color: var(--ink3); }
   .rule .v { font-size: 16px; font-weight: 500; }
   .rule .v code { font-family: var(--mono); font-size: 12px; color: var(--ink3); margin-left: 6px; }
+  .rule.else { display: block; font-size: 13.5px; line-height: 1.5; color: var(--ink2); padding-top: 8px; border-top: 1px solid var(--line); }
+  .rule.else b { color: var(--ink); font-weight: 500; }
+  @media (max-width: 560px) { .cardrow .vcard { width: 100%; max-width: 330px; } }
   .receipt { margin-top: 16px; padding-top: 6px; border-top: 1px solid var(--line); }
   .receipt:empty { display: none; }
-  .receipt .line { padding: 11px 0; }
+  .receipt .line { padding: 9px 0; }
+
+  /* a card that replaces another, in an edge case: a swap, not another card */
+  .swap { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  .swap .arr { color: var(--ink3); }
+  .chip { display: inline-flex; align-items: center; gap: 9px; border: 1px solid var(--line2); border-radius: 10px; padding: 8px 12px; font-family: var(--mono); font-size: 13px; letter-spacing: .06em; animation: rise .4s ease-out both; }
+  .chip .state { font-size: 10.5px; letter-spacing: .1em; color: var(--green); }
+  .chip.frozen { color: var(--ink3); border-style: dashed; }
+  .chip.frozen .state { color: var(--ink3); }
+  .chip .k { font-family: var(--sans); font-size: 12.5px; letter-spacing: 0; color: var(--ink3); }
+  .ruleline { font-size: 14px; color: var(--ink2); }
+  .ruleline b { color: var(--ink); font-weight: 500; }
+
+  /* the end of the purchase, and the edge cases apart from it */
+  .recap { display: grid; gap: 9px; margin: 2px 0 20px; }
+  .recap .r { display: flex; align-items: center; gap: 10px; font-size: 15px; animation: rise .4s ease-out both; }
+  .recap .r .ic { width: 20px; height: 20px; border-radius: 50%; background: var(--green-soft); color: var(--green); display: flex; align-items: center; justify-content: center; flex: none; }
+  .recap .r .ic svg { width: 11px; height: 11px; }
+  .recap .r b { font-weight: 500; }
+  .edge { border: 1px dashed var(--line2); border-radius: 14px; padding: 16px 18px; background: var(--well); }
+  .edge .eyebrow { font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--amber); margin-bottom: 6px; }
+  .edge p { font-size: 14px; color: var(--ink2); line-height: 1.5; margin: 0 0 12px; }
+  .edge ol { margin: 0 0 14px; padding-left: 20px; font-size: 14px; color: var(--ink2); line-height: 1.6; }
+  .edge .btn { background: var(--card); }
+  .band { flex: none; display: flex; align-items: center; gap: 12px; margin-top: 14px; padding: 9px 14px; border-radius: 10px; background: var(--amber-soft); color: var(--ink); font-size: 13.5px; animation: rise .4s ease-out both; }
+  .band .k { font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--amber); white-space: nowrap; }
+  .band .t { flex: 1; min-width: 0; }
+  .band a { color: var(--ink3); font-size: 13px; white-space: nowrap; border-bottom: 1px solid var(--line2); cursor: pointer; }
+  .band[hidden] { display: none; }
   @media (max-width: 560px) { .receipt .res { grid-column: 1 / -1; justify-content: flex-start; margin-top: 4px; } .receipt .how { white-space: nowrap; } }
 
   /* big numbers */
@@ -174,6 +214,7 @@
       <div class="figure" id="rebfig" hidden><div class="l">Rebates</div><div class="v num" id="rebates">—</div></div>
     </div>
   </div>
+  <div class="band" id="band" hidden><span class="k">Edge case · months later</span><span class="t" id="bandTitle"></span><a id="bandBack">Back to the purchase</a></div>
   <div class="stage" id="stage">
     <div class="empty" id="empty">Run <code>npm run demo -- --wait</code> and post your intent here, or <code>npm run demo</code> to post the one in <code>data/intent.json</code>. Then watch. It plays one part at a time; you approve the card, and press Continue when you are ready for the next part.</div>
   </div>
@@ -229,7 +270,7 @@
     requestAnimationFrame(tick);
   };
 
-  const state = { slot: {}, vendors: [], currency: "USD", term: 12, cash: 0, floor: 0, dues: "", scene: 0, sceneTitle: "", cards: {}, lastCard: null, released: null, rebates: 0, approvals: 0, later: false, done: false, replay: false };
+  const state = { slot: {}, vendors: [], currency: "USD", term: 12, cash: 0, floor: 0, dues: "", scene: 0, sceneTitle: "", cards: {}, lastCard: null, released: null, rebates: 0, approvals: 0, later: false, done: false, replay: false, finale: null };
   const colorOf = (vendor) => `var(--s${state.slot[vendor] ?? 1})`;
 
   // ─── the stage ───
@@ -263,7 +304,7 @@
     const cur = moments[shown], next = moments[shown + 1];
     if (!next || cur?.hold) { hideNext(); return; } // nothing to move on to yet, or a question still open
     const wait = cur ? Math.max(0, shownAt + cur.dwell - Date.now()) : 0;
-    if (cur && next.scene !== cur.scene) { timer = setTimeout(() => offerNext(cur, next), Math.min(wait, 2500)); return; }
+    if (cur && next.scene !== cur.scene && !cur.open) { timer = setTimeout(() => offerNext(cur, next), Math.min(wait, 4000)); return; }
     hideNext();
     timer = setTimeout(() => show(shown + 1), wait);
   }
@@ -274,10 +315,8 @@
     if (offered === next) return;
     offered = next;
     const b = $("next");
-    const toLater = next.later && !cur.later;
-    b.replaceChildren(toLater ? "What happens later" : "Continue", icon("arrow"));
-    if (toLater) setCaption(el("b", null, "That's the purchase."), " Bids, one approval, a card that can only pay that, and your rebate. The rest happens months later.");
-    else if (!$("caption").textContent) setCaption(el("span", "up", `Next · ${next.sceneTitle}`));
+    b.replaceChildren("Continue", icon("arrow"));
+    if (!$("caption").textContent) setCaption(el("span", "up", `Next · ${next.sceneTitle}`));
     b.onclick = () => show(shown + 1);
     b.hidden = false;
     b.classList.remove("in"); void b.offsetWidth; b.classList.add("in");
@@ -296,12 +335,19 @@
     shown = i; shownAt = Date.now(); m.shownAt = shownAt;
     m.node.classList.remove("out"); m.node.scrollTop = 0;
     stage.append(m.node);
+    const more = () => stage.classList.toggle("more", m.node.scrollHeight - m.node.scrollTop > m.node.clientHeight + 6);
+    m.node.onscroll = more;
+    requestAnimationFrame(more); setTimeout(more, 600); setTimeout(more, 2500);
     $("caption").replaceChildren();
     for (const fn of m.onShow) fn();
     m.onShow = [];
+    const band = $("band");
+    band.hidden = !m.later;
+    if (m.later) $("bandTitle").textContent = m.sceneTitle;
     chapters(m.scene);
     schedule();
   }
+  $("bandBack").onclick = () => { const i = moments.indexOf(state.finale); if (i >= 0) show(i); };
   // The caption is the small thing that happened just now, under the stage.
   // ... and it lands a beat after the moment it belongs to is on stage, like everything else.
   const onStage = (fn, delay = 1500) => { const m = moments[moments.length - 1]; if (m) whenShown(m, fn, delay); else fn(); };
@@ -320,7 +366,7 @@
     scenes.forEach((s, i) => {
       if (s.later && !scenes[i - 1]?.later) box.append(el("span", "sep"));
       const b = el("button", s.n === current ? "on" : s.n < current ? "past" : "");
-      b.append(el("i"), el("span", "k", s.later ? "Later" : `Part ${s.n}`), el("span", "t", s.title));
+      b.append(el("i"), el("span", "k", s.later ? "Edge case" : `Part ${s.n}`), el("span", "t", s.title));
       b.title = s.title;
       b.onclick = () => { const j = moments.findIndex((m) => m.scene === s.n); if (j >= 0) show(j); };
       box.append(b);
@@ -419,7 +465,9 @@
   function scene(e) {
     // Runs recorded before the flag existed: everything after the first rebate payout is later.
     const later = e.later ?? state.done;
+    if (later && !state.finale) finale(); // the purchase is over: say so, before anything from later
     state.scene = e.n; state.sceneTitle = e.title; state.later = later;
+    if (later) state.finale.list.append(el("li", null, e.title));
     for (const m of moments) if (!m.scene) { m.scene = e.n; m.sceneTitle = e.title; m.later = later; } // moments from before the first part belong to it
     scenes.push({ n: e.n, title: e.title, later });
     chapters(moments[shown]?.scene ?? e.n);
@@ -437,6 +485,39 @@
     m.card.append(hero);
     whenShown(m, () => countUp(hero, e.amount, (n) => `+${whole(n, e.currency)}`, 1100), 300);
     whenShown(m, () => status("Rechecking the deal", "info", true));
+  }
+
+  // ─── the end of the purchase ───
+  // The story is the purchase. It ends here, on its own screen; the edge cases are offered apart from it,
+  // and nothing plays into them.
+  function finale() {
+    const c = state.lastCard?.approval, cur = state.currency;
+    const m = moment({
+      title: "That's the purchase.",
+      lead: [c ? `Three bids, one approval, and a card that can only pay ${c.vendor} ${money(c.amount, c.currency)} ${cycleWord(c.cycle)} at a software vendor. ${money(state.rebates, cur)} came back from the vendor's fee. Nothing else for you to do.` : "Nothing else for you to do."],
+      kind: "finale", dwell: 0,
+    });
+    m.hold = true;
+    const recap = el("div", "recap");
+    [
+      ["Intent posted anonymously"],
+      [`${state.vendors.length} bids, ranked on total cost and the reserve`],
+      c && [`Approved: ${c.vendor}, ${money(c.amount, c.currency)} ${cycleWord(c.cycle)}`],
+      state.lastCard && [`Card •••• ${state.lastCard.last4}, its controls enforced by the network`],
+      state.rebates && [`${money(state.rebates, cur)} back, from the vendor's prepaid fee`],
+    ].filter(Boolean).forEach(([t], i) => { const r = el("div", "r"); r.style.animationDelay = `${0.3 + i * 0.18}s`; const ic = el("span", "ic"); ic.append(icon("check")); r.append(ic, el("b", null, t)); recap.append(r); });
+    const edge = el("div", "edge");
+    edge.append(el("div", "eyebrow", "Edge cases · months later"));
+    edge.append(el("p", null, "Not part of the purchase. What the card does when things change, if you want to see it:"));
+    const list = el("ol");
+    const play = el("button", "btn");
+    play.append("Play the edge cases", icon("arrow"));
+    play.onclick = () => { m.open = true; const i = moments.indexOf(m); if (moments[i + 1]) show(i + 1); else { m.hold = false; schedule(); } };
+    edge.append(list, play);
+    m.card.append(recap, edge);
+    m.list = list;
+    whenShown(m, () => status(c ? `Done · paying ${c.vendor}` : "Done", "good"));
+    state.finale = m;
   }
 
   // ─── bids ───
@@ -601,7 +682,7 @@
     const p = (pending[e.id] = { btns, m, clicked: false, decision: null });
     const answer = (approved) => {
       p.clicked = true; yes.disabled = no.disabled = true;
-      fetch("/approve", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: e.id, approved }) });
+      fetch("/approve", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: e.id, approved }) }).catch(() => {});
       if (p.decision !== null) reveal(p);
     };
     yes.onclick = () => answer(true); no.onclick = () => answer(false);
@@ -634,42 +715,82 @@
   }
 
   // ─── the card ───
+  // The first card is the centrepiece: the approval, issued as a card, with its controls locking in one by
+  // one. A card that replaces it in an edge case is shown as a swap, not as another card.
+  const last4 = (number) => (number ?? "").slice(-4);
+  const mccName = (mcc) => MCC[mcc] ?? "the vendor's category";
   function cardIssued(e) {
-    const m = moment({
-      title: e.replaces ? `A new card, for ${e.approval.vendor}` : `Your card for ${e.approval.vendor}`,
-      lead: [e.replaces ? "Issued with the new terms as its controls. The old card is frozen; anything billed to it from now on is declined by the network." : "An Airwallex virtual card whose controls are the approved terms. Enforced at authorization, before money moves."],
-      kind: "card", dwell: 5000,
-    });
-    const row = el("div", "cardrow");
-    const v = el("div", "vcard");
-    const t = el("div", "t"); const st = el("span", "state", e.status); t.append(el("span", null, "Airwallex · virtual"), st);
-    const n = el("div", "n", (e.number ?? "****************").replace(/\*{4}/g, "•••• ").trim());
-    const b = el("div", "b"); const fr = el("div", "for"); fr.append("pays only ", el("b", null, e.approval.vendor));
-    b.append(fr, el("span", "brand", e.brand ?? ""));
-    v.append(t, n, b);
-    const rules = el("div", "rules");
-    [
-      ["Per charge, at most", money(e.approval.amount, e.approval.currency)],
-      ["Only in", e.approval.currency],
-      ["Only at", MCC[e.approval.merchantCategory] ?? "the vendor's category", `MCC ${e.approval.merchantCategory}`],
-    ].forEach(([l, val, code], i) => { const r = el("div", "rule"); r.style.animationDelay = `${0.7 + i * 0.22}s`; const vv = el("div", "v", val); if (code) vv.append(el("code", null, code)); r.append(el("div", "l", l), vv); rules.append(r); });
-    row.append(v, rules);
+    const a = e.approval;
+    const old = e.replaces && state.cards[e.replaces];
     const receipt = el("div", "receipt");
-    m.card.append(row, receipt);
-    state.cards[e.id] = { vcard: v, st, last4: (e.number ?? "").slice(-4), m, receipt };
-    state.lastCard = state.cards[e.id];
+    const card = { nodes: [], sts: [], last4: last4(e.number), receipt, approval: a };
+    const chip = (digits, state_, k) => {
+      const ch = el("span", "chip"); const st = el("span", "state", state_);
+      if (k) ch.append(el("span", "k", k));
+      ch.append(`•••• ${digits}`, st); return [ch, st];
+    };
+    let m;
+    if (old) {
+      m = moment({
+        title: "New terms, new card.",
+        lead: [`${a.vendor} at ${money(a.amount, a.currency)} ${cycleWord(a.cycle)}${old.approval ? `, instead of ${money(old.approval.amount, old.approval.currency)}` : ""}. The new card's controls are the new terms. The old card is frozen, so anything still billed to it is declined by the network.`],
+        kind: "cardswap", dwell: 5000,
+      });
+      const row = el("div", "swap");
+      const [oc, ost] = chip(old.last4, "ACTIVE", "old"); old.nodes.push(oc); old.sts.push(ost);
+      const [nc, nst] = chip(card.last4, e.status, "new"); nc.style.animationDelay = ".5s"; card.nodes.push(nc); card.sts.push(nst);
+      const arr = el("span", "arr"); arr.append(icon("arrow"));
+      row.append(oc, arr, nc);
+      const line = el("div", "ruleline");
+      line.append("Per charge at most ", el("b", null, money(a.amount, a.currency)), ", only in ", el("b", null, a.currency), ", only at ", el("b", null, mccName(a.merchantCategory)), ".");
+      m.card.append(row, line, receipt);
+    } else {
+      m = moment({
+        title: "Your approval, issued as a card.",
+        lead: ["An Airwallex virtual card whose controls are exactly the terms you approved, checked by the network on every charge before money moves. Not a policy to follow: a card that cannot be used any other way."],
+        kind: "card", dwell: 6000,
+      });
+      const row = el("div", "cardrow");
+      const v = el("div", "vcard");
+      const t = el("div", "t"); const st = el("span", "state", e.status); t.append(el("span", null, "Airwallex · virtual"), st);
+      const n = el("div", "n", (e.number ?? "****************").replace(/\*{4}/g, "•••• ").trim());
+      const b = el("div", "b"); const fr = el("div", "for"); fr.append("pays only ", el("b", null, a.vendor));
+      b.append(fr, el("span", "brand", e.brand ?? ""));
+      v.append(t, n, b);
+      card.nodes.push(v); card.sts.push(st);
+      const rules = el("div", "rules");
+      [
+        ["Per charge, at most", money(a.amount, a.currency)],
+        ["Only in", a.currency],
+        ["Only at", mccName(a.merchantCategory), `MCC ${a.merchantCategory}`],
+      ].forEach(([l, val, code], i) => {
+        const r = el("div", "rule"); r.style.animationDelay = `${0.9 + i * 0.3}s`;
+        const ic = el("span", "ic"); ic.append(icon("check")); ic.style.animationDelay = `${1.2 + i * 0.3}s`;
+        const vv = el("div", "v", val); if (code) vv.append(el("code", null, code));
+        const txt = el("div"); txt.append(el("div", "l", l), vv);
+        r.append(ic, txt); rules.append(r);
+      });
+      const rest = el("div", "rule else"); rest.style.animationDelay = "1.9s";
+      rest.append("Anything else, ", el("b", null, "declined by the network"), ", with the reason. A higher bill, another currency, another kind of merchant.");
+      rules.append(rest);
+      row.append(v, rules);
+      m.card.append(row, receipt);
+    }
+    card.m = m;
+    state.cards[e.id] = card;
+    state.lastCard = card;
     whenShown(m, () => {
-      const pay = $("paying"); pay.replaceChildren(`${e.approval.vendor} ${money(e.approval.amount, e.approval.currency)}`, el("small", null, perShort(e.approval.cycle)));
+      const pay = $("paying"); pay.replaceChildren(`${a.vendor} ${money(a.amount, a.currency)}`, el("small", null, perShort(a.cycle)));
       $("payfig").hidden = false;
-      status(`Active · paying ${e.approval.vendor}`, "good", true);
+      status(`Active · paying ${a.vendor}`, "good", true);
     }, 600);
   }
   function cardStatus(e) {
     const c = state.cards[e.id];
     if (!c) return;
     onStage(() => {
-      c.st.textContent = e.status === "ACTIVE" ? "ACTIVE" : "FROZEN";
-      c.vcard.classList.toggle("frozen", e.status !== "ACTIVE");
+      for (const st of c.sts) st.textContent = e.status === "ACTIVE" ? "ACTIVE" : "FROZEN";
+      for (const n of c.nodes) n.classList.toggle("frozen", e.status !== "ACTIVE");
     }, 1200);
     if (e.status !== "ACTIVE") caption("The old card ", el("b", null, `•••• ${c.last4}`), " is frozen.");
   }
@@ -703,11 +824,17 @@
       return;
     }
     if (!card) return;
-    // If that card's moment has passed, bring it back.
-    card.receipt.append(l);
+    // It lands a beat after the card is on stage, and the card reacts. If that card's moment has passed,
+    // bring it back.
+    const k = card.charges = (card.charges ?? 0) + 1;
+    whenShown(card.m, () => {
+      card.receipt.append(l);
+      const cls = e.outcome === "approved" ? "ok" : "no";
+      for (const n of card.nodes) { n.classList.remove("ok", "no"); void n.offsetWidth; n.classList.add(cls); setTimeout(() => n.classList.remove(cls), 1400); }
+    }, 1400 + (k - 1) * 1600);
     const i = moments.indexOf(card.m);
     if (i !== shown) { if (i < shown) { card.m.dwell = 4500; moments.splice(i, 1); moments.push(card.m); shown--; } schedule(); }
-    else { shownAt = Date.now(); card.m.dwell = 4500; schedule(); }
+    else { shownAt = Date.now(); card.m.dwell = 4500 + (k - 1) * 1600; schedule(); }
   }
 
   // ─── escrow ───
