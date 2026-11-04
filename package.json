@@ -2,6 +2,7 @@
   "name": "outbid",
   "version": "0.0.0",
   "private": true,
+  "license": "MIT",
   "description": "Outbid: vendors bid for an agent's purchase intent and the winning bid becomes an Airwallex virtual card",
   "type": "module",
   "engines": {

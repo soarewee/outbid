@@ -32,8 +32,8 @@ What drives the build:
 
 ## Reference: Agentic AdFi
 
-The parent project is `~/Developer/Agentic-AdFi` (private repo, Korean docs). `docs/product/proposal.md`
-(form C) and `docs/product/sponsored-offer-schema.md` explain the three-party model Outbid comes from, and
+The parent project is Agentic AdFi (a separate private repo, Korean docs). `docs/product/proposal.md` and
+`docs/product/forms/c-reverse-auction.md` explain the three-party model Outbid comes from, and
 `contracts/` holds AdFi's settlement contract, the closest model for the fee escrow. Read them freely, but
 don't depend on AdFi packages or copy its code: Outbid has its own dependencies and its own Foundry project
 for the escrow.
