@@ -1,7 +1,7 @@
 // Money in and out of the company's Airwallex wallet: balances, simulated deposits into the Global
 // Account, and payouts to a bank beneficiary.
 import { randomUUID } from "node:crypto";
-import { waitFor } from "./airwallex.mjs";
+import { sleep } from "./airwallex.mjs";
 
 export async function available(aw, currency) {
   const balances = await aw.get("/api/v1/balances/current");
@@ -9,9 +9,12 @@ export async function available(aw, currency) {
 }
 
 // A simulated incoming payment to the Global Account (sandbox only). USD lands as USD. The deposit is
-// created PENDING and usually shows up in the balance at once, but on Oct 28 one took over a minute, so
-// this waits until the available balance has risen by the amount.
-export async function deposit(aw, amount, payerName) {
+// asked for as SETTLED (the default too) and usually shows up in the available balance at once, but the
+// sandbox sometimes leaves one PENDING for hours (Oct 28: over a minute; Nov 7: a $4,540 deposit still
+// pending while a $1 one settled in 0.2 s). So this waits for the balance to rise, sends the deposit
+// once more if it hasn't, and gives up after `waitMs` in all, saying so: `landed` is false and the
+// callers decide whether the story can go on without it.
+export async function deposit(aw, amount, payerName, { waitMs = 150_000, intervalMs = 3_000, retryAfterMs = 45_000 } = {}) {
   const accounts = (await aw.get("/api/v1/global_accounts")).items ?? [];
   const account = accounts[0] ?? await aw.post("/api/v1/global_accounts/create", {
     request_id: randomUUID(),
@@ -19,9 +22,24 @@ export async function deposit(aw, amount, payerName) {
     required_features: [{ currency: "USD", transfer_method: "LOCAL" }],
   });
   const before = await available(aw, "USD");
-  await aw.post("/api/v1/simulation/deposit/create", { global_account_id: account.id, amount, payer_name: payerName });
-  await waitFor("deposit", () => available(aw, "USD"), (cash) => cash >= before + amount - 0.005, { tries: 60, intervalMs: 3000 });
-  return account.id;
+  const send = () => aw.post("/api/v1/simulation/deposit/create", { global_account_id: account.id, amount, payer_name: payerName, status: "SETTLED" });
+  const deposits = [await send()];
+  const started = Date.now();
+  let warned = false;
+  while (Date.now() - started < waitMs) {
+    const cash = await available(aw, "USD");
+    if (cash >= before + amount - 0.005) return { accountId: account.id, deposits, landed: true, cash };
+    const waited = Date.now() - started;
+    if (waited >= retryAfterMs && deposits.length === 1) {
+      console.log(`Deposit ${deposits[0].id} is still ${deposits[0].status} after ${Math.round(waited / 1000)} s; sending it once more.`);
+      deposits.push(await send());
+    } else if (!warned && waited >= intervalMs * 3) {
+      console.log(`Waiting for the sandbox to settle the deposit (${deposits[0].id}, ${deposits[0].status}) …`);
+      warned = true;
+    }
+    await sleep(intervalMs);
+  }
+  return { accountId: account.id, deposits, landed: false, cash: await available(aw, "USD") };
 }
 
 // The account's local beneficiary for this currency, created on first use (US ACH test details).
@@ -69,10 +87,16 @@ export async function payout(aw, { amount, currency, reference }) {
 }
 
 // Moves the available balance to `target` with a deposit or a payout, so a demo starts from known cash.
-export async function setAvailable(aw, currency, target) {
+// If the sandbox leaves the top-up pending, the run goes on from the cash it has: `pending` says how
+// much is still on its way (a later run's reset pays it back out).
+export async function setAvailable(aw, currency, target, options) {
   const before = await available(aw, currency);
   const gap = Math.round((target - before) * 100) / 100;
-  if (gap > 0) await deposit(aw, gap, "Outbid demo top-up");
+  let pending = 0;
+  if (gap > 0) {
+    const topUp = await deposit(aw, gap, "Outbid demo top-up", options);
+    if (!topUp.landed) pending = gap;
+  }
   if (gap < 0) await payout(aw, { amount: -gap, currency, reference: "Outbid demo reset" });
-  return { before, after: await available(aw, currency) };
+  return { before, after: await available(aw, currency), pending };
 }

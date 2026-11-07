@@ -137,7 +137,10 @@ Every charge outcome comes from Airwallex Issuing. An API error is reported as a
 - A card's per-transaction limit is capped per account: `GET /api/v1/issuing/config` reports `maximum: 50000` for USD
   and EUR here, and a higher limit is rejected with `limit setting exceed max spending limit for the account`.
 - A `LOCAL` USD transfer to an ACH beneficiary has no fee and lowers the available balance as soon as it is created.
-  Simulated deposits show up in the available balance right away.
+  Simulated deposits usually show up in the available balance right away, but not always: on Nov 7 a $4,540 deposit
+  stayed `PENDING` (estimated to settle at the end of the day) while a $1 one settled in 0.2 s. The demo sends a deposit
+  again if it hasn't landed in 45 s, starts from the cash it has if the opening top-up never lands, and stops with a
+  message if the customer payment in the last part doesn't.
 
 ## Sandbox spike
 

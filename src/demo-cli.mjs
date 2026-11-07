@@ -115,8 +115,9 @@ async function settle(card, prepaid, charge) {
 }
 
 async function play() {
-  const reset = await setAvailable(aw, cur, scenario.startingCash);
+  const reset = await setAvailable(aw, cur, scenario.startingCash, { waitMs: 60_000, retryAfterMs: 20_000 });
   console.log(`Sandbox ${cur} balance set to ${money(reset.after, cur)} (was ${money(reset.before, cur)})`);
+  if (reset.pending) console.log(`The sandbox hasn't settled the ${money(reset.pending, cur)} top-up yet, so the run starts from ${money(reset.after, cur)} instead of ${money(scenario.startingCash, cur)}.`);
   stage.emit("start", { intent, company, scenario, vendors: vendorNames });
 
   scene(1, "Three vendors bid. The cheapest would break the reserve.");
@@ -173,7 +174,8 @@ async function play() {
   run.charges.push(await chargeAt(card, "Renewed charge", card.approval.amount));
 
   scene(5, "Cash recovers, so the annual deal comes back.", { later: true });
-  await deposit(aw, scenario.customerPayment.amount, scenario.customerPayment.payer);
+  const paid = await deposit(aw, scenario.customerPayment.amount, scenario.customerPayment.payer);
+  if (!paid.landed) stop(`${scenario.customerPayment.payer}'s ${money(scenario.customerPayment.amount, cur)} payment is still pending in the sandbox, and the recheck needs it in the balance. Cash stays at ${money(paid.cash, cur)}; run the demo again later.`);
   cash = await available(aw, cur);
   console.log(`${scenario.customerPayment.payer} paid ${money(scenario.customerPayment.amount, cur)}. Cash: ${money(cash, cur)}\n`);
   stage.emit("deposit", { payer: scenario.customerPayment.payer, amount: scenario.customerPayment.amount, currency: cur });
