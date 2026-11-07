@@ -81,9 +81,9 @@ In this order, on Nov 13 after the video is up:
   no fixed format, so also confirm by eye that `.env` was never committed: `git log --all --oneline -- .env`
   prints nothing.
 - [x] MIT license in the repository, visible in its About.
-- [ ] Delete the unused `FLY_API_TOKEN` GitHub Actions secret (`gh secret delete FLY_API_TOKEN`; no workflow uses
-  it), and revoke the Fly token named `outbid` (`fly tokens list`, then `fly tokens revoke <id>`), since the
-  hosted replay is deployed by hand with `fly deploy`.
+- [x] Delete the unused `FLY_API_TOKEN` GitHub Actions secret (Nov 7; no workflow used it).
+- [ ] Revoke the Fly token named `outbid` (`fly tokens list`, then `fly tokens revoke <id>`), since the hosted
+  replay is deployed by hand with `fly deploy`.
 - [ ] Put the YouTube link in the README (next to the hosted replay) and in the table above.
 - [ ] `AGENTS.md`: change "The repo is private until submission" to say it is public, and keep the parent
   project described without a local path.
