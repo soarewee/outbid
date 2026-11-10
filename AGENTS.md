@@ -12,8 +12,7 @@ Agent), and an evolution of Agentic AdFi's form C (reverse auction).
 ## The hackathon
 
 [Airwallex Agentic Banking Hackathon](https://airwallex.hackerearth.com/), shortlisted on Oct 27. Submission
-deadline **Nov 14, 2026 03:29 KST**; the target is to finish on the night of Nov 12, because the PayPal
-deadline lands the same day. Notes (Korean) in `~/Developer/Agentic-AdFi/docs/events/`:
+deadline **Nov 14, 2026 03:29 KST**. Notes (Korean) are in the parent project's `docs/events/`:
 
 - `airwallex-agentic-banking.md`: rules, prizes (Metal Award: Metal + Airwallex tools).
 - `airwallex-idea-kit02.md`: the submitted pitch (the demo must match it) and the **build schedule** with
@@ -27,7 +26,7 @@ What drives the build:
   change; approvals are bound to amount, currency, counterparty and terms; limits and the reserve live in
   code, and the model reads vendor terms and explains the trade-off.
 - Deliverables: a working demo, a video under 5 minutes, and a repository link with run instructions.
-  Everything is in English. The repo is private until submission.
+  Everything is in English. The repo has been public since Nov 10, so anything committed is published.
 - Outbid is an independent entry. Don't mention the team's other hackathon entries in the repo or demo.
 
 ## Reference: Agentic AdFi

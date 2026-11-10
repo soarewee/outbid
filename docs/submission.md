@@ -68,7 +68,7 @@ copy at outbid.fly.dev replays that run without touching the sandbox.
 | What | Where |
 | --- | --- |
 | Repository, with run instructions in the README | https://github.com/soarewee/outbid |
-| Video (under 5 minutes) | *YouTube link, after recording* |
+| Video (under 5 minutes) | https://youtu.be/MQ9fp_v3k3o |
 | Hosted replay of the recorded run: site, buyer console, vendor console | https://outbid.fly.dev |
 | Evidence of the run (Airwallex ids and response fields, Metal transactions) | `evidence/2026-11-10.json` in the repository |
 | Fee escrow on Metal testnet | address in `contracts/deployments/metal-testnet.json`, transactions on testnet.metalntwx.com |
@@ -83,13 +83,13 @@ In this order, on Nov 13 after the video is up:
 - [x] MIT license in the repository, visible in its About.
 - [x] Delete the unused `FLY_API_TOKEN` GitHub Actions secret (Nov 7; no workflow used it).
 - [x] Revoke the Fly token named `outbid` (Nov 7); the hosted replay is deployed by hand with `fly deploy`.
-- [ ] Put the YouTube link in the README (next to the hosted replay) and in the table above.
-- [ ] `AGENTS.md`: change "The repo is private until submission" to say it is public, and keep the parent
+- [x] Put the YouTube link in the README (next to the hosted replay) and in the table above.
+- [x] `AGENTS.md`: change "The repo is private until submission" to say it is public, and keep the parent
   project described without a local path.
 - [x] If the recording run replaced the Nov 2 evidence: `npm run evidence`, update `web/index.html` and the
   `Dockerfile`, `fly deploy`, and check the hosted buyer console still plays (Nov 10: the 14:25 KST run).
-- [ ] Make the repository public (`gh repo edit --visibility public --accept-visibility-change-consequences`).
-- [ ] From an empty folder, `git clone`, `cp .env.example .env`, fill it, `npm test`, `npm run demo -- --yes`:
-  the run instructions work as written.
+- [x] Make the repository public (`gh repo edit --visibility public --accept-visibility-change-consequences`).
+- [x] From an empty folder, `git clone`, `cp .env.example .env`, fill it, `npm test`, `npm run demo -- --yes`:
+  the run instructions work as written (Nov 10: 18 tests pass, all five parts ran against the sandbox and Metal).
 - [ ] Fill the form with the title, the description and the links above; check that the video is public and
   under 5 minutes.
