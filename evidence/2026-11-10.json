@@ -1,0 +1,2020 @@
+{
+ "recorded": "2026-11-10T05:25:36Z",
+ "note": "A demo run of Outbid against the Airwallex sandbox and Metal testnet. `events` are what the consoles played; `airwallex` holds, for each call that proves a step, the fields that prove it; `metal` lists the escrow transactions (open them on https://testnet.metalntwx.com). Credentials, cardholder and beneficiary records are left out.",
+ "model": "claude-opus-5-5",
+ "explanations": [
+  {
+   "key": "opening",
+   "text": "Vendor B wins at €2,960 a month, billed in EUR, about $39,669 over 12 months and within your $3,750 monthly budget. Vendor C is cheaper at $34,500, but paying it up front drops your cash to $19,500 on day 45, under your $20,000 reserve floor, and to $6,000 by day 84. Vendor A, billed monthly with cancel any time, costs more at $40,800. You can revisit Vendor C on 2027-02-08 or once your cash can carry it above $20,000.",
+   "model": "claude-opus-5-5",
+   "usage": {
+    "input": 1419,
+    "output": 1102
+   }
+  },
+  {
+   "key": "reopened",
+   "text": "Vendor A wins at $3,400 a month, $40,800 over the year, billed monthly and cancel any time. Vendor C is cheaper at $34,500, but it is prepaid up front, which would drop your cash below your $20,000 reserve on day 45 and to $5,980 by day 84. Vendor B, your incumbent, raised its price from €2,960 to €3,612 a month, about $4,034, over your $3,750 budget. We revisit Vendor C on 2027-02-08, or sooner if cash can hold the reserve.",
+   "model": "claude-opus-5-5",
+   "usage": {
+    "input": 1542,
+    "output": 955
+   }
+  },
+  {
+   "key": "recheck",
+   "text": "Northwind Traders' $30,000 payment lifts your cash to $109,980, so Vendor C now wins over your current pick, Vendor B. Vendor C costs $34,500 for the year, prepaid up front, against $40,379 for Vendor B's €3,013 billed monthly in EUR and $40,800 for Vendor A. Paying up front no longer strains you. Your lowest balance would be $35,980 on day 84, safely above your $20,000 reserve floor, and all three bids fit your $3,750 monthly budget.",
+   "model": "claude-opus-5-5",
+   "usage": {
+    "input": 1419,
+    "output": 503
+   }
+  }
+ ],
+ "airwallex": [
+  {
+   "method": "POST",
+   "path": "/api/v1/simulation/deposit/create",
+   "status": 201,
+   "request": {
+    "amount": 4540,
+    "payer_name": "Outbid demo top-up"
+   },
+   "response": {
+    "status": "PENDING",
+    "amount": 4540,
+    "currency": "USD"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/fx/rates/current?sell_currency=EUR&buy_currency=USD&sell_amount=1000",
+   "status": 200,
+   "response": {
+    "currency_pair": "EURUSD",
+    "rate": 1.116819,
+    "sell_currency": "EUR",
+    "buy_currency": "USD"
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/issuing/cards/create",
+   "status": 202,
+   "request": {
+    "authorization_controls": {
+     "allowed_transaction_count": "MULTIPLE",
+     "allowed_currencies": [
+      "EUR"
+     ],
+     "allowed_merchant_categories": [
+      "7372"
+     ],
+     "transaction_limits": {
+      "currency": "EUR",
+      "limits": [
+       {
+        "amount": 2960,
+        "interval": "PER_TRANSACTION"
+       }
+      ]
+     }
+    },
+    "nick_name": "Outbid: Vendor B @ EUR 2960/monthly"
+   },
+   "response": {
+    "card_id": "f5551cf2-7f10-4c90-ad1a-7afc36c6f2eb",
+    "card_number": "************7597",
+    "card_status": "ACTIVE",
+    "brand": "VISA",
+    "created_at": "2026-11-10T05:23:05.374+0000"
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/simulation/issuing/create",
+   "status": 201,
+   "request": {
+    "card_id": "f5551cf2-7f10-4c90-ad1a-7afc36c6f2eb",
+    "transaction_amount": 2960,
+    "transaction_currency": "EUR",
+    "merchant_category_code": "7372"
+   },
+   "response": {
+    "card_transaction_id": "01a1c3e9-1b2a-7000-8d38-98f1710f6d33",
+    "process_result": "APPROVED",
+    "billing_amount": 2960,
+    "billing_currency": "EUR",
+    "transaction_amount": 2960,
+    "transaction_currency": "EUR"
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/simulation/issuing/create",
+   "status": 201,
+   "request": {
+    "card_id": "f5551cf2-7f10-4c90-ad1a-7afc36c6f2eb",
+    "transaction_amount": 180,
+    "transaction_currency": "EUR",
+    "merchant_category_code": "5812"
+   },
+   "response": {
+    "card_transaction_id": "01a1c3e9-24eb-7000-ac2b-ddb32cef79c7",
+    "process_result": "DECLINED",
+    "failure_reason": "MERCHANT_CATEGORY_NOT_ALLOWED",
+    "billing_amount": 180,
+    "billing_currency": "EUR",
+    "transaction_amount": 180,
+    "transaction_currency": "EUR"
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/transfers/create",
+   "status": 201,
+   "request": {
+    "transfer_amount": 20,
+    "transfer_currency": "USD",
+    "transfer_method": "LOCAL",
+    "reference": "Outbid rebate 0x861eae19"
+   },
+   "response": {
+    "id": "8ae730bf-dfa2-4ea3-a2e9-8fe9346984d8",
+    "short_reference_id": "P261110-OMO44AY",
+    "status": "SCHEDULED",
+    "amount_payer_pays": 20,
+    "transfer_currency": "USD",
+    "created_at": "2026-11-10T05:23:27+0000"
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/simulation/issuing/create",
+   "status": 201,
+   "request": {
+    "card_id": "f5551cf2-7f10-4c90-ad1a-7afc36c6f2eb",
+    "transaction_amount": 3612.2,
+    "transaction_currency": "EUR",
+    "merchant_category_code": "7372"
+   },
+   "response": {
+    "card_transaction_id": "01a1c3e9-4772-7000-9af2-dc509dd11f0d",
+    "process_result": "DECLINED",
+    "failure_reason": "LIMIT_EXCEEDED",
+    "billing_amount": 3612.2,
+    "billing_currency": "EUR",
+    "transaction_amount": 3612.2,
+    "transaction_currency": "EUR"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/fx/rates/current?sell_currency=USD&buy_currency=EUR&sell_amount=1000",
+   "status": 200,
+   "response": {
+    "currency_pair": "EURUSD",
+    "rate": 1.128466,
+    "sell_currency": "USD",
+    "buy_currency": "EUR"
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/issuing/cards/create",
+   "status": 202,
+   "request": {
+    "authorization_controls": {
+     "allowed_transaction_count": "MULTIPLE",
+     "allowed_currencies": [
+      "EUR"
+     ],
+     "allowed_merchant_categories": [
+      "7372"
+     ],
+     "transaction_limits": {
+      "currency": "EUR",
+      "limits": [
+       {
+        "amount": 3012.93,
+        "interval": "PER_TRANSACTION"
+       }
+      ]
+     }
+    },
+    "nick_name": "Outbid: Vendor B @ EUR 3012.93/monthly"
+   },
+   "response": {
+    "card_id": "e2a5275d-f9fd-4c3e-9d83-c557223802b8",
+    "card_number": "************9429",
+    "card_status": "ACTIVE",
+    "brand": "VISA",
+    "created_at": "2026-11-10T05:24:40.830+0000"
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/issuing/cards/f5551cf2-7f10-4c90-ad1a-7afc36c6f2eb/update",
+   "status": 200,
+   "request": {
+    "card_status": "INACTIVE"
+   },
+   "response": {
+    "card_id": "f5551cf2-7f10-4c90-ad1a-7afc36c6f2eb",
+    "card_status": "INACTIVE"
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/simulation/issuing/create",
+   "status": 201,
+   "request": {
+    "card_id": "e2a5275d-f9fd-4c3e-9d83-c557223802b8",
+    "transaction_amount": 3012.93,
+    "transaction_currency": "EUR",
+    "merchant_category_code": "7372"
+   },
+   "response": {
+    "card_transaction_id": "01a1c3ea-67c2-7000-843a-1b72597481e5",
+    "process_result": "APPROVED",
+    "billing_amount": 3012.93,
+    "billing_currency": "EUR",
+    "transaction_amount": 3012.93,
+    "transaction_currency": "EUR"
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/simulation/deposit/create",
+   "status": 201,
+   "request": {
+    "amount": 30000,
+    "payer_name": "Northwind Traders"
+   },
+   "response": {
+    "status": "PENDING",
+    "amount": 30000,
+    "currency": "USD"
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/issuing/cards/create",
+   "status": 202,
+   "request": {
+    "authorization_controls": {
+     "allowed_transaction_count": "MULTIPLE",
+     "allowed_currencies": [
+      "USD"
+     ],
+     "allowed_merchant_categories": [
+      "7372"
+     ],
+     "transaction_limits": {
+      "currency": "USD",
+      "limits": [
+       {
+        "amount": 34500,
+        "interval": "PER_TRANSACTION"
+       }
+      ]
+     }
+    },
+    "nick_name": "Outbid: Vendor C @ USD 34500/annual"
+   },
+   "response": {
+    "card_id": "1af53a69-73a1-44df-b436-798fe042a13e",
+    "card_number": "************0090",
+    "card_status": "ACTIVE",
+    "brand": "VISA",
+    "created_at": "2026-11-10T05:25:01.694+0000"
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/issuing/cards/e2a5275d-f9fd-4c3e-9d83-c557223802b8/update",
+   "status": 200,
+   "request": {
+    "card_status": "INACTIVE"
+   },
+   "response": {
+    "card_id": "e2a5275d-f9fd-4c3e-9d83-c557223802b8",
+    "card_status": "INACTIVE"
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/simulation/issuing/create",
+   "status": 201,
+   "request": {
+    "card_id": "1af53a69-73a1-44df-b436-798fe042a13e",
+    "transaction_amount": 34500,
+    "transaction_currency": "USD",
+    "merchant_category_code": "7372"
+   },
+   "response": {
+    "card_transaction_id": "01a1c3eb-0c78-7000-b8c7-90e71423038b",
+    "process_result": "APPROVED",
+    "billing_amount": 34500,
+    "billing_currency": "USD",
+    "transaction_amount": 34500,
+    "transaction_currency": "USD"
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/simulation/issuing/create",
+   "status": 201,
+   "request": {
+    "card_id": "e2a5275d-f9fd-4c3e-9d83-c557223802b8",
+    "transaction_amount": 3012.93,
+    "transaction_currency": "EUR",
+    "merchant_category_code": "7372"
+   },
+   "response": {
+    "card_transaction_id": "01a1c3eb-1b4e-7000-b5ce-39595ea3e883",
+    "process_result": "DECLINED",
+    "failure_reason": "CARD_INACTIVE",
+    "billing_amount": 3012.93,
+    "billing_currency": "EUR",
+    "transaction_amount": 3012.93,
+    "transaction_currency": "EUR"
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/transfers/create",
+   "status": 201,
+   "request": {
+    "transfer_amount": 20,
+    "transfer_currency": "USD",
+    "transfer_method": "LOCAL",
+    "reference": "Outbid rebate 0x19da2a21"
+   },
+   "response": {
+    "id": "b3eb8a4f-8fee-4d48-938c-c7f9e750c4c0",
+    "short_reference_id": "P261110-65D4EUC",
+    "status": "SCHEDULED",
+    "amount_payer_pays": 20,
+    "transfer_currency": "USD",
+    "created_at": "2026-11-10T05:25:35+0000"
+   }
+  }
+ ],
+ "metal": [
+  {
+   "label": "fund vendor:Vendor B",
+   "from": "0xf5d174d7C86c46ab30dD01A28C71eB646d12452a",
+   "to": "0x000000000000000000000000000000000000b5d5",
+   "hash": "0xaff4a76d6ff99f82ec775460df7f056ef47c11b9451e9fc1baf2ee00a3e2d4df",
+   "status": "0x1"
+  },
+  {
+   "label": "Vendor B approves the escrow",
+   "from": "0xc5E14e16A3DDA30Ad5D7A9e2eb5cBaEEFd37A181",
+   "to": "0x000000000000000000000000000000000000b5d5",
+   "hash": "0xf7dc585318e20059c041303d0d73521f5921ce78cee4c461cbdef8894226eff8",
+   "status": "0x1"
+  },
+  {
+   "label": "Vendor B prepays the fee",
+   "from": "0xc5E14e16A3DDA30Ad5D7A9e2eb5cBaEEFd37A181",
+   "to": "0x76cBc578cE1c9ea6cC8D87331c86bCF430449140",
+   "hash": "0xb0ee828779471992a2ca63d27719231e66fa77a081e490a7a1ef8e9cb193d172",
+   "status": "0x1"
+  },
+  {
+   "label": "Outbid releases the fee",
+   "from": "0xf5d174d7C86c46ab30dD01A28C71eB646d12452a",
+   "to": "0x76cBc578cE1c9ea6cC8D87331c86bCF430449140",
+   "hash": "0x861eae190c94a0ddfdfde7589a6c46b555d77bd3f1cec10956d4f347748e3a7a",
+   "status": "0x1"
+  },
+  {
+   "label": "sweep rebates",
+   "from": "0x9a2e201325c6f9c02d374fEC6002A89D59E7B7dc",
+   "to": "0x000000000000000000000000000000000000b5d5",
+   "hash": "0xaf32edf1f0bf2f3de8492dcc385ced0b6cc25041c86b6e59836b1cf2080382bd",
+   "status": "0x1"
+  },
+  {
+   "label": "sweep fees",
+   "from": "0x8180945aa5f8aDEeb19aD52F05545b45604FE775",
+   "to": "0x000000000000000000000000000000000000b5d5",
+   "hash": "0x69a9efe394874263cdea946c73a81a81d8a57bbf737d64e02ed462635a9c39e2",
+   "status": "0x1"
+  },
+  {
+   "label": "fund vendor:Vendor C",
+   "from": "0xf5d174d7C86c46ab30dD01A28C71eB646d12452a",
+   "to": "0x000000000000000000000000000000000000b5d5",
+   "hash": "0x79fe4a9f8ebb91075abc6ae1a1657778947606c37b073e061da25c12f9c33dcc",
+   "status": "0x1"
+  },
+  {
+   "label": "Vendor C approves the escrow",
+   "from": "0xA998e50743aFE15D208fa73C83fAf0D6F0D679F0",
+   "to": "0x000000000000000000000000000000000000b5d5",
+   "hash": "0x8f4033bed8fd695f873770d11599194e9e5aaaf34b6292e5d5d4090987de2710",
+   "status": "0x1"
+  },
+  {
+   "label": "Vendor C prepays the fee",
+   "from": "0xA998e50743aFE15D208fa73C83fAf0D6F0D679F0",
+   "to": "0x76cBc578cE1c9ea6cC8D87331c86bCF430449140",
+   "hash": "0xdd95cd00d38b0f96dfcf840b9b5225aeb7ccd0e57ff69a67cadcfd3800251254",
+   "status": "0x1"
+  },
+  {
+   "label": "Outbid releases the fee",
+   "from": "0xf5d174d7C86c46ab30dD01A28C71eB646d12452a",
+   "to": "0x76cBc578cE1c9ea6cC8D87331c86bCF430449140",
+   "hash": "0x19da2a2155585835dc88a747a33dc35f16e2e40c605fd45e3fcc7d93056afa13",
+   "status": "0x1"
+  }
+ ],
+ "events": [
+  {
+   "type": "await-intent",
+   "t": 5,
+   "defaults": {
+    "category": "gpu-h100",
+    "quantity": 2,
+    "budget": {
+     "amount": 3750,
+     "currency": "USD",
+     "per": "month"
+    },
+    "termMonths": 12,
+    "merchantCategory": "7372"
+   },
+   "company": {
+    "currency": "USD",
+    "policy": {
+     "reserveFloor": 20000,
+     "horizonDays": 90,
+     "reconsiderAfterMonths": 3
+    },
+    "obligations": [
+     {
+      "label": "Payroll",
+      "amount": 4500,
+      "firstDay": 14,
+      "everyDays": 14
+     },
+     {
+      "label": "Quarterly tax",
+      "amount": 12500,
+      "firstDay": 45
+     }
+    ]
+   }
+  },
+  {
+   "type": "start",
+   "t": 50001,
+   "intent": {
+    "category": "gpu-h100",
+    "quantity": 2,
+    "budget": {
+     "amount": 3750,
+     "currency": "USD",
+     "per": "month"
+    },
+    "termMonths": 12,
+    "merchantCategory": "7372"
+   },
+   "company": {
+    "currency": "USD",
+    "policy": {
+     "reserveFloor": 20000,
+     "horizonDays": 90,
+     "reconsiderAfterMonths": 3
+    },
+    "obligations": [
+     {
+      "label": "Payroll",
+      "amount": 4500,
+      "firstDay": 14,
+      "everyDays": 14
+     },
+     {
+      "label": "Quarterly tax",
+      "amount": 12500,
+      "firstDay": 45
+     }
+    ]
+   },
+   "scenario": {
+    "startingCash": 80000,
+    "customerPayment": {
+     "payer": "Northwind Traders",
+     "amount": 30000
+    },
+    "wrongMerchant": {
+     "name": "Corner Bistro",
+     "mcc": "5812",
+     "amount": 180
+    },
+    "acquisitionFee": {
+     "amount": 25,
+     "currency": "USD",
+     "rebateBps": 8000
+    }
+   },
+   "vendors": [
+    "Vendor A",
+    "Vendor B",
+    "Vendor C"
+   ]
+  },
+  {
+   "type": "scene",
+   "t": 50001,
+   "n": 1,
+   "title": "Three vendors bid. The cheapest would break the reserve.",
+   "later": false
+  },
+  {
+   "type": "cash",
+   "t": 50133,
+   "available": 80000
+  },
+  {
+   "type": "vendor",
+   "t": 50133,
+   "vendor": "Vendor A",
+   "text": "Sees the anonymous intent. Bids $3,400.00 monthly."
+  },
+  {
+   "type": "vendor",
+   "t": 50133,
+   "vendor": "Vendor B",
+   "text": "Sees the anonymous intent. Bids €2,960.00 monthly."
+  },
+  {
+   "type": "vendor",
+   "t": 50133,
+   "vendor": "Vendor C",
+   "text": "Sees the anonymous intent. Bids $34,500.00 annual."
+  },
+  {
+   "type": "ranking",
+   "t": 60352,
+   "key": "opening",
+   "title": "Cheapest first over 12 months, priced with Airwallex FX, then checked against the reserve",
+   "explanation": {
+    "text": "Vendor B wins at €2,960 a month, billed in EUR, about $39,669 over 12 months and within your $3,750 monthly budget. Vendor C is cheaper at $34,500, but paying it up front drops your cash to $19,500 on day 45, under your $20,000 reserve floor, and to $6,000 by day 84. Vendor A, billed monthly with cancel any time, costs more at $40,800. You can revisit Vendor C on 2027-02-08 or once your cash can carry it above $20,000.",
+    "model": "claude-opus-5-5",
+    "usage": {
+     "input": 1419,
+     "output": 1102
+    }
+   },
+   "currency": "USD",
+   "cash": 80000,
+   "floor": 20000,
+   "budget": 3750,
+   "winner": "Vendor B",
+   "reconsider": {
+    "at": "2027-02-08",
+    "orWhen": "cash keeps USD 20000 through the horizon with Vendor C's bid",
+    "candidate": "Vendor C"
+   },
+   "bids": [
+    {
+     "vendor": "Vendor C",
+     "price": {
+      "amount": 34500,
+      "currency": "USD"
+     },
+     "billing": "annual",
+     "fx": 1,
+     "total": 34500,
+     "perMonth": 2875,
+     "verdict": "breaks-reserve",
+     "cashPath": {
+      "ok": false,
+      "breachDay": 45,
+      "balance": 19500,
+      "low": {
+       "day": 84,
+       "balance": 6000
+      },
+      "path": [
+       45500,
+       45500,
+       45500,
+       45500,
+       45500,
+       45500,
+       45500,
+       45500,
+       45500,
+       45500,
+       45500,
+       45500,
+       45500,
+       45500,
+       41000,
+       41000,
+       41000,
+       41000,
+       41000,
+       41000,
+       41000,
+       41000,
+       41000,
+       41000,
+       41000,
+       41000,
+       41000,
+       41000,
+       36500,
+       36500,
+       36500,
+       36500,
+       36500,
+       36500,
+       36500,
+       36500,
+       36500,
+       36500,
+       36500,
+       36500,
+       36500,
+       36500,
+       32000,
+       32000,
+       32000,
+       19500,
+       19500,
+       19500,
+       19500,
+       19500,
+       19500,
+       19500,
+       19500,
+       19500,
+       19500,
+       19500,
+       15000,
+       15000,
+       15000,
+       15000,
+       15000,
+       15000,
+       15000,
+       15000,
+       15000,
+       15000,
+       15000,
+       15000,
+       15000,
+       15000,
+       10500,
+       10500,
+       10500,
+       10500,
+       10500,
+       10500,
+       10500,
+       10500,
+       10500,
+       10500,
+       10500,
+       10500,
+       10500,
+       10500,
+       6000,
+       6000,
+       6000,
+       6000,
+       6000,
+       6000,
+       6000
+      ]
+     }
+    },
+    {
+     "vendor": "Vendor B",
+     "price": {
+      "amount": 2960,
+      "currency": "EUR"
+     },
+     "billing": "monthly",
+     "fx": 1.116819,
+     "total": 39669.36,
+     "perMonth": 3305.78,
+     "verdict": "fits",
+     "cashPath": {
+      "ok": true,
+      "low": {
+       "day": 90,
+       "balance": 27276.88
+      },
+      "path": [
+       76694.22,
+       76694.22,
+       76694.22,
+       76694.22,
+       76694.22,
+       76694.22,
+       76694.22,
+       76694.22,
+       76694.22,
+       76694.22,
+       76694.22,
+       76694.22,
+       76694.22,
+       76694.22,
+       72194.22,
+       72194.22,
+       72194.22,
+       72194.22,
+       72194.22,
+       72194.22,
+       72194.22,
+       72194.22,
+       72194.22,
+       72194.22,
+       72194.22,
+       72194.22,
+       72194.22,
+       72194.22,
+       67694.22,
+       67694.22,
+       64388.44,
+       64388.44,
+       64388.44,
+       64388.44,
+       64388.44,
+       64388.44,
+       64388.44,
+       64388.44,
+       64388.44,
+       64388.44,
+       64388.44,
+       64388.44,
+       59888.44,
+       59888.44,
+       59888.44,
+       47388.44,
+       47388.44,
+       47388.44,
+       47388.44,
+       47388.44,
+       47388.44,
+       47388.44,
+       47388.44,
+       47388.44,
+       47388.44,
+       47388.44,
+       42888.44,
+       42888.44,
+       42888.44,
+       42888.44,
+       39582.66,
+       39582.66,
+       39582.66,
+       39582.66,
+       39582.66,
+       39582.66,
+       39582.66,
+       39582.66,
+       39582.66,
+       39582.66,
+       35082.66,
+       35082.66,
+       35082.66,
+       35082.66,
+       35082.66,
+       35082.66,
+       35082.66,
+       35082.66,
+       35082.66,
+       35082.66,
+       35082.66,
+       35082.66,
+       35082.66,
+       35082.66,
+       30582.66,
+       30582.66,
+       30582.66,
+       30582.66,
+       30582.66,
+       30582.66,
+       27276.88
+      ]
+     }
+    },
+    {
+     "vendor": "Vendor A",
+     "price": {
+      "amount": 3400,
+      "currency": "USD"
+     },
+     "billing": "monthly",
+     "fx": 1,
+     "total": 40800,
+     "perMonth": 3400,
+     "verdict": "fits",
+     "cashPath": {
+      "ok": true,
+      "low": {
+       "day": 90,
+       "balance": 26900
+      },
+      "path": [
+       76600,
+       76600,
+       76600,
+       76600,
+       76600,
+       76600,
+       76600,
+       76600,
+       76600,
+       76600,
+       76600,
+       76600,
+       76600,
+       76600,
+       72100,
+       72100,
+       72100,
+       72100,
+       72100,
+       72100,
+       72100,
+       72100,
+       72100,
+       72100,
+       72100,
+       72100,
+       72100,
+       72100,
+       67600,
+       67600,
+       64200,
+       64200,
+       64200,
+       64200,
+       64200,
+       64200,
+       64200,
+       64200,
+       64200,
+       64200,
+       64200,
+       64200,
+       59700,
+       59700,
+       59700,
+       47200,
+       47200,
+       47200,
+       47200,
+       47200,
+       47200,
+       47200,
+       47200,
+       47200,
+       47200,
+       47200,
+       42700,
+       42700,
+       42700,
+       42700,
+       39300,
+       39300,
+       39300,
+       39300,
+       39300,
+       39300,
+       39300,
+       39300,
+       39300,
+       39300,
+       34800,
+       34800,
+       34800,
+       34800,
+       34800,
+       34800,
+       34800,
+       34800,
+       34800,
+       34800,
+       34800,
+       34800,
+       34800,
+       34800,
+       30300,
+       30300,
+       30300,
+       30300,
+       30300,
+       30300,
+       26900
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "type": "note",
+   "t": 60353,
+   "text": "Pick: Vendor B"
+  },
+  {
+   "type": "note",
+   "t": 60353,
+   "text": "Reconsider Vendor C on 2027-02-08, or sooner if cash recovers."
+  },
+  {
+   "type": "vendor",
+   "t": 60353,
+   "vendor": "Vendor A",
+   "text": "Lost. Another bid won; the buyer stays anonymous."
+  },
+  {
+   "type": "vendor",
+   "t": 60353,
+   "vendor": "Vendor B",
+   "text": "Won. The buyer's card will confirm it."
+  },
+  {
+   "type": "vendor",
+   "t": 60353,
+   "vendor": "Vendor C",
+   "text": "Lost. Another bid won; the buyer stays anonymous."
+  },
+  {
+   "type": "scene",
+   "t": 60353,
+   "n": 2,
+   "title": "One approval becomes the card.",
+   "later": false
+  },
+  {
+   "type": "approval",
+   "t": 60356,
+   "id": "5106ccff-5643-4ab8-b6bb-5a8ca39b173d",
+   "terms": {
+    "vendor": "Vendor B",
+    "amount": 2960,
+    "currency": "EUR",
+    "cycle": "monthly",
+    "merchantCategory": "7372"
+   }
+  },
+  {
+   "type": "approved",
+   "t": 103223,
+   "id": "5106ccff-5643-4ab8-b6bb-5a8ca39b173d",
+   "approved": true
+  },
+  {
+   "type": "card",
+   "t": 103999,
+   "id": "f5551cf2-7f10-4c90-ad1a-7afc36c6f2eb",
+   "number": "************7597",
+   "brand": "VISA",
+   "status": "ACTIVE",
+   "approval": {
+    "vendor": "Vendor B",
+    "amount": 2960,
+    "currency": "EUR",
+    "cycle": "monthly",
+    "merchantCategory": "7372"
+   },
+   "replaces": null
+  },
+  {
+   "type": "escrow",
+   "t": 114411,
+   "step": "prepaid",
+   "vendor": "Vendor B",
+   "cardId": "f5551cf2-7f10-4c90-ad1a-7afc36c6f2eb",
+   "amount": 25,
+   "currency": "USD",
+   "hash": "0xb0ee828779471992a2ca63d27719231e66fa77a081e490a7a1ef8e9cb193d172",
+   "url": "https://testnet.metalntwx.com/tx/0xb0ee828779471992a2ca63d27719231e66fa77a081e490a7a1ef8e9cb193d172"
+  },
+  {
+   "type": "charge",
+   "t": 116881,
+   "cardId": "f5551cf2-7f10-4c90-ad1a-7afc36c6f2eb",
+   "label": "Agreed charge",
+   "amount": 2960,
+   "currency": "EUR",
+   "mcc": "7372",
+   "merchant": "Vendor B",
+   "outcome": "approved",
+   "detail": "APPROVED",
+   "txId": "01a1c3e9-1b2a-7000-8d38-98f1710f6d33"
+  },
+  {
+   "type": "charge",
+   "t": 120344,
+   "cardId": "f5551cf2-7f10-4c90-ad1a-7afc36c6f2eb",
+   "label": "Wrong merchant",
+   "amount": 180,
+   "currency": "EUR",
+   "mcc": "5812",
+   "merchant": "Corner Bistro",
+   "outcome": "declined",
+   "detail": "MERCHANT_CATEGORY_NOT_ALLOWED",
+   "txId": "01a1c3e9-24eb-7000-ac2b-ddb32cef79c7"
+  },
+  {
+   "type": "scene",
+   "t": 120345,
+   "n": 3,
+   "title": "The cleared charge releases the vendor's fee.",
+   "later": false
+  },
+  {
+   "type": "escrow",
+   "t": 124642,
+   "step": "released",
+   "vendor": "Vendor B",
+   "cardId": "f5551cf2-7f10-4c90-ad1a-7afc36c6f2eb",
+   "txId": "01a1c3e9-1b2a-7000-8d38-98f1710f6d33",
+   "amount": 25,
+   "rebate": 20,
+   "outbidFee": 5,
+   "currency": "USD",
+   "hash": "0x861eae190c94a0ddfdfde7589a6c46b555d77bd3f1cec10956d4f347748e3a7a",
+   "url": "https://testnet.metalntwx.com/tx/0x861eae190c94a0ddfdfde7589a6c46b555d77bd3f1cec10956d4f347748e3a7a"
+  },
+  {
+   "type": "escrow",
+   "t": 125830,
+   "step": "payout",
+   "amount": 20,
+   "currency": "USD",
+   "transferId": "8ae730bf-dfa2-4ea3-a2e9-8fe9346984d8",
+   "status": "SCHEDULED"
+  },
+  {
+   "type": "scene",
+   "t": 125831,
+   "n": 4,
+   "title": "At renewal the price hike is declined, and re-auctioned.",
+   "later": true
+  },
+  {
+   "type": "charge",
+   "t": 129105,
+   "cardId": "f5551cf2-7f10-4c90-ad1a-7afc36c6f2eb",
+   "label": "Renewal at €3,612.20",
+   "amount": 3612.2,
+   "currency": "EUR",
+   "mcc": "7372",
+   "merchant": "Vendor B",
+   "outcome": "declined",
+   "detail": "LIMIT_EXCEEDED",
+   "txId": "01a1c3e9-4772-7000-9af2-dc509dd11f0d"
+  },
+  {
+   "type": "cash",
+   "t": 129242,
+   "available": 79980
+  },
+  {
+   "type": "ranking",
+   "t": 138398,
+   "key": "reopened",
+   "title": "The auction reopens with Vendor B at its new price",
+   "explanation": {
+    "text": "Vendor A wins at $3,400 a month, $40,800 over the year, billed monthly and cancel any time. Vendor C is cheaper at $34,500, but it is prepaid up front, which would drop your cash below your $20,000 reserve on day 45 and to $5,980 by day 84. Vendor B, your incumbent, raised its price from €2,960 to €3,612 a month, about $4,034, over your $3,750 budget. We revisit Vendor C on 2027-02-08, or sooner if cash can hold the reserve.",
+    "model": "claude-opus-5-5",
+    "usage": {
+     "input": 1542,
+     "output": 955
+    }
+   },
+   "currency": "USD",
+   "cash": 79980,
+   "floor": 20000,
+   "budget": 3750,
+   "winner": "Vendor A",
+   "reconsider": {
+    "at": "2027-02-08",
+    "orWhen": "cash keeps USD 20000 through the horizon with Vendor C's bid",
+    "candidate": "Vendor C"
+   },
+   "bids": [
+    {
+     "vendor": "Vendor C",
+     "price": {
+      "amount": 34500,
+      "currency": "USD"
+     },
+     "billing": "annual",
+     "fx": 1,
+     "total": 34500,
+     "perMonth": 2875,
+     "verdict": "breaks-reserve",
+     "cashPath": {
+      "ok": false,
+      "breachDay": 45,
+      "balance": 19480,
+      "low": {
+       "day": 84,
+       "balance": 5980
+      },
+      "path": [
+       45480,
+       45480,
+       45480,
+       45480,
+       45480,
+       45480,
+       45480,
+       45480,
+       45480,
+       45480,
+       45480,
+       45480,
+       45480,
+       45480,
+       40980,
+       40980,
+       40980,
+       40980,
+       40980,
+       40980,
+       40980,
+       40980,
+       40980,
+       40980,
+       40980,
+       40980,
+       40980,
+       40980,
+       36480,
+       36480,
+       36480,
+       36480,
+       36480,
+       36480,
+       36480,
+       36480,
+       36480,
+       36480,
+       36480,
+       36480,
+       36480,
+       36480,
+       31980,
+       31980,
+       31980,
+       19480,
+       19480,
+       19480,
+       19480,
+       19480,
+       19480,
+       19480,
+       19480,
+       19480,
+       19480,
+       19480,
+       14980,
+       14980,
+       14980,
+       14980,
+       14980,
+       14980,
+       14980,
+       14980,
+       14980,
+       14980,
+       14980,
+       14980,
+       14980,
+       14980,
+       10480,
+       10480,
+       10480,
+       10480,
+       10480,
+       10480,
+       10480,
+       10480,
+       10480,
+       10480,
+       10480,
+       10480,
+       10480,
+       10480,
+       5980,
+       5980,
+       5980,
+       5980,
+       5980,
+       5980,
+       5980
+      ]
+     }
+    },
+    {
+     "vendor": "Vendor A",
+     "price": {
+      "amount": 3400,
+      "currency": "USD"
+     },
+     "billing": "monthly",
+     "fx": 1,
+     "total": 40800,
+     "perMonth": 3400,
+     "verdict": "fits",
+     "cashPath": {
+      "ok": true,
+      "low": {
+       "day": 90,
+       "balance": 26880
+      },
+      "path": [
+       76580,
+       76580,
+       76580,
+       76580,
+       76580,
+       76580,
+       76580,
+       76580,
+       76580,
+       76580,
+       76580,
+       76580,
+       76580,
+       76580,
+       72080,
+       72080,
+       72080,
+       72080,
+       72080,
+       72080,
+       72080,
+       72080,
+       72080,
+       72080,
+       72080,
+       72080,
+       72080,
+       72080,
+       67580,
+       67580,
+       64180,
+       64180,
+       64180,
+       64180,
+       64180,
+       64180,
+       64180,
+       64180,
+       64180,
+       64180,
+       64180,
+       64180,
+       59680,
+       59680,
+       59680,
+       47180,
+       47180,
+       47180,
+       47180,
+       47180,
+       47180,
+       47180,
+       47180,
+       47180,
+       47180,
+       47180,
+       42680,
+       42680,
+       42680,
+       42680,
+       39280,
+       39280,
+       39280,
+       39280,
+       39280,
+       39280,
+       39280,
+       39280,
+       39280,
+       39280,
+       34780,
+       34780,
+       34780,
+       34780,
+       34780,
+       34780,
+       34780,
+       34780,
+       34780,
+       34780,
+       34780,
+       34780,
+       34780,
+       34780,
+       30280,
+       30280,
+       30280,
+       30280,
+       30280,
+       30280,
+       26880
+      ]
+     }
+    },
+    {
+     "vendor": "Vendor B",
+     "price": {
+      "amount": 3612.2,
+      "currency": "EUR"
+     },
+     "billing": "monthly",
+     "fx": 1.116819,
+     "total": 48410.04,
+     "perMonth": 4034.17,
+     "verdict": "over-budget",
+     "cashPath": {
+      "ok": true,
+      "low": {
+       "day": 90,
+       "balance": 27276.88
+      },
+      "path": [
+       76694.22,
+       76694.22,
+       76694.22,
+       76694.22,
+       76694.22,
+       76694.22,
+       76694.22,
+       76694.22,
+       76694.22,
+       76694.22,
+       76694.22,
+       76694.22,
+       76694.22,
+       76694.22,
+       72194.22,
+       72194.22,
+       72194.22,
+       72194.22,
+       72194.22,
+       72194.22,
+       72194.22,
+       72194.22,
+       72194.22,
+       72194.22,
+       72194.22,
+       72194.22,
+       72194.22,
+       72194.22,
+       67694.22,
+       67694.22,
+       64388.44,
+       64388.44,
+       64388.44,
+       64388.44,
+       64388.44,
+       64388.44,
+       64388.44,
+       64388.44,
+       64388.44,
+       64388.44,
+       64388.44,
+       64388.44,
+       59888.44,
+       59888.44,
+       59888.44,
+       47388.44,
+       47388.44,
+       47388.44,
+       47388.44,
+       47388.44,
+       47388.44,
+       47388.44,
+       47388.44,
+       47388.44,
+       47388.44,
+       47388.44,
+       42888.44,
+       42888.44,
+       42888.44,
+       42888.44,
+       39582.66,
+       39582.66,
+       39582.66,
+       39582.66,
+       39582.66,
+       39582.66,
+       39582.66,
+       39582.66,
+       39582.66,
+       39582.66,
+       35082.66,
+       35082.66,
+       35082.66,
+       35082.66,
+       35082.66,
+       35082.66,
+       35082.66,
+       35082.66,
+       35082.66,
+       35082.66,
+       35082.66,
+       35082.66,
+       35082.66,
+       35082.66,
+       30582.66,
+       30582.66,
+       30582.66,
+       30582.66,
+       30582.66,
+       30582.66,
+       27276.88
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "type": "offer",
+   "t": 138399,
+   "to": "Vendor B",
+   "from": "Vendor A",
+   "amount": 3012.93,
+   "currency": "EUR",
+   "per": "month",
+   "matched": {
+    "amount": 3012.93,
+    "currency": "EUR"
+   }
+  },
+  {
+   "type": "note",
+   "t": 138399,
+   "text": "Pick: Vendor B"
+  },
+  {
+   "type": "approval",
+   "t": 138399,
+   "id": "24fedf5b-f90e-47c7-b7cb-abbcb64001fb",
+   "terms": {
+    "vendor": "Vendor B",
+    "amount": 3012.93,
+    "currency": "EUR",
+    "cycle": "monthly",
+    "merchantCategory": "7372"
+   }
+  },
+  {
+   "type": "approved",
+   "t": 198754,
+   "id": "24fedf5b-f90e-47c7-b7cb-abbcb64001fb",
+   "approved": true
+  },
+  {
+   "type": "card",
+   "t": 199425,
+   "id": "e2a5275d-f9fd-4c3e-9d83-c557223802b8",
+   "number": "************9429",
+   "brand": "VISA",
+   "status": "ACTIVE",
+   "approval": {
+    "vendor": "Vendor B",
+    "amount": 3012.93,
+    "currency": "EUR",
+    "cycle": "monthly",
+    "merchantCategory": "7372"
+   },
+   "replaces": "f5551cf2-7f10-4c90-ad1a-7afc36c6f2eb"
+  },
+  {
+   "type": "cardStatus",
+   "t": 199612,
+   "id": "f5551cf2-7f10-4c90-ad1a-7afc36c6f2eb",
+   "status": "INACTIVE"
+  },
+  {
+   "type": "charge",
+   "t": 202163,
+   "cardId": "e2a5275d-f9fd-4c3e-9d83-c557223802b8",
+   "label": "Renewed charge",
+   "amount": 3012.93,
+   "currency": "EUR",
+   "mcc": "7372",
+   "merchant": "Vendor B",
+   "outcome": "approved",
+   "detail": "APPROVED",
+   "txId": "01a1c3ea-67c2-7000-843a-1b72597481e5"
+  },
+  {
+   "type": "scene",
+   "t": 202163,
+   "n": 5,
+   "title": "Cash recovers, so the annual deal comes back.",
+   "later": true
+  },
+  {
+   "type": "deposit",
+   "t": 203278,
+   "payer": "Northwind Traders",
+   "amount": 30000,
+   "currency": "USD"
+  },
+  {
+   "type": "cash",
+   "t": 203278,
+   "available": 109980
+  },
+  {
+   "type": "ranking",
+   "t": 209181,
+   "key": "recheck",
+   "title": "The same rules, re-run on the new balance",
+   "explanation": {
+    "text": "Northwind Traders' $30,000 payment lifts your cash to $109,980, so Vendor C now wins over your current pick, Vendor B. Vendor C costs $34,500 for the year, prepaid up front, against $40,379 for Vendor B's €3,013 billed monthly in EUR and $40,800 for Vendor A. Paying up front no longer strains you. Your lowest balance would be $35,980 on day 84, safely above your $20,000 reserve floor, and all three bids fit your $3,750 monthly budget.",
+    "model": "claude-opus-5-5",
+    "usage": {
+     "input": 1419,
+     "output": 503
+    }
+   },
+   "currency": "USD",
+   "cash": 109980,
+   "floor": 20000,
+   "budget": 3750,
+   "winner": "Vendor C",
+   "reconsider": null,
+   "bids": [
+    {
+     "vendor": "Vendor C",
+     "price": {
+      "amount": 34500,
+      "currency": "USD"
+     },
+     "billing": "annual",
+     "fx": 1,
+     "total": 34500,
+     "perMonth": 2875,
+     "verdict": "fits",
+     "cashPath": {
+      "ok": true,
+      "low": {
+       "day": 84,
+       "balance": 35980
+      },
+      "path": [
+       75480,
+       75480,
+       75480,
+       75480,
+       75480,
+       75480,
+       75480,
+       75480,
+       75480,
+       75480,
+       75480,
+       75480,
+       75480,
+       75480,
+       70980,
+       70980,
+       70980,
+       70980,
+       70980,
+       70980,
+       70980,
+       70980,
+       70980,
+       70980,
+       70980,
+       70980,
+       70980,
+       70980,
+       66480,
+       66480,
+       66480,
+       66480,
+       66480,
+       66480,
+       66480,
+       66480,
+       66480,
+       66480,
+       66480,
+       66480,
+       66480,
+       66480,
+       61980,
+       61980,
+       61980,
+       49480,
+       49480,
+       49480,
+       49480,
+       49480,
+       49480,
+       49480,
+       49480,
+       49480,
+       49480,
+       49480,
+       44980,
+       44980,
+       44980,
+       44980,
+       44980,
+       44980,
+       44980,
+       44980,
+       44980,
+       44980,
+       44980,
+       44980,
+       44980,
+       44980,
+       40480,
+       40480,
+       40480,
+       40480,
+       40480,
+       40480,
+       40480,
+       40480,
+       40480,
+       40480,
+       40480,
+       40480,
+       40480,
+       40480,
+       35980,
+       35980,
+       35980,
+       35980,
+       35980,
+       35980,
+       35980
+      ]
+     }
+    },
+    {
+     "vendor": "Vendor B",
+     "price": {
+      "amount": 3012.93,
+      "currency": "EUR"
+     },
+     "billing": "monthly",
+     "fx": 1.116819,
+     "total": 40378.8,
+     "perMonth": 3364.9,
+     "verdict": "fits",
+     "cashPath": {
+      "ok": true,
+      "low": {
+       "day": 90,
+       "balance": 57020.4
+      },
+      "path": [
+       106615.1,
+       106615.1,
+       106615.1,
+       106615.1,
+       106615.1,
+       106615.1,
+       106615.1,
+       106615.1,
+       106615.1,
+       106615.1,
+       106615.1,
+       106615.1,
+       106615.1,
+       106615.1,
+       102115.1,
+       102115.1,
+       102115.1,
+       102115.1,
+       102115.1,
+       102115.1,
+       102115.1,
+       102115.1,
+       102115.1,
+       102115.1,
+       102115.1,
+       102115.1,
+       102115.1,
+       102115.1,
+       97615.1,
+       97615.1,
+       94250.2,
+       94250.2,
+       94250.2,
+       94250.2,
+       94250.2,
+       94250.2,
+       94250.2,
+       94250.2,
+       94250.2,
+       94250.2,
+       94250.2,
+       94250.2,
+       89750.2,
+       89750.2,
+       89750.2,
+       77250.2,
+       77250.2,
+       77250.2,
+       77250.2,
+       77250.2,
+       77250.2,
+       77250.2,
+       77250.2,
+       77250.2,
+       77250.2,
+       77250.2,
+       72750.2,
+       72750.2,
+       72750.2,
+       72750.2,
+       69385.3,
+       69385.3,
+       69385.3,
+       69385.3,
+       69385.3,
+       69385.3,
+       69385.3,
+       69385.3,
+       69385.3,
+       69385.3,
+       64885.3,
+       64885.3,
+       64885.3,
+       64885.3,
+       64885.3,
+       64885.3,
+       64885.3,
+       64885.3,
+       64885.3,
+       64885.3,
+       64885.3,
+       64885.3,
+       64885.3,
+       64885.3,
+       60385.3,
+       60385.3,
+       60385.3,
+       60385.3,
+       60385.3,
+       60385.3,
+       57020.4
+      ]
+     }
+    },
+    {
+     "vendor": "Vendor A",
+     "price": {
+      "amount": 3400,
+      "currency": "USD"
+     },
+     "billing": "monthly",
+     "fx": 1,
+     "total": 40800,
+     "perMonth": 3400,
+     "verdict": "fits",
+     "cashPath": {
+      "ok": true,
+      "low": {
+       "day": 90,
+       "balance": 56880
+      },
+      "path": [
+       106580,
+       106580,
+       106580,
+       106580,
+       106580,
+       106580,
+       106580,
+       106580,
+       106580,
+       106580,
+       106580,
+       106580,
+       106580,
+       106580,
+       102080,
+       102080,
+       102080,
+       102080,
+       102080,
+       102080,
+       102080,
+       102080,
+       102080,
+       102080,
+       102080,
+       102080,
+       102080,
+       102080,
+       97580,
+       97580,
+       94180,
+       94180,
+       94180,
+       94180,
+       94180,
+       94180,
+       94180,
+       94180,
+       94180,
+       94180,
+       94180,
+       94180,
+       89680,
+       89680,
+       89680,
+       77180,
+       77180,
+       77180,
+       77180,
+       77180,
+       77180,
+       77180,
+       77180,
+       77180,
+       77180,
+       77180,
+       72680,
+       72680,
+       72680,
+       72680,
+       69280,
+       69280,
+       69280,
+       69280,
+       69280,
+       69280,
+       69280,
+       69280,
+       69280,
+       69280,
+       64780,
+       64780,
+       64780,
+       64780,
+       64780,
+       64780,
+       64780,
+       64780,
+       64780,
+       64780,
+       64780,
+       64780,
+       64780,
+       64780,
+       60280,
+       60280,
+       60280,
+       60280,
+       60280,
+       60280,
+       56880
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "type": "note",
+   "t": 209181,
+   "text": "Switch: Vendor B → Vendor C"
+  },
+  {
+   "type": "approval",
+   "t": 209181,
+   "id": "ad81686b-caae-4b24-acf3-bd3a0a7e0588",
+   "terms": {
+    "vendor": "Vendor C",
+    "amount": 34500,
+    "currency": "USD",
+    "cycle": "annual",
+    "merchantCategory": "7372"
+   }
+  },
+  {
+   "type": "approved",
+   "t": 219403,
+   "id": "ad81686b-caae-4b24-acf3-bd3a0a7e0588",
+   "approved": true
+  },
+  {
+   "type": "card",
+   "t": 220408,
+   "id": "1af53a69-73a1-44df-b436-798fe042a13e",
+   "number": "************0090",
+   "brand": "VISA",
+   "status": "ACTIVE",
+   "approval": {
+    "vendor": "Vendor C",
+    "amount": 34500,
+    "currency": "USD",
+    "cycle": "annual",
+    "merchantCategory": "7372"
+   },
+   "replaces": "e2a5275d-f9fd-4c3e-9d83-c557223802b8"
+  },
+  {
+   "type": "cardStatus",
+   "t": 220597,
+   "id": "e2a5275d-f9fd-4c3e-9d83-c557223802b8",
+   "status": "INACTIVE"
+  },
+  {
+   "type": "vendor",
+   "t": 220598,
+   "vendor": "Vendor B",
+   "text": "Lost the account: the buyer switched to an annual plan. The card is frozen."
+  },
+  {
+   "type": "vendor",
+   "t": 220598,
+   "vendor": "Vendor C",
+   "text": "Won, now that the buyer's cash allows the prepay."
+  },
+  {
+   "type": "escrow",
+   "t": 241754,
+   "step": "prepaid",
+   "vendor": "Vendor C",
+   "cardId": "1af53a69-73a1-44df-b436-798fe042a13e",
+   "amount": 25,
+   "currency": "USD",
+   "hash": "0xdd95cd00d38b0f96dfcf840b9b5225aeb7ccd0e57ff69a67cadcfd3800251254",
+   "url": "https://testnet.metalntwx.com/tx/0xdd95cd00d38b0f96dfcf840b9b5225aeb7ccd0e57ff69a67cadcfd3800251254"
+  },
+  {
+   "type": "charge",
+   "t": 245578,
+   "cardId": "1af53a69-73a1-44df-b436-798fe042a13e",
+   "label": "First annual charge",
+   "amount": 34500,
+   "currency": "USD",
+   "mcc": "7372",
+   "merchant": "Vendor C",
+   "outcome": "approved",
+   "detail": "APPROVED",
+   "txId": "01a1c3eb-0c78-7000-b8c7-90e71423038b"
+  },
+  {
+   "type": "charge",
+   "t": 248906,
+   "cardId": "e2a5275d-f9fd-4c3e-9d83-c557223802b8",
+   "label": "Old card, Vendor B",
+   "amount": 3012.93,
+   "currency": "EUR",
+   "mcc": "7372",
+   "merchant": "Vendor B",
+   "outcome": "declined",
+   "detail": "CARD_INACTIVE",
+   "txId": "01a1c3eb-1b4e-7000-b5ce-39595ea3e883"
+  },
+  {
+   "type": "escrow",
+   "t": 253488,
+   "step": "released",
+   "vendor": "Vendor C",
+   "cardId": "1af53a69-73a1-44df-b436-798fe042a13e",
+   "txId": "01a1c3eb-0c78-7000-b8c7-90e71423038b",
+   "amount": 25,
+   "rebate": 20,
+   "outbidFee": 5,
+   "currency": "USD",
+   "hash": "0x19da2a2155585835dc88a747a33dc35f16e2e40c605fd45e3fcc7d93056afa13",
+   "url": "https://testnet.metalntwx.com/tx/0x19da2a2155585835dc88a747a33dc35f16e2e40c605fd45e3fcc7d93056afa13"
+  },
+  {
+   "type": "escrow",
+   "t": 254616,
+   "step": "payout",
+   "amount": 20,
+   "currency": "USD",
+   "transferId": "b3eb8a4f-8fee-4d48-938c-c7f9e750c4c0",
+   "status": "SCHEDULED"
+  },
+  {
+   "type": "end",
+   "t": 254616
+  }
+ ]
+}

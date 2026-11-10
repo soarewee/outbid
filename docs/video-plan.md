@@ -79,9 +79,9 @@ The intent form is left at its defaults (they are `data/intent.json`), so nothin
 - [x] The agent's words from Claude on the *Why not* and recheck moments (`ANTHROPIC_API_KEY`).
 - [x] The demo survives a sandbox deposit that stays `PENDING` (Nov 7): it resends once, starts from the cash it
   has if the opening top-up never lands, and stops with a message if the customer payment doesn't.
-- [ ] If the recording run is better than the Nov 2 one, `npm run evidence` on it, point `web/index.html` and
+- [x] If the recording run is better than the Nov 2 one, `npm run evidence` on it, point `web/index.html` and
   the `Dockerfile` at the new file, and `fly deploy`, so the hosted replay and the evidence table show the run
-  in the video.
+  in the video (Nov 10: `evidence/2026-11-10.json`, the 14:25 KST run).
 
 ## Tools
 
