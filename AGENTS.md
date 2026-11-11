@@ -7,16 +7,13 @@ vendor agents bid, the agent picks a bid that respects the company's cash reserv
 become an Airwallex virtual card that can only pay that vendor, that amount, in that currency. Vendors prepay
 an acquisition fee into an escrow; when the card charge clears, the fee is split into the buyer's rebate and
 Outbid's fee. It is a solo entry in the Airwallex Agentic Banking Hackathon (Kit 02: Intent-Bound Purchase
-Agent), and an evolution of Agentic AdFi's form C (reverse auction).
+Agent).
 
 ## The hackathon
 
 [Airwallex Agentic Banking Hackathon](https://airwallex.hackerearth.com/), shortlisted on Oct 27. Submission
-deadline **Nov 14, 2026 03:29 KST**. Notes (Korean) are in the parent project's `docs/events/`:
-
-- `airwallex-agentic-banking.md`: rules, prizes (Metal Award: Metal + Airwallex tools).
-- `airwallex-idea-kit02.md`: the submitted pitch (the demo must match it) and the **build schedule** with
-  done-criteria per phase and what to cut first if it slips.
+deadline **Nov 14, 2026 03:29 KST**. The shortlisted pitch is the title and description in
+`docs/submission.md`; the demo must match it.
 
 What drives the build:
 
@@ -28,14 +25,6 @@ What drives the build:
 - Deliverables: a working demo, a video under 5 minutes, and a repository link with run instructions.
   Everything is in English. The repo has been public since Nov 10, so anything committed is published.
 - Outbid is an independent entry. Don't mention the team's other hackathon entries in the repo or demo.
-
-## Reference: Agentic AdFi
-
-The parent project is Agentic AdFi (a separate private repo, Korean docs). `docs/product/proposal.md` and
-`docs/product/forms/c-reverse-auction.md` explain the three-party model Outbid comes from, and
-`contracts/` holds AdFi's settlement contract, the closest model for the fee escrow. Read them freely, but
-don't depend on AdFi packages or copy its code: Outbid has its own dependencies and its own Foundry project
-for the escrow.
 
 ## Working here
 
