@@ -18,7 +18,7 @@ their prepaid fee is split into the buyer's rebate when the card charge clears.
 ## Description
 
 **Ads compete for people's attention. But more and more of the buying is done by AI agents, and agents don't
-see ads.** So vendors need a new place to compete. Outbid lets them bid for an agent's purchase directly, and the
+see ads the way people do.** So vendors need a new place to compete. Outbid lets them bid for an agent's purchase directly, and the
 winning bid becomes a card that can only pay what the buyer approved.
 
 **How it works (Kit 02: Intent-Bound Purchase Agent)**
