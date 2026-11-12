@@ -66,14 +66,14 @@ it needs no vendor integration.
 `FeeEscrow` contract on Metal. A buyer console and a vendor console fill in live from the run; the buyer writes
 the request, posts the intent and gives each approval on the page, with the agent's calls listed beside it. Each run saves its request log, and `evidence/2026-11-12.json`
 is a publishable copy of the run behind the site, with the response fields that prove each step. The hosted
-copy at outbid.fly.dev replays that run without touching the sandbox.
+copy at outbid.fly.dev replays the purchase in that run, the one in the video, without touching the sandbox.
 
 ## Links
 
 | What | Where |
 | --- | --- |
 | Repository, with run instructions in the README | https://github.com/soarewee/outbid |
-| Video (under 5 minutes) | https://youtu.be/MQ9fp_v3k3o |
+| Video (3 minutes) | https://youtu.be/0mQKk-4Egrw |
 | Hosted replay of the recorded run: site, buyer console, vendor console | https://outbid.fly.dev |
 | Evidence of the run (Airwallex ids and response fields, Metal transactions) | `evidence/2026-11-12.json` in the repository |
 | Fee escrow on Metal testnet | address in `contracts/deployments/metal-testnet.json`, transactions on testnet.metalntwx.com |

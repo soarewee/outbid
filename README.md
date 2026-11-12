@@ -8,7 +8,7 @@ Outbid is a purchase-intent auction for what a company buys on subscription, sof
 paying it would break the company's cash reserve), and the approved terms become an Airwallex virtual card that can
 only pay that vendor, that amount, in that currency.
 
-> **Demo video (3.5 min): [youtu.be/MQ9fp_v3k3o](https://youtu.be/MQ9fp_v3k3o)**
+> **Demo video (3 min): [youtu.be/0mQKk-4Egrw](https://youtu.be/0mQKk-4Egrw)**
 >
 > The demo runs end to end against the Airwallex sandbox and Metal testnet, with a buyer console and a vendor
 > console that fill in live. A replay of a recorded run is hosted at [outbid.fly.dev](https://outbid.fly.dev)
