@@ -19,7 +19,7 @@ const deploymentFile = new URL("deployments/metal-testnet.json", contractsDir);
 // Metal's guide fixes the gas limit, since estimation can fail on its native-balance checks.
 const GAS = ["--gas-price", "1", "--priority-gas-price", "1"];
 
-export function createMetal({ rpcUrl = process.env.METAL_RPC_URL, privateKey = process.env.METAL_PRIVATE_KEY } = {}) {
+export function createMetal({ rpcUrl = process.env.METAL_RPC_URL, privateKey = process.env.METAL_PRIVATE_KEY, onCall = () => {} } = {}) {
   if (!rpcUrl || !privateKey) throw new Error("Set METAL_RPC_URL and METAL_PRIVATE_KEY in .env.");
   const env = { ...process.env, ETH_RPC_URL: rpcUrl, PATH: `${homedir()}/.foundry/bin:${process.env.PATH}` };
   const log = [];
@@ -49,9 +49,13 @@ export function createMetal({ rpcUrl = process.env.METAL_RPC_URL, privateKey = p
   const keccak = (text) => cast("keccak", text);
 
   async function send(from, to, sig, args, { gasLimit = 300000, label } = {}) {
+    const started = Date.now();
     const out = await cast("send", "--json", "--private-key", from.key, "--gas-limit", String(gasLimit), ...GAS, to, sig, ...args);
     const receipt = JSON.parse(out);
     log.push({ label: label ?? sig, from: from.address, to, hash: receipt.transactionHash, status: receipt.status });
+    try {
+      onCall({ label: label ?? sig, hash: receipt.transactionHash, status: receipt.status, ms: Date.now() - started });
+    } catch {}
     if (receipt.status !== "0x1" && receipt.status !== "1" && receipt.status !== 1) throw new Error(`${label ?? sig} reverted: ${explorer(receipt.transactionHash)}`);
     return receipt.transactionHash;
   }

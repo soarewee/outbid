@@ -212,47 +212,41 @@
 
           <div class="panel on" data-panel="0">
             <div class="intent"><span class="q">What does your company need?</span></div>
+            <div class="policy"><b>You:</b> We're Fernhill Robotics. Our perception team needs two H100s reserved for the next 12 months to train our models. Keep it under $3,750 a month. We have about $80,000 in the bank…</div>
+            <div class="cap" style="margin:4px 0 10px"><b style="color:var(--amber)">Claude</b> wrote the intent, and kept the company's name, team, purpose, cash and bills from vendors.</div>
             <div class="mform">
               <div class="f"><label>Category</label><div>H100 GPU capacity <span>▾</span></div></div>
               <div class="f"><label>GPUs</label><div>2</div></div>
               <div class="f"><label>Budget per month</label><div>3750 <span>USD</span></div></div>
               <div class="f"><label>Term</label><div>12 months <span>▾</span></div></div>
             </div>
-            <div class="policy">Your agent will keep cash above the <b>$20,000 reserve floor</b> for the next 90 days, after what is already due ($4,500 payroll every 14 days, $12,500 quarterly tax on day 45). The cheapest bid that respects that wins. Those rules are code, not a prompt.</div>
             <button class="btn dark" style="width:100%">Post intent</button>
           </div>
 
           <div class="panel" data-panel="1">
             <div class="intent"><span class="q">Your agent wants</span> H100 GPU capacity, 2 GPUs, up to $3,750 a month, for 12 months. <span class="q">Vendors don't know who you are.</span></div>
             <div class="inner">
-              <div class="cap">Cheapest first over 12 months, priced with Airwallex FX, then checked against the reserve</div>
+              <div class="cap">Cheapest first over 12 months, priced with Airwallex FX</div>
               <div class="bids">
-                <div class="bid"><div class="name"><i style="background:var(--s3)"></i>Cedar</div><div class="price">$34,500.00<small>/yr</small></div><div class="sub">$34,500 up front, then nothing for 12 months</div><div class="right">$34,500 over 12 months</div><div class="why"><span class="pill bad">✕ Breaks the reserve in week 7</span>Cash would fall to $19,500 on day 45</div></div>
-                <div class="bid"><div class="name"><i style="background:var(--s2)"></i>Birch</div><div class="price">€2,960.00<small>/mo</small></div><div class="sub">12 payments of $3,301 · EUR at 1.1153</div><div class="right">$39,617 over 12 months</div><div class="why"><span class="pill pick">Picked</span><span class="pill good">✓ Keeps the reserve</span>Lowest cash $27,294, on day 90</div></div>
-                <div class="bid"><div class="name"><i style="background:var(--s1)"></i>Arbor</div><div class="price">$3,400.00<small>/mo</small></div><div class="sub">12 payments of $3,400</div><div class="right">$40,800 over 12 months</div><div class="why"><span class="pill good">✓ Keeps the reserve</span>Lowest cash $26,900, on day 90</div></div>
+                <div class="bid"><div class="name"><i style="background:var(--s2)"></i>Harbor</div><div class="price">€2,960.00<small>/mo</small></div><div class="sub">12 payments of $3,301 · EUR at 1.1153</div><div class="right">$39,617 over 12 months</div><div class="why"><span class="pill pick">Picked</span><span class="pill good">✓ Lowest total</span></div></div>
+                <div class="bid"><div class="name"><i style="background:var(--s1)"></i>Orbit</div><div class="price">$3,400.00<small>/mo</small></div><div class="sub">12 payments of $3,400</div><div class="right">$40,800 over 12 months</div><div class="why"><span class="pill quiet">+$1,183 over 12 months</span></div></div>
               </div>
+              <div class="cap" style="margin:12px 0 0"><b style="color:var(--amber)">In the agent's words:</b> Harbor wins at €2,960 a month, about $3,301 at today's rate, $1,183 less than Orbit over the year. Orbit lets you cancel any time; Harbor bills in euros, so the dollar cost moves with the rate.</div>
             </div>
           </div>
 
           <div class="panel" data-panel="2">
-            <div class="intent"><span class="q">Step 1 ·</span> Three vendors bid. The cheapest would break the reserve.</div>
-            <div class="inner chart">
-              <div class="cap">Cash over the next 90 days, with each bid</div>
-              <div class="keys"><span><i style="background:var(--s3)"></i>Cedar</span><span><i style="background:var(--s2)"></i>Birch</span><span><i style="background:var(--s1)"></i>Arbor</span><span><i class="floor"></i>Reserve floor $20,000</span></div>
-              <svg viewBox="0 0 640 220" role="img" aria-label="Projected cash for each bid against the reserve floor">
-              <g stroke="var(--line)" stroke-width="1"><line x1="36" x2="624" y1="196.0" y2="196.0"/><line x1="36" x2="624" y1="150.0" y2="150.0"/><line x1="36" x2="624" y1="104.0" y2="104.0"/><line x1="36" x2="624" y1="58.0" y2="58.0"/><line x1="36" x2="624" y1="12.0" y2="12.0"/></g>
-              <g fill="var(--ink3)" font-size="11" text-anchor="end"><text x="28" y="200.0">0</text><text x="28" y="154.0">20K</text><text x="28" y="108.0">40K</text><text x="28" y="62.0">60K</text><text x="28" y="16.0">80K</text></g>
-              <g fill="var(--ink3)" font-size="11"><text x="36" y="214">today</text><text x="232" y="214" text-anchor="middle">day 30</text><text x="428" y="214" text-anchor="middle">day 60</text><text x="624" y="214" text-anchor="middle">day 90</text></g>
-              <line x1="36" x2="624" y1="150.0" y2="150.0" stroke="var(--ink3)" stroke-width="1.5" stroke-dasharray="4 4"/>
-              <text x="624" y="144.0" text-anchor="end" fill="var(--ink2)" font-size="11" font-weight="500">reserve floor</text>
-              <path d="M36.0,19.8H127.5V30.2H218.9V40.5H232.0V48.3H310.4V58.7H330.0V87.4H401.9V97.8H428.0V105.6H493.3V116.0H584.8V126.3H624.0V134.1H624.0" fill="none" stroke="var(--s1)" stroke-width="2" stroke-linejoin="round"/>
-              <path d="M36.0,19.6H127.5V29.9H218.9V40.3H232.0V47.9H310.4V58.2H330.0V87.0H401.9V97.3H428.0V104.9H493.3V115.3H584.8V125.6H624.0V133.2H624.0" fill="none" stroke="var(--s2)" stroke-width="2" stroke-linejoin="round"/>
-              <path d="M36.0,91.3H127.5V101.7H218.9V112.0H310.4V122.4H330.0V151.2H401.9V161.5H493.3V171.8H584.8V182.2H624.0" fill="none" stroke="var(--s3)" stroke-width="2" stroke-linejoin="round"/>
-              <circle cx="624" cy="134.1" r="4" fill="var(--s1)"/><circle cx="624" cy="133.2" r="4" fill="var(--s2)"/><circle cx="624" cy="182.2" r="4" fill="var(--s3)"/>
-              <circle cx="330.0" cy="151.2" r="7" fill="var(--card)"/><circle cx="330.0" cy="151.2" r="5" fill="var(--red)"/>
-              <text x="342.0" y="167.2" fill="var(--red)" font-size="12" font-weight="500">$19,500 on day 45</text>
-              </svg>
-              <div class="cap" style="margin:12px 0 0">Cedar's prepay would take cash to $19,500 on day 45, under the $20,000 floor. The rule lives in code; the agent only explains it.</div>
+            <div class="intent"><span class="q">Beside it ·</span> What your agent is doing, call by call.</div>
+            <div class="inner">
+              <div class="cap">It runs on your machine in <code>npm run demo</code>. Claude does the words, Airwallex the money, Metal the escrow; the rules are its own code.</div>
+              <div class="receipt">
+                <div class="line"><div class="who"><b style="color:var(--amber)">Claude</b> · read your request, wrote the intent</div><div class="amt"></div><div class="how">POST /v1/messages · claude-opus-5-5</div><div class="res">5 things kept from vendors</div></div>
+                <div class="line"><div class="who"><b style="color:var(--blue)">Airwallex</b> · Balances, read cash</div><div class="amt"></div><div class="how">GET /api/v1/balances/current</div><div class="res">$80,000.00 available</div></div>
+                <div class="line"><div class="who"><b style="color:var(--blue)">Airwallex</b> · FX, today's rate</div><div class="amt"></div><div class="how">GET /api/v1/fx/rates/current</div><div class="res">EURUSD 1.1153</div></div>
+                <div class="line"><div class="who"><b>Code</b> · rank the bids</div><div class="amt"></div><div class="how">src/auction.mjs</div><div class="res">2 bids on total cost → Harbor</div></div>
+                <div class="line"><div class="who"><b style="color:var(--amber)">Claude</b> · explain the pick to you</div><div class="amt"></div><div class="how">POST /v1/messages · claude-opus-5-5</div><div class="res">one paragraph, from the ranking and the vendors' terms</div></div>
+                <div class="line"><div class="who"><b style="color:var(--blue)">Airwallex</b> · Issuing, create the card</div><div class="amt"></div><div class="how">POST /api/v1/issuing/cards/create</div><div class="res">at most €2,960 a charge, EUR only, MCC 7372 only</div></div>
+              </div>
             </div>
           </div>
 
@@ -261,7 +255,7 @@
             <div class="inner">
               <div class="cap">You approve exactly this. Nothing broader.</div>
               <div class="terms">
-                <div><div class="l">Vendor</div><div class="v">Birch</div></div>
+                <div><div class="l">Vendor</div><div class="v">Harbor</div></div>
                 <div><div class="l">Amount</div><div class="v">€2,960.00 per month</div></div>
                 <div><div class="l">Currency</div><div class="v">EUR</div></div>
                 <div><div class="l">Merchant</div><div class="v">Only cloud and data-processing vendors</div></div>
@@ -271,7 +265,7 @@
             <div class="inner">
               <div class="cap">The approved terms are the card's controls, enforced by the network before money moves.</div>
               <div class="cardrow">
-                <div class="vcard"><div class="t"><span>Airwallex · virtual</span><span class="state">ACTIVE</span></div><div class="n">•••• •••• •••• 7597</div><div class="b"><div class="for">pays only <b>Birch</b></div><span class="brand">VISA</span></div></div>
+                <div class="vcard"><div class="t"><span>Airwallex · virtual</span><span class="state">ACTIVE</span></div><div class="n">•••• •••• •••• 7597</div><div class="b"><div class="for">pays only <b>Harbor</b></div><span class="brand">VISA</span></div></div>
                 <div class="rules">
                   <div class="rule"><div class="l">Per charge, at most</div><div class="v">€2,960.00</div></div>
                   <div class="rule"><div class="l">Only in</div><div class="v">EUR</div></div>
@@ -286,14 +280,14 @@
             <div class="inner">
               <div class="cap">Charges on the card, decided by Airwallex Issuing</div>
               <div class="receipt">
-                <div class="line"><div class="who">Birch</div><div class="amt">€2,960.00</div><div class="how">Agreed charge · 01a1c3e9</div><div class="res approved">✓ Approved</div></div>
+                <div class="line"><div class="who">Harbor</div><div class="amt">€2,960.00</div><div class="how">Agreed charge · 01a1c3e9</div><div class="res approved">✓ Approved</div></div>
                 <div class="line"><div class="who">Corner Bistro</div><div class="amt">€180.00</div><div class="how">Wrong merchant</div><div class="res declined">✕ Declined · not a software vendor <code>MERCHANT_CATEGORY_NOT_ALLOWED</code></div></div>
-                <div class="line"><div class="who">Birch</div><div class="amt">€3,612.20</div><div class="how">Renewal at +22%</div><div class="res declined">✕ Declined · more than the approved amount <code>LIMIT_EXCEEDED</code></div></div>
+                <div class="line"><div class="who">Harbor</div><div class="amt">€3,612.20</div><div class="how">Renewal at +22%</div><div class="res declined">✕ Declined · more than the approved amount <code>LIMIT_EXCEEDED</code></div></div>
               </div>
             </div>
             <div class="inner">
               <div class="cap">Settlement</div>
-              <div class="hero" style="font-size:30px">$20.00 back to you<small>The cleared charge is the proof of sale. The escrow splits Birch's $25.00 fee in one transaction, and Airwallex Payouts sends the rebate to your bank.</small></div>
+              <div class="hero" style="font-size:30px">$20.00 back to you<small>The cleared charge is the proof of sale. The escrow splits Harbor's $25.00 fee in one transaction, and Airwallex Payouts sends the rebate to your bank.</small></div>
               <div class="split"><i style="flex:20;background:var(--blue)"></i><i style="flex:5;background:var(--line2)"></i></div>
               <div class="split-keys"><span><i style="background:var(--blue)"></i>Your rebate $20.00</span><span><i style="background:var(--line2)"></i>Outbid $5.00</span></div>
             </div>
@@ -305,7 +299,7 @@
     <div class="tabs" role="tablist">
       <button class="tab on" data-tab="0">Post the intent<small>Anonymous</small></button>
       <button class="tab" data-tab="1">Bids come in<small>Ranked on cost</small></button>
-      <button class="tab" data-tab="2">Reserve check<small>Above the floor</small></button>
+      <button class="tab" data-tab="2">Your agent<small>Every call shown</small></button>
       <button class="tab" data-tab="3">Approve<small>Becomes the card</small></button>
       <button class="tab" data-tab="4">Charges and rebate<small>Network decides</small></button>
     </div>
@@ -313,19 +307,19 @@
 
   <section class="s center" id="how">
     <div class="eyebrow">How it works</div>
-    <h2 class="h2">One intent, three bids, one card.</h2>
+    <h2 class="h2">One request, one intent, one card.</h2>
     <p class="lede">Companies buy software at list price while vendors spend a fortune finding them. When an agent does the buying, it already knows exactly what it needs. Let vendors compete for it, and turn their acquisition budget into the buyer's discount.</p>
     <div class="three" style="text-align:left">
       <div class="step">
         <div class="pic"><div class="mini"><div class="r"><b>H100 GPUs</b><span class="m">2 GPUs</span></div><div class="r"><b>Up to $3,750</b><span class="m">per month</span></div><div class="r"><b>12 months</b><span class="m">pays by card</span></div><div class="r"><span class="m">Buyer</span><span class="pill quiet">anonymous</span></div></div></div>
-        <div class="txt"><div class="n">1</div><h3 class="h3">The buyer's agent posts an intent</h3><p>Category, quantity, budget and term. No company name, no balance. Every vendor's agent sees the same four fields and nothing else.</p></div>
+        <div class="txt"><div class="n">1</div><h3 class="h3">You say it, the agent writes the intent</h3><p>Tell the agent what the company needs in your own words. Claude turns it into category, quantity, budget and term, and keeps the name, the cash and everything else out. Vendors see those four fields and nothing more.</p></div>
       </div>
       <div class="step">
-        <div class="pic"><div class="mini"><div class="r"><b>Cedar</b><span>$34,500<span class="m">/yr</span></span></div><div class="r"><b>Birch</b><span>€2,960<span class="m">/mo</span></span></div><div class="r"><b>Arbor</b><span>$3,400<span class="m">/mo</span></span></div><div class="r"><span class="m">Cheapest that keeps $20,000</span><span class="pill pick">Birch</span></div></div></div>
-        <div class="txt"><div class="n">2</div><h3 class="h3">Vendors bid, the agent ranks against cash</h3><p>Each bid is priced with Airwallex FX and ranked on total cost. Then the agent reads the live balance and what's already due: the cheapest bid loses if it would push cash under the reserve floor.</p></div>
+        <div class="pic"><div class="mini"><div class="r"><b>Harbor</b><span>€2,960<span class="m">/mo</span></span></div><div class="r"><b>Orbit</b><span>$3,400<span class="m">/mo</span></span></div><div class="r"><span class="m">Lowest total over 12 months</span><span class="pill pick">Harbor</span></div></div></div>
+        <div class="txt"><div class="n">2</div><h3 class="h3">Vendors bid, the cheapest wins</h3><p>Each bid is priced with Airwallex FX and ranked on total cost over the term. The ranking is code; Claude explains the pick in plain words, from the ranking and each vendor's own terms.</p></div>
       </div>
       <div class="step">
-        <div class="pic"><div class="vcard" style="width:220px;padding:14px 16px"><div class="t"><span>Airwallex · virtual</span><span class="state">ACTIVE</span></div><div class="n" style="font-size:13px">•••• •••• •••• 7597</div><div class="b"><div class="for">pays only <b>Birch</b></div><span class="brand">VISA</span></div></div></div>
+        <div class="pic"><div class="vcard" style="width:220px;padding:14px 16px"><div class="t"><span>Airwallex · virtual</span><span class="state">ACTIVE</span></div><div class="n" style="font-size:13px">•••• •••• •••• 7597</div><div class="b"><div class="for">pays only <b>Harbor</b></div><span class="brand">VISA</span></div></div></div>
         <div class="txt"><div class="n">3</div><h3 class="h3">The approval is issued as the card</h3><p>The human approves one thing: this vendor, this amount, this currency. That approval is issued as a card whose controls are exactly those terms, so the network, not a policy, decides every charge.</p></div>
       </div>
     </div>
@@ -342,20 +336,20 @@
       </div>
       <div class="vis"><div class="inner">
         <div class="receipt">
-          <div class="line"><div class="who">Birch</div><div class="amt">€2,960.00</div><div class="how">The agreed charge</div><div class="res approved">✓ Approved</div></div>
-          <div class="line"><div class="who">Birch</div><div class="amt">€3,612.20</div><div class="how">Renewal hike, +22%</div><div class="res declined">✕ Declined <code>LIMIT_EXCEEDED</code></div></div>
+          <div class="line"><div class="who">Harbor</div><div class="amt">€2,960.00</div><div class="how">The agreed charge</div><div class="res approved">✓ Approved</div></div>
+          <div class="line"><div class="who">Harbor</div><div class="amt">€3,612.20</div><div class="how">Renewal hike, +22%</div><div class="res declined">✕ Declined <code>LIMIT_EXCEEDED</code></div></div>
           <div class="line"><div class="who">Corner Bistro</div><div class="amt">€180.00</div><div class="how">Wrong merchant</div><div class="res declined">✕ Declined <code>MERCHANT_CATEGORY_NOT_ALLOWED</code></div></div>
-          <div class="line"><div class="who">Birch, old card</div><div class="amt">€3,012.93</div><div class="how">After the buyer switched</div><div class="res declined">✕ Declined <code>CARD_INACTIVE</code></div></div>
+          <div class="line"><div class="who">Harbor, old card</div><div class="amt">€3,012.93</div><div class="how">After the buyer switched</div><div class="res declined">✕ Declined <code>CARD_INACTIVE</code></div></div>
         </div>
       </div></div>
     </div>
 
     <div class="feat flip">
       <div class="txt">
-        <div class="eyebrow">Reserve check</div>
-        <h2 class="h2">The cheapest bid <span class="hl">doesn't automatically win</span></h2>
-        <p>The agent reads the company's Airwallex balance and upcoming obligations, then projects cash for every bid. If the annual prepay would push cash under the floor in week seven, the best monthly bid wins and a reconsider date is recorded.</p>
-        <p>When a customer payment lands later, the agent re-runs the same decision on the new balance. The annual deal comes back, with a fresh approval and a fresh card.</p>
+        <div class="eyebrow">When cash decides</div>
+        <h2 class="h2">A cheaper prepaid year <span class="hl">waits for the cash</span></h2>
+        <p>Months later, a third vendor offers the term prepaid: the cheapest total yet. The agent reads the company's Airwallex balance and what is already due, and projects cash: paying it all up front would push cash under the reserve floor in week seven, so it waits.</p>
+        <p>When a customer payment lands, the agent re-runs the same rules on the new balance. The prepay fits now, and the switch comes with a fresh approval and a fresh card.</p>
         <a class="btn" href="buyer.html">See it in the buyer console <span class="arr">→</span></a>
       </div>
       <div class="vis"><div class="inner chart">
@@ -381,11 +375,11 @@
         <p>At renewal, a price hike is declined by the same limit that was approved. Outbid reopens the auction and goes back to the incumbent: match the best new price, or the company switches.</p>
       </div>
       <div class="vis"><div class="inner">
-        <div class="hero" style="font-size:30px">$20.00 back to the buyer<small>From Birch's $25.00 prepaid fee, released by the cleared charge.</small></div>
+        <div class="hero" style="font-size:30px">$20.00 back to the buyer<small>From Harbor's $25.00 prepaid fee, released by the cleared charge.</small></div>
         <div class="split"><i style="flex:20;background:var(--blue)"></i><i style="flex:5;background:var(--line2)"></i></div>
         <div class="split-keys"><span><i style="background:var(--blue)"></i>Buyer rebate $20.00</span><span><i style="background:var(--line2)"></i>Outbid $5.00</span></div>
         <div class="steps">
-          <div class="s"><span>Birch funds the escrow (USDZ)</span><code>0xb0ee8287… on Metal</code></div>
+          <div class="s"><span>Harbor funds the escrow (USDZ)</span><code>0xb0ee8287… on Metal</code></div>
           <div class="s"><span>Proof of sale, Airwallex transaction</span><code>01a1c3e9-1b2a…</code></div>
           <div class="s"><span>Escrow releases and splits the fee</span><code>0x861eae19… on Metal</code></div>
           <div class="s"><span>Rebate sent via Airwallex Payouts</span><code>8ae730bf… scheduled</code></div>
@@ -402,12 +396,13 @@
     </div>
     <table class="sees">
       <tr><th>Step</th><th>Buyer sees</th><th>Each vendor sees</th></tr>
-      <tr><td>Intent posted</td><td>The form: category, quantity, budget, term, and the reserve policy the agent will hold to.</td><td>The intent, from an anonymous buyer. <span class="hid">Not the name, not the cash.</span></td></tr>
-      <tr><td>Bids in</td><td>Every bid ranked by FX-priced total cost, a cash projection for each against the reserve floor, and why each fits or doesn't.</td><td>Its own price and its rank on cost. <span class="hid">Not the other bids.</span></td></tr>
+      <tr><td>Intent posted</td><td>Their request in their own words, the intent Claude wrote from it, and what it kept from vendors.</td><td>The intent, from an anonymous buyer. <span class="hid">Not the name, not the cash.</span></td></tr>
+      <tr><td>Bids in</td><td>Every bid ranked by FX-priced total cost, and the agent's explanation in its own words.</td><td>Its own price and its rank on cost. <span class="hid">Not the other bids.</span></td></tr>
       <tr><td>Approval</td><td>The exact terms, with Approve and Decline.</td><td><b>Picked</b> or <b>Passed over</b>.</td></tr>
       <tr><td>Card issued</td><td>The virtual card and its three controls: amount per charge, currency, merchant category.</td><td>The deal: what it can charge, in what currency, from which merchant category, and the card's last four digits.</td></tr>
       <tr><td>Charges</td><td>Every charge with the reason Airwallex Issuing gave: approved, or declined and why.</td><td>Its own charges: cleared, or declined because it billed above what the buyer approved.</td></tr>
       <tr><td>Fee</td><td>The prepaid fee split into the rebate and Outbid's fee, with the Metal transaction and the Airwallex payout.</td><td>Its fee in escrow, then released against the cleared charge. Both transactions on the Metal explorer.</td></tr>
+      <tr><td>Throughout</td><td>Beside the story, every call the agent makes: to Claude, to Airwallex, to Metal, and its own rules.</td><td>Only what reaches it: the intent, and the messages Outbid sends.</td></tr>
       <tr><td>Renewal</td><td>The hike declined, the auction reopened, and the message Outbid sent the incumbent.</td><td>If it is the incumbent: "A competing bid is at €1,200. Match it, or the buyer switches." If it loses, its card is frozen.</td></tr>
     </table>
   </section>
@@ -415,9 +410,10 @@
   <section class="s center" id="live">
     <div class="eyebrow">Built on</div>
     <h2 class="h2">Every step runs against the Airwallex sandbox and the Metal testnet.</h2>
-    <p class="lede">Balances for the reserve check, FX for cross-currency bids, Issuing for the card controls, card transactions as proof of sale, Global Accounts for funding and Payouts for the rebate. Metal holds the one thing Airwallex doesn't: the fee escrow. Each run saves its request log.</p>
+    <p class="lede">The agent runs on your machine. Claude, over the Messages API, does the words: it writes the intent from your request and explains each decision. Airwallex does the money: balances for the cash check, FX for cross-currency bids, Issuing for the card controls, card transactions as proof of sale, Global Accounts for funding and Payouts for the rebate. Metal holds the one thing Airwallex doesn't: the fee escrow. Each run saves its request log.</p>
     <div class="stack">
-      <span>Balances<small>reserve check</small></span>
+      <span>Claude<small>writes the intent, explains</small></span>
+      <span>Balances<small>cash check</small></span>
       <span>FX<small>cross-currency bids</small></span>
       <span>Issuing<small>terms as card controls</small></span>
       <span>Card transactions<small>proof of sale</small></span>
@@ -429,13 +425,13 @@
       <div class="cap">The run behind this page, recorded 2026-11-10. The Metal transactions are public; the Airwallex ids are in <code>evidence/2026-11-10.json</code> with the response fields that prove each step.</div>
       <table class="ev">
         <tr><th>Step</th><th>Airwallex</th><th>Metal</th></tr>
-        <tr><td>Birch's card, €2,960 per charge, EUR, MCC 7372</td><td><code>card f5551cf2… •••• 7597 · ACTIVE</code></td><td><a href="https://testnet.metalntwx.com/tx/0xb0ee828779471992a2ca63d27719231e66fa77a081e490a7a1ef8e9cb193d172" rel="noopener">fee prepaid 0xb0ee8287…</a></td></tr>
+        <tr><td>Harbor's card, €2,960 per charge, EUR, MCC 7372</td><td><code>card f5551cf2… •••• 7597 · ACTIVE</code></td><td><a href="https://testnet.metalntwx.com/tx/0xb0ee828779471992a2ca63d27719231e66fa77a081e490a7a1ef8e9cb193d172" rel="noopener">fee prepaid 0xb0ee8287…</a></td></tr>
         <tr><td>Agreed charge €2,960</td><td><code>01a1c3e9-1b2a… APPROVED</code></td><td><a href="https://testnet.metalntwx.com/tx/0x861eae190c94a0ddfdfde7589a6c46b555d77bd3f1cec10956d4f347748e3a7a" rel="noopener">fee released, split 0x861eae19…</a></td></tr>
         <tr><td>Corner Bistro €180</td><td><code>01a1c3e9-24eb… DECLINED · MERCHANT_CATEGORY_NOT_ALLOWED</code></td><td></td></tr>
         <tr><td>Rebate $20 to the buyer's bank</td><td><code>transfer P261110-OMO44AY · SCHEDULED</code></td><td></td></tr>
         <tr><td>Renewal at €3,612.20</td><td><code>01a1c3e9-4772… DECLINED · LIMIT_EXCEEDED</code></td><td></td></tr>
-        <tr><td>Birch matches at €3,012.93: new card, old card frozen</td><td><code>card e2a5275d… •••• 9429 · ACTIVE</code> <code>f5551cf2… INACTIVE</code></td><td></td></tr>
-        <tr><td>Cedar's card after the deposit, $34,500 per charge</td><td><code>card 1af53a69… •••• 0090 · ACTIVE</code> <code>e2a5275d… INACTIVE</code></td><td><a href="https://testnet.metalntwx.com/tx/0xdd95cd00d38b0f96dfcf840b9b5225aeb7ccd0e57ff69a67cadcfd3800251254" rel="noopener">fee prepaid 0xdd95cd00…</a></td></tr>
+        <tr><td>Harbor matches at €3,012.93: new card, old card frozen</td><td><code>card e2a5275d… •••• 9429 · ACTIVE</code> <code>f5551cf2… INACTIVE</code></td><td></td></tr>
+        <tr><td>Summit's card after the deposit, $34,500 per charge</td><td><code>card 1af53a69… •••• 0090 · ACTIVE</code> <code>e2a5275d… INACTIVE</code></td><td><a href="https://testnet.metalntwx.com/tx/0xdd95cd00d38b0f96dfcf840b9b5225aeb7ccd0e57ff69a67cadcfd3800251254" rel="noopener">fee prepaid 0xdd95cd00…</a></td></tr>
         <tr><td>First annual charge $34,500, then the old card tried</td><td><code>01a1c3eb-0c78… APPROVED</code> <code>01a1c3eb-1b4e… DECLINED · CARD_INACTIVE</code></td><td><a href="https://testnet.metalntwx.com/tx/0x19da2a2155585835dc88a747a33dc35f16e2e40c605fd45e3fcc7d93056afa13" rel="noopener">fee released, split 0x19da2a21…</a></td></tr>
         <tr><td>Second rebate $20</td><td><code>transfer P261110-65D4EUC · SCHEDULED</code></td><td></td></tr>
       </table>
@@ -453,12 +449,12 @@
 <span class="p">$ </span>cd outbid
 <span class="p">$ </span>cp .env.example .env</pre></div></div>
       <div class="step"><div class="txt"><div class="n">2</div><h3 class="h3">Add the two sandboxes</h3><p>At <a href="https://sandbox.airwallex.com" rel="noopener">sandbox.airwallex.com</a>, register the business in the <b>United States</b> and name it <code>Sandbox Business</code> so it skips review. Create a Client ID and API key under Account → Developer.</p><p style="margin-top:10px">For Metal, an RPC endpoint from the testnet console and a disposable key (<code>cast wallet new</code>) with USDZ from the faucet. Put all of it in <code>.env</code>, and never commit it.</p></div></div>
-      <div class="step"><div class="txt"><div class="n">3</div><h3 class="h3">Run, then post the intent</h3><p>Start the demo and open the buyer console. It asks what to buy, and the story plays from there. Open the vendor console beside it to watch the other side.</p><pre style="margin-top:14px"><span class="p">$ </span>npm run demo -- --wait
+      <div class="step"><div class="txt"><div class="n">3</div><h3 class="h3">Run, then tell the agent what you need</h3><p>Start the demo and open the buyer console. It asks what the company needs; add <code>ANTHROPIC_API_KEY</code> to <code>.env</code> and Claude writes the intent from your words, or fill in the four fields yourself. Open the vendor console beside it to watch the other side.</p><pre style="margin-top:14px"><span class="p">$ </span>npm run demo -- --wait
 <span class="c">→ http://localhost:4780/buyer</span>
 <span class="c">→ http://localhost:4780/vendor</span></pre></div></div>
     </div>
     <div class="cmds">
-      <code>npm run demo</code><span>The whole story with the intent in <code>data/intent.json</code>. <code>-- --yes</code> approves every step; <code>-- --wait</code> lets the buyer post the intent from the page.</span>
+      <code>npm run demo</code><span>The whole story with the request in <code>data/intent.json</code>. <code>-- --yes</code> approves every step; <code>-- --wait</code> lets the buyer post the intent from the page.</span>
       <code>npm run demo:replay -- out/demo-&lt;time&gt;.json</code><span>Replays a saved run on the pages with the original pacing, without touching the sandbox. <code>--speed 2</code> to hurry.</span>
       <code>npm run auction</code><span>One auction: intent → bids → ranking → reserve check → approval → card → first charge.</span>
       <code>npm run spike</code><span>Three sandbox charges on a fresh card: the agreed amount, an overcharge, a wrong merchant.</span>

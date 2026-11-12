@@ -3,9 +3,10 @@
 Your agent posts what it wants to buy. Vendors compete. The winning bid becomes the card.
 
 Outbid is a purchase-intent auction for what a company buys on subscription, software or GPU capacity, built for the Airwallex Agentic Banking Hackathon
-(Kit 02: Intent-Bound Purchase Agent). A company's agent posts an anonymous intent, vendor agents bid, the agent
-picks a bid that respects the company's cash reserve, and the approved terms become an Airwallex virtual card
-that can only pay that vendor, that amount, in that currency.
+(Kit 02: Intent-Bound Purchase Agent). The buyer tells the company's agent what it needs in plain words, the agent
+(Claude) writes an anonymous intent from it, vendor agents bid, the cheapest bid over the term wins (or waits, if
+paying it would break the company's cash reserve), and the approved terms become an Airwallex virtual card that can
+only pay that vendor, that amount, in that currency.
 
 > **Demo video (3.5 min): [youtu.be/MQ9fp_v3k3o](https://youtu.be/MQ9fp_v3k3o)**
 >
@@ -25,7 +26,9 @@ Node 20 or later, no dependencies, no build.
 2. Get a Metal testnet RPC endpoint and a disposable test key (`cast wallet new`) funded with USDZ from the faucet.
    The escrow is already deployed; the key only funds the vendors' prepaid fees.
 3. `cp .env.example .env` and fill in the keys. Never commit `.env`.
-4. `npm run demo -- --wait`, then open [localhost:4780/buyer](http://localhost:4780/buyer) and post the intent.
+4. `npm run demo -- --wait`, then open [localhost:4780/buyer](http://localhost:4780/buyer), tell the agent what the
+   company needs, and post the intent it writes. With `ANTHROPIC_API_KEY` in `.env` Claude writes it; without, you
+   fill in the four fields yourself.
 
 ## The site and the two consoles
 
@@ -34,17 +37,22 @@ Node 20 or later, no dependencies, no build.
 
 - `/` (`web/index.html`) is the site: what Outbid does, how it works, who sees what, why a card, the sandbox
   evidence, and how to run it. It also opens straight from the file.
-- `/buyer` (`web/buyer.html`) is the **buyer console**, where the company's agent starts. One screen: the
-  purchase at the top (the intent, a status, available cash, the reserve floor, what the card pays, the
-  rebates so far) and the moment that is happening now in the middle. Inside a part the moments replace
+- `/buyer` (`web/buyer.html`) is the **buyer console**, where the company's agent starts. It opens on a text box:
+  the buyer says what the company needs in their own words, and the agent (Claude) writes the anonymous intent
+  from it, showing what it kept from vendors (the name, the cash, what it's for). Beside the story, on screens
+  1180px and wider, the **agent panel** lists every call the agent makes as it makes it, tagged by where it goes:
+  Claude for words, Airwallex for money, Metal for the escrow, Code for its own rules, and You for the approvals
+  (`src/trace.mjs` names each one). The rest is one screen: the purchase at the top (the intent, a status,
+  available cash, what the card pays, the rebates so far, and the reserve floor once it matters) and the moment
+  that is happening now in the middle. Inside a part the moments replace
   each other on their own; between parts the run stops on a Continue button, so nothing passes by
   unread, and the approval waits for its click (in a replay too). The purchase is three parts: the intent
-  being posted (or the form, with `--wait`), vendors reading it and their bids landing, ranked by FX-priced total cost, and why the cheapest loses,
-  with the cash forecast drawing itself; the approval, which says exactly what the buyer agrees to, and
+  being posted (or the request box, with `--wait`), vendors reading it and their bids landing, ranked by FX-priced
+  total cost, with the agent's explanation in its own words; the approval, which says exactly what the buyer agrees to, and
   then that approval issued as the card, its controls locking in one by one and each charge landing on it
   with the reason Issuing gave; the rebate counting up. It ends on its own screen: "That's the purchase."
   The edge cases (months later, the declined renewal hike, the reopened auction and the message to the
-  incumbent; the deposit and the recheck) are listed there and played only on request, under a band that
+  incumbent; a prepaid year that would break the reserve, the customer payment, and the recheck) are listed there and played only on request, under a band that
   says so, and a card that replaces another is shown as a swap, not as another card. Small things show as
   a caption under the stage, and the strip at the bottom jumps to any part.
 - `/vendor` (`web/vendor.html`) is a **vendor console**, one vendor at a time (switch at the top, or `?v=Vendor%20B`).
@@ -55,7 +63,7 @@ Node 20 or later, no dependencies, no build.
 
 Both consoles fill in live from the same run, so they can be recorded side by side. The run names the vendors
 `Vendor A`, `Vendor B` and `Vendor C` (so do the pitch and the saved runs); the pages show them as the fictional
-brands Arbor, Birch and Cedar, with a monogram mark each (`web/brands.js`).
+brands Orbit, Harbor and Summit, each with its own mark (`web/brands.js`).
 
 ## Demo
 
@@ -64,8 +72,9 @@ the scenario's starting cash (`data/scenario.json`) with a simulated deposit or 
 the same place. Vendors price per GPU, so the bids follow the quantity in the intent; 2 GPUs give the demo's numbers,
 and keep the annual prepay under the sandbox's card limit.
 
-1. Three vendors bid. The annual prepay is cheapest but would break the reserve in week 7, so the best monthly bid wins
-   and the agent records when to reconsider.
+0. Claude reads the buyer's request (`request` in `data/intent.json`, or the text box with `--wait`) and writes the
+   anonymous intent from it. Code checks the four fields before they are posted.
+1. Two vendors bid monthly. Bids are priced with Airwallex FX and ranked on total cost over the term; the cheapest wins.
 2. The winning bid becomes a card, and the winning vendor prepays its acquisition fee into the escrow on Metal. The
    agreed charge clears and a restaurant charge is declined.
 3. The cleared charge is the proof of sale. Outbid reports it to the escrow, which splits the fee into the buyer's
@@ -73,8 +82,10 @@ and keep the annual prepay under the sandbox's card limit.
 4. At renewal the incumbent's price hike is declined by the card. The auction reopens with the hiked price, and the
    incumbent is offered the best competing price: match, or the company switches. Any change of terms gets a new card
    and the old one is frozen.
-5. A customer payment lands in the Global Account. The agent re-runs the decision, the annual prepay now fits, and
-   after approval it gets a new card while the old card is frozen and declines.
+5. A third vendor offers the term prepaid, the cheapest total. Paying it up front would put cash under the reserve
+   floor in week 7, so the agent stays and says when it will look again. A customer payment lands in the Global
+   Account, the agent re-runs the same rules, the prepay now fits, and after approval it gets a new card while the
+   old card is frozen and declines.
 
 Every step that changes a card asks for approval, on the buyer console or in the terminal; add `-- --yes` to approve
 them all. The buyer console also stops between parts until Continue is pressed, so a live run that has moved on is
@@ -82,15 +93,23 @@ simply queued until the viewer gets there. `-- --wait` lets the buyer post the i
 saves its stage events with the request log in `out/`, and `npm run demo:replay -- out/demo-<time>.json` plays them
 back on the pages with the original pacing, without touching the sandbox (`--speed 2` to hurry).
 
-## The agent's voice
+## Where the agent runs, and what Claude does
+
+The buyer's agent is the demo process itself (`npm run demo`, on your machine). It calls Airwallex for money,
+Metal for the escrow, and Claude (`claude-opus-5-5`, over the Messages API, `src/model.mjs`) for words, and the
+buyer console's agent panel shows each call as it happens. Claude does two things:
+
+- **It writes the intent.** It reads the buyer's request and returns the four fields as JSON against a schema
+  (structured outputs), with a list of what it kept back from vendors. Code checks the fields
+  (`stage.checkIntent`) before they are posted, and the buyer can edit them first.
+- **It explains each decision.** After each ranking it gets the ranking, each vendor's own terms and, only when a
+  bid would break the reserve, the cash projection, and writes one short paragraph for the buyer, marked on the
+  page as the agent's words.
 
 The decision is code: `src/auction.mjs` ranks the bids by total cost over the term, prices foreign-currency bids
-with Airwallex FX, checks each against the monthly budget and projects cash against the reserve floor. What the
-model does is explain it. After each decision the demo sends the ranking, the cash projection and each vendor's own
-terms to Claude (`claude-opus-5-5`, over the Messages API, `src/model.mjs`) and asks for one short paragraph for
-the buyer; the buyer console shows it in the "Why not…" and re-auction moments, marked as the agent's words. Set
-`ANTHROPIC_API_KEY` in `.env` to turn it on; without it the console uses its own wording, and the decision is the
-same either way. The model never picks the winner.
+with Airwallex FX, checks each against the monthly budget and projects cash against the reserve floor. The model
+never picks the winner. Without `ANTHROPIC_API_KEY` the buyer fills in the four fields and the console uses its
+own wording; the decision is the same either way.
 
 ## Evidence
 

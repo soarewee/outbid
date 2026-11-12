@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { decide, projectCash } from "../src/auction.mjs";
-import { collectBids } from "../src/vendors.mjs";
+import { collectBids, laterBids } from "../src/vendors.mjs";
 import { approvalFor, cardControls } from "../src/approval.mjs";
 
 const load = (name) => JSON.parse(readFileSync(new URL(`../data/${name}.json`, import.meta.url)));
@@ -10,8 +10,18 @@ const intent = load("intent");
 const company = load("company");
 const fixedRate = (rates) => async (from, to) => (from === to ? 1 : rates[`${from}${to}`]);
 
-test("the annual prepay is cheapest but breaks the reserve in week 7", async () => {
+test("the opening is a plain comparison: two monthly bids, the cheapest wins, nothing to reconsider", async () => {
   const bids = await collectBids(intent);
+  assert.deepEqual(bids.map((b) => b.vendor), ["Vendor A", "Vendor B"]);
+  const result = await decide({ intent, company, cash: 80000, bids, rate: fixedRate({ EURUSD: 1.116819 }) });
+  assert.equal(result.winner.vendor, "Vendor B");
+  assert.equal(result.ranked[0].vendor, "Vendor B");
+  assert.ok(result.ranked.every((b) => b.verdict === "fits"));
+  assert.equal(result.reconsider, null);
+});
+
+test("the prepaid year that comes in later is cheapest but breaks the reserve in week 7", async () => {
+  const bids = [...(await collectBids(intent)), ...(await laterBids(intent))];
   const result = await decide({ intent, company, cash: 80000, bids, rate: fixedRate({ EURUSD: 1.110611 }) });
   const annual = result.ranked.find((b) => b.vendor === "Vendor C");
   assert.equal(result.ranked[0].vendor, "Vendor C");
@@ -29,7 +39,7 @@ test("the best monthly bid depends on the EUR rate", async () => {
 });
 
 test("with more cash the annual prepay wins and no reconsider is needed", async () => {
-  const bids = await collectBids(intent);
+  const bids = [...(await collectBids(intent)), ...(await laterBids(intent))];
   const result = await decide({ intent, company, cash: 130000, bids, rate: fixedRate({ EURUSD: 1.11 }) });
   assert.equal(result.winner.vendor, "Vendor C");
   assert.equal(result.reconsider, null);

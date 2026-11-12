@@ -1,5 +1,10 @@
 # Demo video plan
 
+> The submission video (youtu.be/MQ9fp_v3k3o, recorded Nov 10) follows the flow as it was then: three bids at
+> the start, the cheapest losing on the reserve. Since Nov 12 the purchase is a plain comparison, Claude writes the
+> intent from the buyer's request, and the reserve check moved into the last edge case; `docs/demo-day-video.md`
+> plans a video of the current flow.
+
 Submission: a working demo, a video under 5 minutes, and a repository link with run instructions, all in
 English. Deadline Nov 14, 2026 03:29 KST; the video is recorded in the Nov 10–12 block and the repository goes
 public right before the form is sent (`docs/submission.md`). The decline reasons on screen come from Airwallex

@@ -1,7 +1,8 @@
 // The stage: a local server that shows the demo as it runs. The CLI emits one event per step; the
 // pages in web/ receive them over server-sent events. / is the site, /buyer the buyer's console and
 // /vendor a vendor's. The buyer posts the intent and gives approvals from the page as well as the
-// terminal. No dependencies: node:http only.
+// terminal, and can ask the agent to draft the intent from their own words (POST /draft, answered by
+// the `draft` function the run passes in). No dependencies: node:http only.
 import { createServer } from "node:http";
 import { readFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -11,7 +12,7 @@ const root = fileURLToPath(new URL("../web/", import.meta.url));
 const pages = { "/": "index.html", "/buyer": "buyer.html", "/vendor": "vendor.html" };
 const types = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".svg": "image/svg+xml", ".png": "image/png", ".json": "application/json" };
 
-export function openStage({ port = Number(process.env.OUTBID_STAGE_PORT ?? 4780) } = {}) {
+export function openStage({ port = Number(process.env.OUTBID_STAGE_PORT ?? 4780), draft = null } = {}) {
   const started = Date.now();
   const events = [];
   const clients = new Set();
@@ -52,6 +53,21 @@ export function openStage({ port = Number(process.env.OUTBID_STAGE_PORT ?? 4780)
         return res.writeHead(204).end();
       } catch {
         return res.writeHead(400).end();
+      }
+    }
+    if (req.method === "POST" && url.pathname === "/draft") {
+      const reply = (code, body) => {
+        res.writeHead(code, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(body));
+      };
+      if (!draft) return reply(501, { error: "The agent can't read requests in this run (no ANTHROPIC_API_KEY)." });
+      try {
+        const { text } = JSON.parse(await readBody(req));
+        const drafted = await draft(text);
+        if (!drafted) return reply(501, { error: "The agent couldn't draft this one. Fill in the four fields instead." });
+        return reply(200, { ...drafted, intent: checkIntent(drafted.intent) });
+      } catch (error) {
+        return reply(400, { error: error.message });
       }
     }
     if (req.method === "POST" && url.pathname === "/intent") {

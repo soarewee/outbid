@@ -1,20 +1,24 @@
 #!/usr/bin/env node
 // The demo story against the live sandbox, scene by scene:
-// 1. Vendors bid; the cheapest annual prepay is passed over to protect the reserve.
+// 0. The buyer says what the company needs in plain words; Claude writes the anonymous intent from it.
+// 1. Two vendors bid on it, priced with Airwallex FX; the cheapest over the term wins.
 // 2. The winning bid becomes a card and the vendor prepays its acquisition fee into the Metal escrow.
 //    The agreed charge clears; a charge at the wrong merchant is declined.
 // 3. The cleared charge proves the sale: the escrow splits the fee into the buyer's rebate and Outbid's
 //    fee, and the rebate goes out through Airwallex Payouts.
 // 4. At renewal the hike is declined; the auction reopens and the incumbent matches or loses.
-// 5. A customer payment lands; the agent re-runs the decision and switches to the annual prepay with a
-//    new card, freezing the old one. The new vendor's fee goes through the same escrow.
+// 5. A third vendor offers a prepaid year, cheaper in total. Today's cash can't carry it above the
+//    reserve, so the agent stays; a customer payment lands, the same rules re-run, and it switches with
+//    a new card, freezing the old one. The new vendor's fee goes through the same escrow.
+// Every Airwallex request, Metal transaction and Claude call is also sent to the buyer console's agent
+// panel (src/trace.mjs), so the page shows what the agent is doing and where.
 // The run is shown live on the stage (local pages). Run: npm run demo
 //   --yes    approve every step without a prompt
 //   --wait   let the buyer post the intent from the page (http://localhost:4780/buyer) instead of
 //            reading data/intent.json; the story starts when it is posted
 import { createClient, saveRun } from "./airwallex.mjs";
 import { airwallexRates } from "./fx.mjs";
-import { collectBids, renewalBid, vendorNames } from "./vendors.mjs";
+import { bidderNames, collectBids, laterBids, renewalBid, vendorNames } from "./vendors.mjs";
 import { decide } from "./auction.mjs";
 import { reauction } from "./renewal.mjs";
 import { available, deposit, payout, setAvailable } from "./funds.mjs";
@@ -23,7 +27,8 @@ import { approvalFor } from "./approval.mjs";
 import { freezeCard } from "./issuing.mjs";
 import { openStage } from "./stage.mjs";
 import { approve, cardFor, chargeAndPrint, load, money, printRanking, useStage } from "./cli.mjs";
-import { MODEL, explain } from "./model.mjs";
+import { MODEL, draftIntent, explain } from "./model.mjs";
+import { airwallexCall, claudeCall, codeStep, metalCall } from "./trace.mjs";
 
 let intent = load("intent");
 const company = load("company");
@@ -31,25 +36,47 @@ const scenario = load("scenario");
 const cur = company.currency;
 const fee = scenario.acquisitionFee;
 
-const aw = createClient();
-const metal = createMetal();
-const stage = openStage();
+const run = { scenes: [], charges: [], settlements: [], model: process.env.ANTHROPIC_API_KEY ? MODEL : null, drafts: [], explanations: [] };
+// The agent drafts the intent from the buyer's own words. The draft is checked by code before it is posted.
+async function draft(text) {
+  const drafted = await draftIntent(text);
+  if (!drafted) return null;
+  stage.emit("call", claudeCall({ op: "Read your request, wrote the intent", model: drafted.model, usage: drafted.usage, ms: drafted.ms, detail: `${drafted.withheld.length} things kept from vendors` }));
+  run.drafts.push({ request: text, ...drafted });
+  stage.emit("drafted", { request: text, intent: drafted.intent, withheld: drafted.withheld, note: drafted.note, model: drafted.model });
+  return drafted;
+}
+const stage = openStage({ draft: process.env.ANTHROPIC_API_KEY ? draft : null });
 useStage(stage);
+// While the demo resets the sandbox balance, its calls are setup, not the agent's work: one line says so.
+let settingUp = false;
+const trace = (entry) => !settingUp && stage.emit("call", entry);
+const aw = createClient({ onCall: (c) => trace(airwallexCall(c)) });
+const metal = createMetal({ onCall: (c) => trace(metalCall(c)) });
 await stage.listening;
 console.log(`Stage: ${stage.url}  buyer ${stage.url}/buyer  vendors ${stage.url}/vendor`);
 if (process.argv.includes("--wait")) {
   console.log(`Waiting for the buyer to post the intent at ${stage.url}/buyer …`);
   stage.emit("await-intent", { defaults: intent, company });
   intent = { ...intent, ...(await stage.intent) };
-  console.log(`Intent posted: ${intent.category}, ${intent.quantity} units, up to ${money(intent.budget.amount, intent.budget.currency)}/${intent.budget.per}, ${intent.termMonths} months`);
+} else if (intent.request && process.env.ANTHROPIC_API_KEY) {
+  // Without the page, the agent reads the request in data/intent.json; the four fields there are the fallback.
+  try {
+    const drafted = await draft(intent.request);
+    if (drafted) intent = { ...intent, ...drafted.intent };
+  } catch (error) {
+    console.log(`(The agent couldn't draft the intent, ${error.message}; posting the one in data/intent.json.)`);
+  }
 }
+console.log(`Intent: ${intent.category}, ${intent.quantity} units, up to ${money(intent.budget.amount, intent.budget.currency)}/${intent.budget.per}, ${intent.termMonths} months`);
 await aw.login();
 const rate = airwallexRates(aw);
-const run = { scenes: [], charges: [], settlements: [], model: process.env.ANTHROPIC_API_KEY ? MODEL : null, explanations: [] };
+const SPOKEN = { opening: "Explain the pick to you", reopened: "Explain the re-auction to you", annual: "Explain why not yet", recheck: "Explain the switch to you" };
 // The agent explains each decision in its own words; the run goes on without it if the model is unavailable.
 async function voice(args) {
   try {
     const explanation = await explain(args);
+    if (explanation) trace(claudeCall({ op: SPOKEN[args.key] ?? "Explain the decision", model: explanation.model, usage: explanation.usage, ms: explanation.ms }));
     if (explanation) run.explanations.push({ key: args.key, ...explanation });
     else if (!run.model) console.log("(No ANTHROPIC_API_KEY, so the agent's explanation is the console's own wording.)");
     return explanation;
@@ -58,6 +85,10 @@ async function voice(args) {
     return null;
   }
 }
+
+// The ranking is the agent's own code, not a call: it says so on the panel.
+const ranked = (result) =>
+  trace(codeStep({ op: "Rank the bids", where: "src/auction.mjs", detail: `${result.ranked.length} bids on total cost${result.ranked.some((b) => b.verdict === "breaks-reserve") ? ", cash checked against the reserve" : ""} → ${result.winner?.vendor ?? "none fits"}` }));
 
 // The story ends early when nothing fits or the human declines; the stage stays open either way.
 class Stop extends Error {}
@@ -115,20 +146,23 @@ async function settle(card, prepaid, charge) {
 }
 
 async function play() {
-  const reset = await setAvailable(aw, cur, scenario.startingCash, { waitMs: 60_000, retryAfterMs: 20_000 });
+  settingUp = true;
+  const reset = await setAvailable(aw, cur, scenario.startingCash, { waitMs: 60_000, retryAfterMs: 20_000 }).finally(() => (settingUp = false));
+  trace({ service: "airwallex", op: "Demo setup · reset the sandbox balance", endpoint: "simulated deposit or payout", detail: `${money(reset.before, cur)} → ${money(reset.after, cur)}, so every run starts the same`, ok: true, ms: 0 });
   console.log(`Sandbox ${cur} balance set to ${money(reset.after, cur)} (was ${money(reset.before, cur)})`);
   if (reset.pending) console.log(`The sandbox hasn't settled the ${money(reset.pending, cur)} top-up yet, so the run starts from ${money(reset.after, cur)} instead of ${money(scenario.startingCash, cur)}.`);
-  stage.emit("start", { intent, company, scenario, vendors: vendorNames });
+  stage.emit("start", { intent, company, scenario, vendors: vendorNames, bidders: bidderNames });
 
-  scene(1, "Three vendors bid. The cheapest would break the reserve.");
-  console.log(`Intent: ${intent.category}, ${intent.quantity} units, up to ${money(intent.budget.amount, intent.budget.currency)}/${intent.budget.per}, ${intent.termMonths} months`);
+  scene(1, "Two vendors bid. The cheapest wins.");
   let cash = await available(aw, cur);
   console.log(`Cash: ${money(cash, cur)} available, reserve floor ${money(company.policy.reserveFloor, cur)}\n`);
   stage.emit("cash", { available: cash });
+  trace(codeStep({ op: "Post the anonymous intent", where: "src/vendors.mjs", detail: `${bidderNames.length} vendor agents read it` }));
   const bids = await collectBids(intent);
   for (const bid of bids) vendorSees(bid.vendor, `Sees the anonymous intent. Bids ${money(bid.price.amount, bid.price.currency)} ${bid.billing}.`);
   const opening = await decide({ intent, company, cash, bids, rate });
-  printRanking(opening, cur, { key: "opening", title: "Cheapest first over 12 months, priced with Airwallex FX, then checked against the reserve", explanation: await voice({ intent, company, result: opening, key: "opening" }) });
+  ranked(opening);
+  printRanking(opening, cur, { key: "opening", title: "Cheapest first over the term, priced with Airwallex FX", explanation: await voice({ intent, company, result: opening, key: "opening" }) });
   run.opening = opening;
   if (!opening.winner) stop("\nNo bid fits the budget and reserve.");
   say(`\nPick: ${opening.winner.vendor}`);
@@ -139,22 +173,28 @@ async function play() {
   if (!(await approve(approvalFor(opening.winner)))) stop("Not approved. No card issued.");
   let current = opening.winner;
   let card = await cardFor(aw, current);
-  let prepaid = await prepay(card);
+  // The vendor's prepay (Metal, several seconds) runs while the card is charged, so the charges land on
+  // the card right after it is issued instead of after the escrow. The fee is released only after both.
+  const prepaying = prepay(card);
+  prepaying.catch(() => {}); // awaited below; this only keeps an early failure from being unhandled
   run.charges.push(await chargeAt(card, "Agreed charge", card.approval.amount));
   const wrong = scenario.wrongMerchant;
   run.charges.push(await chargeAndPrint(aw, card, { label: "Wrong merchant", amount: wrong.amount, currency: card.approval.currency, mcc: wrong.mcc, merchant: wrong.name }));
+  let prepaid = await prepaying;
 
   scene(3, "The cleared charge releases the vendor's fee.");
   await settle(card, prepaid, run.charges[0]);
 
-  scene(4, "At renewal the price hike is declined, and re-auctioned.", { later: true });
+  scene(4, "The vendor raises its price.", { later: true });
   const hiked = renewalBid(current);
   run.charges.push(await chargeAt(card, `Renewal at ${money(hiked.price.amount, hiked.price.currency)}`, hiked.price.amount));
   cash = await available(aw, cur);
   stage.emit("cash", { available: cash });
   const renewal = await reauction({ intent, company, cash, rate, incumbent: current });
+  ranked(renewal.opened);
   console.log(`\nAuction reopened with ${current.vendor} at its renewal price:`);
-  printRanking(renewal.opened, cur, { key: "reopened", title: `The auction reopens with ${current.vendor} at its new price`, explanation: await voice({ intent, company, result: renewal.opened, key: "reopened", context: { incumbent: current.vendor, incumbentPriceBefore: current.price, incumbentPriceNow: renewal.hiked.price } }) });
+  // The buyer console tells this one with the message to the incumbent, so it needs no explanation.
+  printRanking(renewal.opened, cur, { key: "reopened", title: `The auction reopens with ${current.vendor} at its new price` });
   if (renewal.offer) {
     const per = current.billing === "annual" ? "year" : "month";
     const ask = `${renewal.offer.from} costs ${money(renewal.offer.amount, renewal.offer.currency)} per ${per}. Match, or the company switches.`;
@@ -173,16 +213,32 @@ async function play() {
   if (current.vendor !== previous.vendor) vendorSees(previous.vendor, "Lost the renewal to a lower bid. The card is frozen.");
   run.charges.push(await chargeAt(card, "Renewed charge", card.approval.amount));
 
-  scene(5, "Cash recovers, so the annual deal comes back.", { later: true });
-  const paid = await deposit(aw, scenario.customerPayment.amount, scenario.customerPayment.payer);
-  if (!paid.landed) stop(`${scenario.customerPayment.payer}'s ${money(scenario.customerPayment.amount, cur)} payment is still pending in the sandbox, and the recheck needs it in the balance. Cash stays at ${money(paid.cash, cur)}; run the demo again later.`);
+  scene(5, "Cash changes, and so does the best deal.", { later: true });
+  const offers = await laterBids(intent);
+  for (const bid of offers) vendorSees(bid.vendor, `Sees the anonymous intent. Bids ${money(bid.price.amount, bid.price.currency)} ${bid.billing}.`);
   cash = await available(aw, cur);
-  console.log(`${scenario.customerPayment.payer} paid ${money(scenario.customerPayment.amount, cur)}. Cash: ${money(cash, cur)}\n`);
-  stage.emit("deposit", { payer: scenario.customerPayment.payer, amount: scenario.customerPayment.amount, currency: cur });
   stage.emit("cash", { available: cash });
-  // The bids standing after the renewal, including the incumbent's renewed price.
-  const recheck = await decide({ intent, company, cash, bids: renewal.result.ranked, rate });
-  printRanking(recheck, cur, { key: "recheck", title: "The same rules, re-run on the new balance", explanation: await voice({ intent, company, result: recheck, key: "recheck", context: { current: current.vendor, customerPayment: scenario.customerPayment } }) });
+  // The bids standing after the renewal, including the incumbent's renewed price, and the new offer.
+  const standing = [...renewal.result.ranked, ...offers];
+  const offered = await decide({ intent, company, cash, bids: standing, rate });
+  ranked(offered);
+  printRanking(offered, cur, { key: "annual", title: "A prepaid year, checked against today's cash", explanation: await voice({ intent, company, result: offered, key: "annual", context: { current: current.vendor, newOffers: offers.map((b) => b.vendor) } }) });
+  run.annual = offered;
+  let recheck = offered;
+  if (offered.winner?.vendor === current.vendor) {
+    console.log(`Staying with ${current.vendor} for now. The agent looks again when cash changes.`);
+    // Said before the deposit is sent, so the page opens the payment's moment and its calls land there.
+    stage.emit("incoming", { payer: scenario.customerPayment.payer, amount: scenario.customerPayment.amount, currency: cur });
+    const paid = await deposit(aw, scenario.customerPayment.amount, scenario.customerPayment.payer);
+    if (!paid.landed) stop(`${scenario.customerPayment.payer}'s ${money(scenario.customerPayment.amount, cur)} payment is still pending in the sandbox, and the recheck needs it in the balance. Cash stays at ${money(paid.cash, cur)}; run the demo again later.`);
+    cash = await available(aw, cur);
+    console.log(`${scenario.customerPayment.payer} paid ${money(scenario.customerPayment.amount, cur)}. Cash: ${money(cash, cur)}\n`);
+    stage.emit("deposit", { payer: scenario.customerPayment.payer, amount: scenario.customerPayment.amount, currency: cur });
+    stage.emit("cash", { available: cash });
+    recheck = await decide({ intent, company, cash, bids: standing, rate });
+    ranked(recheck);
+    printRanking(recheck, cur, { key: "recheck", title: "The same rules, re-run on the new balance" });
+  }
   run.recheck = recheck;
   if (!recheck.winner || recheck.winner.vendor === current.vendor) stop(`\nStaying with ${current.vendor}.`);
   say(`\nSwitch: ${current.vendor} → ${recheck.winner.vendor}`);
@@ -191,9 +247,11 @@ async function play() {
   vendorSees(current.vendor, "Lost the account: the buyer switched to an annual plan. The card is frozen.");
   vendorSees(recheck.winner.vendor, "Won, now that the buyer's cash allows the prepay.");
   card = switched.card;
-  prepaid = await prepay(card);
+  const prepayingAnnual = prepay(card);
+  prepayingAnnual.catch(() => {});
   const annual = await chargeAt(card, "First annual charge", card.approval.amount);
   run.charges.push(annual, await chargeAt(switched.frozen, `Old card, ${switched.frozen.approval.vendor}`, switched.frozen.approval.amount));
+  prepaid = await prepayingAnnual;
   await settle(card, prepaid, annual);
 }
 

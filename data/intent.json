@@ -1,4 +1,5 @@
 {
+  "request": "We're Fernhill Robotics. Our perception team needs two H100s reserved for the next 12 months to train our models. Keep it under $3,750 a month. We have about $80,000 in the bank, with payroll every two weeks and the quarterly tax bill coming up.",
   "category": "gpu-h100",
   "quantity": 2,
   "budget": {

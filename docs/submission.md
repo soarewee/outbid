@@ -10,8 +10,8 @@ Outbid: Your Agent Posts What It Wants to Buy. Vendors Compete. The Winning Bid 
 
 ## One line
 
-A purchase-intent auction for what a company buys on subscription. The agent posts an anonymous intent,
-vendors bid, the agent picks the bid that keeps the cash reserve, and the approved terms become an Airwallex
+A purchase-intent auction for what a company buys on subscription. The buyer tells its agent what it needs,
+the agent writes an anonymous intent, vendors bid, the cheapest wins, and the approved terms become an Airwallex
 virtual card that can only pay that vendor, that amount, in that currency. Vendors pay only for closed deals:
 their prepaid fee is split into the buyer's rebate when the card charge clears.
 
@@ -23,16 +23,17 @@ needs. Outbid lets vendors compete for it, and turns their acquisition budget in
 
 **How it works (Kit 02: Intent-Bound Purchase Agent)**
 
-1. **Post the intent.** The company's agent publishes an anonymous purchase intent: H100 GPU capacity, 2 GPUs,
-   up to $3,750 a month, 12 months. Vendors see those four fields and nothing else.
-2. **Vendors bid.** Three vendor agents answer: Arbor $3,400 a month, Birch €2,960 a month, Cedar $34,500
-   prepaid for the year, the cheapest in total. Outbid prices the euro bid with **Airwallex FX** and ranks total
-   cost over the term.
-3. **The cheapest bid doesn't automatically win.** The agent reads the company's **Airwallex balance** and
-   upcoming obligations and projects cash under each bid. Cedar's prepay would put cash at $19,500 on day 45,
-   under the $20,000 reserve floor, so Birch wins and the agent records when to reconsider Cedar. The ranking,
-   the budget and the reserve live in code; Claude reads the vendors' terms and explains the trade-off, and
-   never picks the winner.
+1. **Say what you need.** The buyer writes it the way they'd tell a colleague: "We're Fernhill Robotics. Our
+   perception team needs two H100s for 12 months, under $3,750 a month. We have about $80,000 in the bank…"
+   The agent (**Claude**, with a JSON schema) writes the anonymous intent from it: H100 GPU capacity, 2 GPUs, up
+   to $3,750 a month, 12 months. It lists what it kept from vendors (the name, the team, the cash, the bills),
+   and code checks the four fields before they are posted. Vendors see those fields and nothing else.
+2. **Vendors bid, the cheapest wins.** Two vendor agents answer: Orbit $3,400 a month, Harbor €2,960 a month.
+   Outbid prices the euro bid with **Airwallex FX** and ranks total cost over the term; Harbor wins. The ranking
+   and the budget live in code; Claude reads the vendors' terms and explains the pick, and never picks.
+3. **You see the agent work.** Beside the story, the buyer console lists every call the agent makes as it makes
+   it: Claude for words, Airwallex for money, Metal for the escrow, its own code for the rules, and the buyer's
+   approvals.
 4. **Approval is bound to the terms.** The human approves one thing: this vendor, this amount, this currency,
    this merchant category.
 5. **The winning bid becomes the card.** Outbid issues an **Airwallex virtual card** (Issuing) whose controls
@@ -46,9 +47,11 @@ needs. Outbid lets vendors compete for it, and turns their acquisition budget in
 
 **The decision keeps changing as the facts do.** At renewal the incumbent bills 22% more; the card declines it
 with `LIMIT_EXCEEDED`, Outbid reopens the auction and tells the incumbent: match the lower bid, or the company
-switches. It matches, and gets a new card while the old one is frozen. Later a $30,000 customer payment lands
-in the **Global Account**; the agent re-runs the same rules, Cedar's annual prepay now fits and is cheapest, so
-after approval the company switches, and the old card declines with `CARD_INACTIVE`.
+switches. It matches, and gets a new card while the old one is frozen. Then a third vendor, Summit, offers the
+year prepaid for $34,500, the cheapest total. The agent reads the company's **Airwallex balance** and upcoming
+obligations: paying it up front would put cash at about $19,500 on day 45, under the $20,000 reserve floor, so
+it waits. A $30,000 customer payment lands in the **Global Account**, the same rules re-run, the prepay fits,
+and after approval the company switches; the old card declines with `CARD_INACTIVE`. The reserve lives in code.
 
 **Why a card, not just a bid?** A bid is a promise; the vendor's billing system decides what gets charged, and
 an agent holding the company card is a blank check. A virtual card per winning bid means the vendor can't
@@ -58,8 +61,8 @@ it needs no vendor integration.
 
 **What's built.** Everything above runs end to end against the Airwallex sandbox and Metal testnet with
 `npm run demo`: Balances, FX, Issuing, card transactions, Global Accounts and Payouts on Airwallex; a Foundry
-`FeeEscrow` contract on Metal. A buyer console and a vendor console fill in live from the run; the buyer posts
-the intent and gives each approval on the page. Each run saves its request log, and `evidence/2026-11-10.json`
+`FeeEscrow` contract on Metal. A buyer console and a vendor console fill in live from the run; the buyer writes
+the request, posts the intent and gives each approval on the page, with the agent's calls listed beside it. Each run saves its request log, and `evidence/2026-11-10.json`
 is a publishable copy of the run behind the site, with the response fields that prove each step. The hosted
 copy at outbid.fly.dev replays that run without touching the sandbox.
 

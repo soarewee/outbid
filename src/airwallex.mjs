@@ -6,6 +6,8 @@ export function createClient({
   base = process.env.AIRWALLEX_BASE ?? "https://api.sandbox.airwallex.com",
   clientId = process.env.AIRWALLEX_CLIENT_ID,
   apiKey = process.env.AIRWALLEX_API_KEY,
+  // Called after every request with what was sent and what came back, for the agent panel.
+  onCall = () => {},
 } = {}) {
   if (!clientId || !apiKey) {
     throw new Error("Set AIRWALLEX_CLIENT_ID and AIRWALLEX_API_KEY in .env (see .env.example).");
@@ -21,16 +23,24 @@ export function createClient({
     const headers = { "Content-Type": "application/json" };
     if (token) headers.Authorization = `Bearer ${token}`;
     else Object.assign(headers, { "x-client-id": clientId, "x-api-key": apiKey });
+    const started = Date.now();
     const res = await fetch(`${base}${path}`, { method, headers, body: body ? JSON.stringify(body) : undefined });
     const text = await res.text();
+    const report = (response) => {
+      try {
+        onCall({ method, path, status: res.status, body, response, ms: Date.now() - started });
+      } catch {}
+    };
     let data;
     try {
       data = text ? JSON.parse(text) : {};
     } catch {
       log.push({ method, path, status: res.status, body, response: text.slice(0, 500) });
+      report(null);
       throw new Error(`${method} ${path} → ${res.status} returned HTML, not JSON. Check AIRWALLEX_BASE and that the keys are correct.`);
     }
     log.push({ method, path, status: res.status, body, response: data });
+    report(data);
     if (!res.ok) throw Object.assign(new Error(`${method} ${path} → ${res.status}: ${text}`), { status: res.status, data });
     return data;
   }

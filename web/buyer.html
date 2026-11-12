@@ -16,6 +16,42 @@
   body { height: 100vh; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; }
   .wrap { max-width: 760px; width: 100%; padding: 0 20px; margin: 0 auto; display: flex; flex-direction: column; flex: 1; min-height: 0; }
   .bar { flex: none; }
+  .shell { flex: 1; min-height: 0; display: flex; gap: 32px; }
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+  /* the agent panel: every call the buyer's agent makes, as it makes it, and where it goes */
+  .agent { display: none; }
+  @media (min-width: 1180px) {
+    .wrap { max-width: 1200px; }
+    .main { max-width: 760px; }
+    .agent { display: flex; flex-direction: column; width: 360px; flex: none; min-height: 0; margin: 22px 0 22px; border: 1px solid var(--line); border-radius: 16px; background: var(--card); overflow: hidden; }
+  }
+  .agent .ahead { flex: none; padding: 16px 18px 12px; border-bottom: 1px solid var(--line); }
+  .agent .eyebrow { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink); }
+  .agent .eyebrow i { width: 7px; height: 7px; border-radius: 50%; background: var(--line2); }
+  .agent .eyebrow i.live { background: var(--green); animation: pulse 1.6s infinite; }
+  .agent .where { font-size: 13px; line-height: 1.5; color: var(--ink2); margin: 8px 0 10px; }
+  .agent .where code { font-family: var(--mono); font-size: 11.5px; background: var(--well); border-radius: 5px; padding: 1px 5px; }
+  .agent .legend { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 12px; color: var(--ink3); }
+  .agent .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .tag { display: inline-flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; font-weight: 500; padding: 2px 7px; border-radius: 6px; white-space: nowrap; }
+  .tag.claude { background: var(--amber-soft); color: var(--amber); }
+  .tag.airwallex { background: var(--blue-soft); color: var(--blue); }
+  .tag.metal { background: var(--green-soft); color: var(--green); }
+  .tag.code { background: var(--well); color: var(--ink2); }
+  .tag.you { background: var(--ink); color: var(--plane); }
+  .agent .log { flex: 1; min-height: 0; overflow: auto; list-style: none; margin: 0; padding: 6px 0 14px; scrollbar-width: thin; }
+  .agent .log:empty::before { content: "Nothing yet. The agent's calls show up here as it makes them."; display: block; padding: 14px 18px; font-size: 13px; color: var(--ink3); }
+  .agent .e { padding: 9px 18px; border-left: 2px solid transparent; animation: rise .35s ease-out both; }
+  .agent .e.now { border-left-color: var(--ink); background: var(--well); }
+  .agent .e .r1 { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .agent .e .op { font-size: 13.5px; font-weight: 500; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .agent .e .x { font-family: var(--mono); font-size: 11px; color: var(--ink3); }
+  .agent .e .ms { font-family: var(--mono); font-size: 11px; color: var(--ink3); white-space: nowrap; }
+  .agent .e .ep { font-family: var(--mono); font-size: 11px; color: var(--ink3); margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .agent .e .dt { font-size: 12.5px; color: var(--ink2); margin-top: 2px; line-height: 1.45; }
+  .agent .e .dt a { font-family: var(--mono); font-size: 11.5px; color: var(--ink3); border-bottom: 1px solid var(--line2); }
+  .agent .e.fail .dt { color: var(--red); }
 
   .ticket { flex: none; padding: 22px 0 16px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 1fr auto; gap: 6px 24px; align-items: center; }
   .ticket .status { display: flex; align-items: center; gap: 10px; }
@@ -24,6 +60,7 @@
   .ticket .status .pill.live i { animation: pulse 1.6s infinite; }
   .intent { font-size: 19px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.3; margin: 0; }
   .intent .q { color: var(--ink3); }
+  .figures[hidden] { display: none; }
   .figures { grid-column: 1 / -1; display: flex; gap: 28px; flex-wrap: wrap; margin-top: 8px; }
   .figure .l { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); }
   .figure .v { font-size: 17px; font-weight: 500; letter-spacing: -0.02em; transition: color .4s; }
@@ -95,11 +132,25 @@
 
   /* the intent form */
   .post .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; margin-bottom: 14px; }
+  .post .grid.tight { grid-template-columns: 1.4fr 1fr 1fr; gap: 10px 14px; }
+  .post .grid.tight .field:first-child { grid-row: span 1; }
   @media (max-width: 520px) { .post .grid { grid-template-columns: 1fr; } }
   .post .policy { background: var(--well); border-radius: 12px; padding: 11px 14px; font-size: 14px; color: var(--ink2); margin-bottom: 14px; line-height: 1.5; }
   .post .policy b { color: var(--ink); }
   .post .err { color: var(--red); font-size: 14px; margin-top: 10px; display: none; }
   .post .btn.primary { width: 100%; }
+  /* the buyer's own words, and what the agent made of them */
+  .post textarea.ask { width: 100%; min-height: 104px; resize: vertical; font: inherit; font-size: 15.5px; line-height: 1.55; color: var(--ink); background: var(--well); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; box-sizing: border-box; }
+  .post textarea.ask:focus { outline: 2px solid var(--line2); }
+  .said { font-size: 14px; line-height: 1.5; color: var(--ink2); border-left: 2px solid var(--line2); padding: 2px 0 2px 12px; margin: 0 0 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .said b { color: var(--ink); font-weight: 500; }
+  .wrote { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink3); margin: 0 0 10px; }
+  .kept { margin: 2px 0 16px; }
+  .kept .l { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); margin-bottom: 7px; }
+  .kept .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .kept .chips span { font-size: 12.5px; color: var(--ink2); background: var(--well); border-radius: 8px; padding: 4px 9px; text-decoration: line-through; text-decoration-color: var(--ink3); animation: pop .35s cubic-bezier(.2,.9,.3,1.3) both; }
+  .thinking { display: inline-flex; align-items: center; gap: 8px; }
+  .thinking i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: pulse 1.2s infinite; }
 
   /* bids */
   .bids .bid { display: grid; grid-template-columns: 1fr auto; gap: 1px 18px; padding: 12px 0; border-top: 1px solid var(--line); align-items: center; animation: rise .45s cubic-bezier(.2,.7,.2,1) both; }
@@ -218,25 +269,37 @@
     <span class="mode" id="mode" hidden></span>
     <nav class="nav"><a href="/buyer" class="on">Buyer</a><a href="/vendor">Vendors</a><a href="/">About</a></nav>
   </header>
+  <div class="shell">
+  <div class="main">
   <div class="ticket">
     <h1 class="intent" id="intent"><span class="q">Nothing to buy yet.</span></h1>
     <div class="status"><span class="pill quiet" id="status"><i></i>Waiting for the agent</span></div>
     <div class="figures" id="figures" hidden>
       <div class="figure"><div class="l">Available cash</div><div class="v num" id="cash">—</div></div>
-      <div class="figure"><div class="l">Reserve floor</div><div class="v num" id="floor">—</div></div>
+      <div class="figure" id="floorfig" hidden><div class="l">Reserve floor</div><div class="v num" id="floor">—</div></div>
       <div class="figure" id="payfig" hidden><div class="l">Paying</div><div class="v num" id="paying">—</div></div>
       <div class="figure" id="rebfig" hidden><div class="l">Rebates</div><div class="v num" id="rebates">—</div></div>
     </div>
   </div>
   <div class="band" id="band" hidden><span class="k">Edge case · months later</span><span class="t" id="bandTitle"></span><a id="bandBack">Back to the purchase</a></div>
   <div class="stage" id="stage">
-    <div class="empty" id="empty">Run <code>npm run demo -- --wait</code> and post your intent here, or <code>npm run demo</code> to post the one in <code>data/intent.json</code>. Then watch. It plays one part at a time; you approve the card, and press Continue when you are ready for the next part.</div>
+    <div class="empty" id="empty">Run <code>npm run demo -- --wait</code> and tell your agent here what the company needs, or <code>npm run demo</code> to use the request in <code>data/intent.json</code>. Then watch. It plays one part at a time; you approve the card, and press Continue when you are ready for the next part.</div>
   </div>
   <div class="foot">
     <div class="caption" id="caption"></div>
     <button class="btn primary next" id="next" hidden></button>
   </div>
   <div class="chapters" id="chapters" hidden></div>
+  </div>
+  <aside class="agent" aria-label="What your agent is doing">
+    <div class="ahead">
+      <div class="eyebrow"><i id="agentDot"></i>Your agent</div>
+      <div class="where" id="where">Runs on this machine, in <code>npm run demo</code>. Every call it makes shows up below, in order.</div>
+      <div class="legend"><span><span class="tag claude">Claude</span>words</span><span><span class="tag airwallex">Airwallex</span>money</span><span><span class="tag metal">Metal</span>escrow</span><span><span class="tag code">Code</span>rules</span></div>
+    </div>
+    <ol class="log" id="log"></ol>
+  </aside>
+  </div>
 </div>
 
 <script>
@@ -277,6 +340,7 @@
   const perShort = (cycle) => (cycle === "annual" ? "/yr" : "/mo");
   const duesOf = (obligations, cur) => (obligations ?? []).map((o) => `${whole(o.amount, cur)} ${o.label.toLowerCase()}${o.everyDays ? ` every ${o.everyDays === 7 ? "week" : `${o.everyDays} days`}` : ` on day ${o.firstDay}`}`);
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const words = (n) => ["No", "One", "Two", "Three", "Four", "Five"][n] ?? String(n);
   // A number that counts up to its value, for the moments that are about one number.
   const countUp = (node, to, fmt, ms = 900) => {
     if (reduced) { node.textContent = fmt(to); return; }
@@ -305,8 +369,9 @@
     if (lead?.length) { const p = el("p", "lead"); p.append(...lead); c.append(p); }
     const tbar = el("div", "tbar"); tbar.append(el("i")); tbar.hidden = true; c.prepend(tbar);
     node.append(c);
-    const m = { node, card: c, scene: state.scene, sceneTitle: state.sceneTitle, later: state.later, dwell, hold: false, onShow: [], shownAt: 0 };
+    const m = { node, card: c, kind, scene: state.scene, sceneTitle: state.sceneTitle, later: state.later, dwell, hold: false, onShow: [], shownAt: 0 };
     moments.push(m);
+    if (heldCalls.length) { const q = heldCalls; heldCalls = []; for (const c of q) whenShown(m, () => logEntry(c), 250); }
     $("empty")?.remove();
     schedule();
     return m;
@@ -412,14 +477,10 @@
   };
 
   // ─── posting the intent ───
-  function awaitIntent(e) {
-    state.posted = true; // the viewer posts it here, so the run needs no opening moment
-    $("intent").replaceChildren(el("span", "q", "What does your company need?"));
-    status("Draft", "quiet");
-    const d = e.defaults, p = e.company.policy, cur_ = e.company.currency;
-    const dues = duesOf(e.company.obligations, cur_).join(", ");
-    const m = moment({ title: "Post a purchase intent", lead: ["Vendors see exactly these four fields and nothing else: not your name, not your cash. Your agent will hold to the reserve policy below while it picks."], kind: "post", dwell: 0 });
-    const c = m.card;
+  // The buyer says what the company needs in their own words; the agent (Claude, through the run's
+  // /draft) writes the anonymous intent from it and says what it kept back. The four fields stay
+  // editable, and code checks them again when they are posted. Without a model, the fields alone.
+  function intentForm(d) {
     const grid = el("div", "grid");
     const field = (label, input, unit) => {
       const f = el("div", "field"); f.append(el("label", null, label));
@@ -439,24 +500,71 @@
     term.value = d.termMonths;
     grid.append(field("Category", category), field(`${CATEGORY[category.value]?.unit ?? "Unit"}s`, quantity), field("Budget per month", budget, currency.value), field("Currency", currency), field("Term", term));
     currency.onchange = () => (budget.parentElement.querySelector(".unit").textContent = currency.value);
-    const policy = el("div", "policy");
-    policy.append("Your agent will keep cash above the ", el("b", null, `${whole(p.reserveFloor, cur_)} reserve floor`), ` for the next ${p.horizonDays} days, after what is already due${dues ? ` (${dues})` : ""}. The cheapest bid that respects that wins. Those rules are code, not a prompt.`);
+    const read = () => ({ category: category.value, quantity: Number(quantity.value), budget: { amount: Number(budget.value), currency: currency.value }, termMonths: Number(term.value) });
+    return { grid, read };
+  }
+  const keptChips = (withheld) => {
+    const k = el("div", "kept"); k.append(el("div", "l", "Kept from vendors"));
+    const chips = el("div", "chips");
+    withheld.forEach((w, i) => { const c = el("span", null, w); c.style.animationDelay = `${0.2 + i * 0.12}s`; chips.append(c); });
+    k.append(chips); return k;
+  };
+  function awaitIntent(e) {
+    state.posted = true; // the viewer posts it here, so the run needs no opening moment
+    $("intent").replaceChildren(el("span", "q", "What does your company need?"));
+    status("Draft", "quiet");
+    agentLive(true);
+    const d = e.defaults;
+    const m = moment({ title: "What does the company need?", lead: ["Say it the way you would tell a colleague. ", el("b", null, "Your agent writes the anonymous intent"), " from it: four fields, and nothing that says who you are."], kind: "post", dwell: 0 });
+    const c = m.card;
     const err = el("div", "err");
     const post = el("button", "btn primary", "Post intent");
-    post.onclick = async () => {
-      post.disabled = true; err.style.display = "none";
-      const body = { category: category.value, quantity: Number(quantity.value), budget: { amount: Number(budget.value), currency: currency.value }, termMonths: Number(term.value) };
-      const r = await fetch("/intent", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-      if (!r.ok) { err.textContent = (await r.json()).error ?? "Could not post the intent."; err.style.display = "block"; post.disabled = false; return; }
-      post.textContent = "Posted";
+    const showForm = (values, drafted) => {
+      c.querySelector(".asking")?.remove();
+      const { grid, read } = intentForm(values);
+      const parts = [];
+      if (drafted) {
+        c.querySelector(".lead")?.replaceChildren("Check it, then post. ", el("b", null, "Vendors see these four fields"), " and nothing else.");
+        const said = el("p", "said"); said.append(el("b", null, "You: "), drafted.request); parts.push(said);
+        const wrote = el("div", "wrote"); wrote.append(el("span", "tag claude", "Claude"), `wrote this intent${drafted.note ? `. ${drafted.note}` : ""}`); parts.push(wrote);
+      }
+      if (drafted) grid.classList.add("tight");
+      parts.push(grid);
+      if (drafted?.withheld?.length) parts.push(keptChips(drafted.withheld));
+      post.onclick = async () => {
+        post.disabled = true; err.style.display = "none";
+        const r = await fetch("/intent", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(read()) });
+        if (!r.ok) { err.textContent = (await r.json()).error ?? "Could not post the intent."; err.style.display = "block"; post.disabled = false; return; }
+        post.textContent = "Posted";
+      };
+      c.append(...parts, post, err);
     };
-    c.append(grid, policy, post, err);
+    if (!d.request) return showForm(d, null);
+    const asking = el("div", "asking");
+    const ask = el("textarea", "ask"); ask.value = d.request; ask.name = "request"; ask.rows = 4;
+    const go = el("button", "btn primary", "Ask your agent");
+    go.onclick = async () => {
+      go.disabled = true; ask.disabled = true; err.style.display = "none";
+      const t = el("span", "thinking"); t.append(el("i"), "Claude is reading your request…"); go.replaceChildren(t);
+      state.drafting = true;
+      const r = await fetch("/draft", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: ask.value }) }).catch(() => null);
+      const body = r ? await r.json().catch(() => ({})) : {};
+      if (r?.ok) return showForm(body.intent, { ...body, request: ask.value });
+      // No model in this run, or it couldn't read this one: the four fields, filled from the defaults.
+      showForm(d, null);
+      err.textContent = body.error ?? "The agent is unavailable. Fill in the four fields instead."; err.style.display = "block";
+    };
+    asking.append(ask, go);
+    c.append(asking, err);
   }
+  // A draft the run made without this page (npm run demo, or a replay): shown when the intent opens.
+  function drafted(e) { if (!state.drafting) state.drafted = e; }
 
   // ─── the ticket, and waiting for bids ───
   let waiting = null;
   function start(e) {
     state.vendors = e.vendors;
+    state.bidders = e.bidders ?? e.vendors;
     e.vendors.forEach((v, i) => (state.slot[v] = i + 1));
     state.currency = e.company.currency;
     state.term = e.intent.termMonths;
@@ -467,8 +575,9 @@
     // ticket at the top reads as what was just posted rather than as a given.
     let opening = null;
     if (!state.posted) {
-      const p = e.company.policy;
-      opening = moment({ title: "Your agent posts an intent", lead: ["Vendors will see exactly these four fields and nothing else: ", el("b", null, "not your name, not your cash"), ". Your agent holds to the reserve policy below while it picks."], kind: "post", dwell: 6500 });
+      const dr = state.drafted;
+      opening = moment({ title: dr ? "Your agent wrote the intent from your request" : "Your agent posts an intent", lead: ["Vendors will see exactly these four fields and nothing else: ", el("b", null, "not your name, not your cash"), "."], kind: "post", dwell: dr ? 8000 : 6500 });
+      if (dr) { const said = el("p", "said"); said.append(el("b", null, "You: "), dr.request); opening.card.append(said); }
       const terms = el("div", "terms");
       for (const [l, v] of [
         ["Category", categoryName(intent.category)],
@@ -476,22 +585,21 @@
         ["Budget per month", `${whole(intent.budget.amount, intent.budget.currency)} ${intent.budget.currency}`],
         ["Term", `${intent.termMonths} months`],
       ]) { const t = el("div"); t.append(el("div", "l", l), el("div", "v", v)); terms.append(t); }
-      const policy = el("div", "policy");
-      policy.append("Your agent will keep cash above the ", el("b", null, `${whole(p.reserveFloor, state.currency)} reserve floor`), ` for the next ${p.horizonDays} days, after what is already due${state.dues ? ` (${state.dues})` : ""}. The cheapest bid that respects that wins. Those rules are code, not a prompt.`);
-      opening.card.append(terms, policy);
+      opening.card.append(terms);
+      if (dr?.withheld?.length) opening.card.append(keptChips(dr.withheld));
     }
     const ticket = () => {
-      $("intent").replaceChildren(`${categoryName(intent.category)}, ${qty(intent)}, up to ${whole(intent.budget.amount, intent.budget.currency)} a ${intent.budget.per}, for ${intent.termMonths} months`, el("span", "q", ". Posted anonymously."));
-      $("floor").textContent = whole(state.floor, state.currency);
+      $("intent").replaceChildren(`${categoryName(intent.category)}, ${qty(intent)}, up to ${whole(intent.budget.amount, intent.budget.currency)} a ${intent.budget.per ?? "month"}, for ${intent.termMonths} months`, el("span", "q", ". Posted anonymously."));
       $("figures").hidden = false;
       $("dot").classList.add("live");
       if (!state.replay) mode("Live · Airwallex sandbox", true);
+      agentLive(true);
       status("Vendors are bidding", "info", true);
     };
     if (opening) whenShown(opening, ticket, 4500); else ticket();
-    waiting = moment({ title: "Your intent is out. Vendors are looking at it.", lead: ["They see the category, the quantity, the budget and the term. ", el("b", null, "Not who you are, not your cash"), ", not each other's bids."], kind: "waiting", dwell: 3500 });
+    waiting = moment({ title: "Your intent is out. Vendors are looking at it.", lead: ["They see the category, the quantity, the budget and the term. ", el("b", null, "Not who you are, not your cash"), ", not each other's bids."], kind: "waiting", dwell: 7000 });
     waiting.slots = {};
-    for (const v of e.vendors) {
+    for (const v of state.bidders) {
       const s = el("div", "slot"); const i = el("i"); i.style.background = colorOf(v);
       s.append(brandMark(v, 16), el("span", "who", B(v)), el("span", "what pulse", "reading the intent…"));
       waiting.card.append(s);
@@ -508,8 +616,9 @@
       s.querySelector(".what").replaceWith(el("span", "what", "bid"));
       const amt = el("span", "amt num pop"); amt.append(`${m[1]}${m[2]}`, el("small", null, perShort(m[3])));
       s.append(amt);
-    }, 1200 + k * 700);
-    waiting.dwell = Math.max(waiting.dwell, 1200 + k * 700 + 2200);
+    }, 2400 + k * 1400);
+    // Slow enough to watch: each vendor reads the intent, then its bid lands, and both stay up a while.
+    waiting.dwell = Math.max(waiting.dwell, 2400 + k * 1400 + 4400);
   }
   function cash(e) { state.cash = e.available; onStage(() => bump($("cash"), whole(e.available, state.currency)), 400); }
   function scene(e) {
@@ -528,12 +637,24 @@
     if (m) { caption("Switching from ", el("b", null, B(m[1])), " to ", el("b", null, B(m[2])), "."); return; }
     caption(e.text.replace(/Vendor [A-Z]/g, B));
   }
+  // The payment is announced before the deposit is sent (runs from Nov 12 on), so its moment is on stage
+  // while the agent waits for the money, and the calls it makes land with it.
+  function incoming(e) {
+    const m = moment({ title: `${e.payer} is paying ${whole(e.amount, e.currency)}…`, lead: ["A customer payment is on its way into the company's Global Account. When it lands, ", el("b", null, "the agent re-runs the same rules"), " on the new balance."], kind: "why", dwell: 5000 });
+    state.paid = { m, payer: e.payer, amount: e.amount, done: false };
+    whenShown(m, () => status("Waiting for the payment", "info", true));
+  }
   function deposit(e) {
     const from = state.cash, to = state.cash + e.amount;
-    const m = moment({ title: `${e.payer} just paid`, lead: [`A customer payment lands in the company's Global Account. Nothing about the intent changed, but cash goes from ${whole(from, e.currency)} to ${whole(to, e.currency)}, so `, el("b", null, "the agent re-runs the same rules"), " on the new number."], kind: "big", dwell: 4500 });
-    const hero = el("div", "hero num", `+${whole(0, e.currency)}`);
-    m.card.append(hero);
-    whenShown(m, () => countUp(hero, e.amount, (n) => `+${whole(n, e.currency)}`, 1100), 300);
+    if (state.paid && !state.paid.done) {
+      const pm = state.paid;
+      pm.m.card.querySelector(".title").textContent = `${e.payer} just paid ${whole(e.amount, e.currency)}.`;
+      pm.m.card.querySelector(".lead").replaceChildren(`It landed in the Global Account: cash goes from ${whole(from, e.currency)} to ${whole(to, e.currency)}. Nothing about the intent changed, but `, el("b", null, "the agent re-runs the same rules"), " on the new number.");
+      whenShown(pm.m, () => status("Rechecking the deal", "info", true));
+      return;
+    }
+    const m = moment({ title: `${e.payer} just paid ${whole(e.amount, e.currency)}.`, lead: [`A customer payment lands in the company's Global Account: cash goes from ${whole(from, e.currency)} to ${whole(to, e.currency)}. Nothing about the intent changed, but `, el("b", null, "the agent re-runs the same rules"), " on the new number."], kind: "why", dwell: 5000 });
+    state.paid = { m, payer: e.payer, amount: e.amount, done: false };
     whenShown(m, () => status("Rechecking the deal", "info", true));
   }
 
@@ -544,14 +665,14 @@
     const c = state.lastCard?.approval, cur = state.currency;
     const m = moment({
       title: "That's the purchase.",
-      lead: [c ? `Three bids, one approval, and a card that can only pay ${B(c.vendor)} ${money(c.amount, c.currency)} ${cycleWord(c.cycle)} at ${mccName(c.merchantCategory)}. ${money(state.rebates, cur)} came back from the vendor's fee. Nothing else for you to do.` : "Nothing else for you to do."],
+      lead: [c ? `${words(state.bidders.length)} bids, one approval, and a card that can only pay ${B(c.vendor)} ${money(c.amount, c.currency)} ${cycleWord(c.cycle)} at ${mccName(c.merchantCategory)}. ${money(state.rebates, cur)} came back from the vendor's fee. Nothing else for you to do.` : "Nothing else for you to do."],
       kind: "finale", dwell: 0,
     });
     m.hold = true;
     const recap = el("div", "recap");
     [
       ["Intent posted anonymously"],
-      [`${state.vendors.length} bids, ranked on total cost and the reserve`],
+      [`${state.bidders.length} bids, ranked on total cost with Airwallex FX`],
       c && [`Approved: ${B(c.vendor)}, ${money(c.amount, c.currency)} ${cycleWord(c.cycle)}`],
       state.lastCard && [`Card •••• ${state.lastCard.last4}, its controls enforced by the network`],
       state.rebates && [`${money(state.rebates, cur)} back, from the vendor's prepaid fee`],
@@ -578,31 +699,66 @@
     const withPath = bids.filter((x) => x.cashPath?.path);
     const breaker = withPath.find((x) => !x.cashPath.ok);
     const fits = withPath.filter((x) => x.cashPath.ok);
+    // Cash only comes into it when a bid would break the reserve. Otherwise the ranking is a plain
+    // comparison of what each bid costs over the term, and the floor is not mentioned.
+    const tight = Boolean(breaker) || e.key === "recheck";
 
     // The agent's explanation, built from the numbers: who wins, and what rules out the cheaper one.
     const lead = [], why = [];
     if (e.key === "opening") lead.push(`Ranked by total cost over ${state.term} months, priced with Airwallex FX. `);
-    else if (e.key === "reopened") lead.push(`The incumbent's new price goes back into the auction against fresh bids, on today's balance of ${whole(e.cash, e.currency)}. `);
+    else if (e.key === "reopened") lead.push("The incumbent's new price goes back into the auction against fresh bids. ");
+    else if (e.key === "annual") lead.push(breaker ? `${B(breaker.vendor)} offers the term prepaid, ${whole(breaker.total, e.currency)} up front: the cheapest bid so far. Your agent checks it against today's cash of ${whole(e.cash, e.currency)} first. ` : `A prepaid offer comes in, and today's cash of ${whole(e.cash, e.currency)} can carry it. `);
     else lead.push(`Same rules, re-run on ${whole(e.cash, e.currency)}. `);
-    if (winner) lead.push(el("b", null, `${B(winner.vendor)} ${e.key === "reopened" ? "is now lowest" : "wins"} at ${money(winner.price.amount, winner.price.currency)} ${cycleWord(winner.billing)}`), ` (${whole(winner.total, e.currency)} in total). `);
+    if (winner && !(e.key === "annual" && breaker)) lead.push(el("b", null, `${B(winner.vendor)} ${e.key === "reopened" ? "is now lowest" : "wins"} at ${money(winner.price.amount, winner.price.currency)} ${cycleWord(winner.billing)}`), ` (${whole(winner.total, e.currency)} in total). `);
     if (breaker && winner && breaker.vendor !== winner.vendor) {
       why.push(`${B(breaker.vendor)} takes ${whole(breaker.total, e.currency)} on day one. With ${state.dues || "the bills already due"}, cash would be down to `, el("b", null, `${whole(breaker.cashPath.balance, e.currency)} by day ${breaker.cashPath.breachDay}`), `, under your ${whole(e.floor, e.currency)} floor. `);
       if (fits.length) why.push(`Paying monthly spreads the same spend out and never drops below ${whole(Math.min(...fits.map((x) => x.cashPath.low.balance)), e.currency)}. `);
-      why.push("So the cheapest bid loses, and the cheapest one that keeps the floor wins. The rule is code; the agent only explains it.");
+      why.push(e.key === "annual" ? `So you stay with ${B(winner.vendor)} for now, and the agent looks again when cash changes. The rule is code; the agent only explains it.` : "So the cheapest bid loses, and the cheapest one that keeps the floor wins. The rule is code; the agent only explains it.");
     } else if (winner && cheapest.vendor === winner.vendor && e.key === "recheck") {
       why.push("The annual prepay that broke the reserve before now fits, and it is the cheapest, so it wins.");
     } else if (winner && cheapest.vendor === winner.vendor) {
-      why.push(`It is the cheapest, and it keeps cash above the ${whole(e.floor, e.currency)} floor.`);
+      const next = bids.find((x) => x.vendor !== winner.vendor);
+      why.push(next ? `It costs ${whole(next.total - winner.total, e.currency)} less than ${B(next.vendor)} over ${state.term} months${winner.price.currency !== e.currency ? `, after converting ${winner.price.currency} at today's Airwallex rate` : ""}.` : "It is the only bid.");
     }
     // The agent's own words when the model wrote them (the decision is still the code's), the template
     // otherwise. Amounts and days in the model's text get the highlighter.
     const spoken = e.explanation?.text ? e.explanation.text.replace(/Vendor [A-Z]/g, B).split(/([$€£][\d,.]+|\bday \d+|\bweek \d+)/).map((part, i) => (i % 2 ? el("b", null, part) : part)) : null;
     const said = spoken ?? why;
     const by = spoken ? el("div", "by", `In the agent's words: ${e.explanation.model}, reading the ranking and the vendors' terms. The ranking, the budget and the reserve check are code.`) : null;
-    if (e.key !== "opening") lead.push(...said);
-    const title = { opening: e.winner ? `${bids.length} bids. ${B(e.winner)} wins.` : `${bids.length} bids. None fits.`, reopened: `Re-auctioned: ${B(e.winner)} is now lowest`, recheck: `Rechecked: ${B(e.winner)} fits now` }[e.key] ?? e.title;
-    const m = moment({ title, lead, kind: "ranking", dwell: e.key === "opening" ? 7000 : 6500 });
-    if (by && e.key !== "opening") m.card.append(by);
+
+    // ─── the edge cases: one moment each, never a ranking table ───
+    // Price hike: the reopened ranking is carried by the message to the incumbent (offer), which follows.
+    // Cash: the prepaid offer and why it waits are one moment with the forecast; the recheck lands in the
+    // moment of the payment that made it possible.
+    const showFloor = () => { $("floor").textContent = whole(e.floor, e.currency); $("floorfig").hidden = false; };
+    const incumbent = state.lastCard?.approval?.vendor;
+    if (e.key === "reopened" && e.winner && e.winner !== incumbent) { state.reopened = e; return; }
+    if (e.key === "annual" && breaker && winner && breaker.vendor !== winner.vendor) {
+      const text = spoken ?? [`${B(breaker.vendor)} wants ${whole(breaker.total, e.currency)} up front, the lowest total yet. Paying it today would take cash to `, el("b", null, `${whole(breaker.cashPath.balance, e.currency)} on day ${breaker.cashPath.breachDay}`), `, under your ${whole(e.floor, e.currency)} floor. So you stay with ${B(winner.vendor)}, and the agent looks again when cash changes.`];
+      const m = moment({ title: `${B(breaker.vendor)} offers a prepaid year. Cheaper, but not yet.`, lead: text, kind: "why", dwell: 9000 });
+      if (by) m.card.append(by);
+      m.card.append(cashChart(e, withPath, 0.5));
+      whenShown(m, () => { showFloor(); status("Waiting for cash", "warn", true); }, 600);
+      return;
+    }
+    if (e.key === "recheck" && state.paid && !state.paid.done && winner && winner.cashPath) {
+      const pm = state.paid; pm.done = true;
+      pm.m.card.querySelector(".title").textContent = `${pm.payer} paid ${whole(pm.amount, e.currency)}. ${B(winner.vendor)} fits now.`;
+      const line = el("p", "lead");
+      line.append("Same rules on the new balance. With ", el("b", null, `${B(winner.vendor)}'s ${whole(winner.total, e.currency)} up front`), `, cash now stays above your ${whole(e.floor, e.currency)} floor (lowest ${whole(winner.cashPath.low.balance, e.currency)}, on day ${winner.cashPath.low.day}). It is the cheapest, so the agent asks to switch.`);
+      pm.m.card.append(line, cashChart(e, withPath, 1.2));
+      pm.m.dwell = 9000;
+      whenShown(pm.m, showFloor, 600);
+      return;
+    }
+    // The cash forecast gets its own beat when it decides (a bid breaks the reserve); then the agent's
+    // words go with it. Otherwise they go with the ranking.
+    const ownBeat = Boolean(breaker) && (e.key === "opening" || e.key === "annual");
+    if (!ownBeat) lead.push(...said);
+    const title = { opening: e.winner ? `${words(bids.length)} bids. ${B(e.winner)} wins.` : `${words(bids.length)} bids. None fits.`, reopened: `Re-auctioned: ${B(e.winner)} is now lowest`, annual: breaker ? `${B(breaker.vendor)} offers a prepaid year. Cheaper, but not yet.` : `${B(e.winner)} offers a prepaid year, and it fits.`, recheck: `Rechecked: ${B(e.winner)} fits now` }[e.key] ?? e.title;
+    const m = moment({ title, lead, kind: "ranking", dwell: ownBeat ? 7000 : 8000 });
+    if (by && !ownBeat) m.card.append(by);
+    if (tight) whenShown(m, () => { $("floor").textContent = whole(e.floor, e.currency); $("floorfig").hidden = false; }, 600);
     const c = m.card;
     const list = el("div", "bids");
     bids.forEach((bid, i) => {
@@ -615,7 +771,10 @@
       const right = el("div", "right num"); right.append(el("b", null, whole(bid.total, e.currency)), " total");
       const why = el("div", "why");
       const pill = el("span", "pill"); pill.style.animationDelay = `${1 + i * 0.25}s`;
-      if (bid.verdict === "fits") {
+      if (bid.verdict === "fits" && !tight) {
+        if (bid.vendor === e.winner) { pill.classList.add("good"); pill.append(icon("check"), "Lowest total"); why.append(pill); }
+        else if (winner) { pill.classList.add("quiet"); pill.append(`+${whole(bid.total - winner.total, e.currency)} over ${state.term} months`); why.append(pill); }
+      } else if (bid.verdict === "fits") {
         pill.classList.add("good"); pill.append(icon("check"), "Keeps the reserve");
         why.append(pill, `Lowest cash ${whole(bid.cashPath.low.balance, e.currency)}, on day ${bid.cashPath.low.day}`);
       } else if (bid.verdict === "breaks-reserve") {
@@ -630,15 +789,15 @@
       list.append(row);
     });
     c.append(list);
-    if (!withPath.length) return;
+    if (e.key === "opening" || e.key === "annual") whenShown(m, () => status("Picking", "info", true));
+    if (!withPath.length || !tight) return;
     const horizon = withPath[0].cashPath.path.length - 1;
-    // The cash forecast is the whole argument the first time, so it gets its own beat and draws itself.
+    // When cash decides, the forecast is the whole argument, so it gets its own beat and draws itself.
     // Afterwards it is there for whoever wants it.
-    if (e.key === "opening") {
-      const w = moment({ title: breaker ? `Why not ${B(breaker.vendor)}? Cash.` : "Every bid keeps the reserve", lead: said, kind: "why", dwell: 9000 });
+    if (ownBeat) {
+      const w = moment({ title: e.key === "annual" ? `Why not ${B(breaker.vendor)} yet? Cash.` : `Why not ${B(breaker.vendor)}? Cash.`, lead: said, kind: "why", dwell: 9000 });
       if (by) w.card.append(by);
       w.card.append(cashChart(e, withPath, 0.5));
-      whenShown(m, () => status("Picking", "info", true));
     } else c.append((() => { const d = el("details", "more"); d.append(el("summary", null, `Cash over the next ${horizon} days, under each bid`), cashChart(e, withPath, 0)); return d; })());
   }
 
@@ -735,7 +894,7 @@
     ]) { const t = el("div"); t.append(el("div", "l", l), el("div", "v", v)); terms.append(t); }
     const btns = el("div", "btns");
     const no = el("button", "btn", "Decline"), yes = el("button", "btn primary", "Approve");
-    const p = (pending[e.id] = { btns, m, clicked: false, decision: null });
+    const p = (pending[e.id] = { btns, m, clicked: false, decision: null, terms: e.terms });
     const answer = (approved) => {
       p.clicked = true; yes.disabled = no.disabled = true;
       fetch("/approve", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: e.id, approved }) }).catch(() => {});
@@ -753,6 +912,12 @@
       const d = el("div", `decided ${ok ? "yes" : "no"} pop`);
       d.append(icon(ok ? "check" : "cross"), ok ? "Approved" : "Declined");
       p.btns.replaceWith(d);
+      const t = p.terms;
+      logEntry({ seq: p.seq, service: "you", op: ok ? `Approved ${B(t.vendor)}` : `Declined ${B(t.vendor)}`, endpoint: "on this page", detail: `${money(t.amount, t.currency)} ${cycleWord(t.cycle)}, ${t.currency} only, ${MCC[t.merchantCategory] ?? `MCC ${t.merchantCategory}`} only` });
+      // What the agent did after the answer lands with the moment after the question, or the next one made.
+      const after = p.m.after ?? []; p.m.after = [];
+      const next = moments[moments.indexOf(p.m) + 1];
+      for (const c of after) { if (next) whenShown(next, () => logEntry(c), 250); else heldCalls.push(c); }
       status(ok ? "Issuing the card" : "Not approved", ok ? "info" : "quiet", ok);
       p.m.hold = false;
       if (moments[shown] === p.m) shownAt = Date.now();
@@ -765,6 +930,7 @@
     const p = pending[e.id];
     if (!p) return;
     p.decision = e.approved;
+    p.seq = ++seq;
     // Live, the decision follows a click here or in the terminal. In a replay the recorded decision
     // waits for the reader's click, so the one thing the buyer does stays theirs to do.
     if (!state.replay || p.clicked) reveal(p);
@@ -873,8 +1039,11 @@
     l.append(who, amt, how, res);
     const card = state.cards[e.cardId] ?? state.lastCard;
     // A charge lands on the card it was made on, unless it is a story of its own: the renewal hike, or a
-    // charge from a later part than the card (the old card, after the switch) gets a moment in that part.
-    if (hike || (card && card.m.scene !== state.scene)) {
+    // charge from a later part than the card gets a moment in that part. The old card tried right after a
+    // switch lands in the swap, next to the new card's charge.
+    const swapNow = !hike && card && card !== state.lastCard && state.lastCard?.m.scene === state.scene;
+    if (swapNow) how.textContent = `Old card •••• ${card.last4}${e.txId ? ` · ${e.txId.slice(0, 8)}` : ""}`;
+    if (hike || (card && card.m.scene !== state.scene && !swapNow)) {
       const old = !hike && card !== state.lastCard;
       const m = moment({
         title: `${B(e.merchant)} billed ${money(e.amount, e.currency)}${old ? ` on the old card •••• ${card.last4}` : ""}. The card said ${e.outcome === "approved" ? "yes" : "no"}.`,
@@ -890,15 +1059,16 @@
     if (!card) return;
     // It lands a beat after the card is on stage, and the card reacts. If that card's moment has passed,
     // bring it back.
-    const k = card.charges = (card.charges ?? 0) + 1;
-    whenShown(card.m, () => {
-      card.receipt.append(l);
+    const host = swapNow ? state.lastCard : card;
+    const k = host.charges = (host.charges ?? 0) + 1;
+    whenShown(host.m, () => {
+      host.receipt.append(l);
       const cls = e.outcome === "approved" ? "ok" : "no";
       for (const n of card.nodes) { n.classList.remove("ok", "no"); void n.offsetWidth; n.classList.add(cls); setTimeout(() => n.classList.remove(cls), 1400); }
     }, 1400 + (k - 1) * 1600);
-    const i = moments.indexOf(card.m);
-    if (i !== shown) { if (i < shown) { card.m.dwell = 4500; moments.splice(i, 1); moments.push(card.m); shown--; } schedule(); }
-    else { shownAt = Date.now(); card.m.dwell = 4500 + (k - 1) * 1600; schedule(); }
+    const i = moments.indexOf(host.m);
+    if (i !== shown) { if (i < shown) { host.m.dwell = 4500; moments.splice(i, 1); moments.push(host.m); shown--; } schedule(); }
+    else { shownAt = Date.now(); host.m.dwell = 4500 + (k - 1) * 1600; schedule(); }
   }
 
   // ─── escrow ───
@@ -907,6 +1077,12 @@
     const row = (box, left, right, cls) => { const s = el("div", `s ${cls ?? ""}`); s.append(el("span", null, left), right); box.append(s); };
     if (e.step === "prepaid") {
       caption(el("b", null, B(e.vendor)), ` put its ${money(e.amount, e.currency)} acquisition fee in escrow. It is released only when a charge clears on your card. `, link(e.url, e.hash));
+      return;
+    }
+    if (e.step === "released" && state.later) {
+      const total = (state.rebates += e.rebate);
+      caption(el("b", null, B(e.vendor)), `'s ${money(e.amount, e.currency)} fee is released by the cleared charge: `, el("b", null, `${money(e.rebate, e.currency)} back to you`), ". ", link(e.url, e.hash));
+      onStage(() => { $("rebfig").hidden = false; bump($("rebates"), money(total, e.currency)); }, 1500);
       return;
     }
     if (e.step === "released") {
@@ -931,31 +1107,95 @@
       return;
     }
     if (e.step === "payout") state.done = true; // the purchase is settled; what follows is later
-    if (e.step === "payout" && state.released) {
+    if (e.step === "payout" && state.released && !state.later) {
       row(state.released.card.querySelector(".steps"), "Sent to your bank via Airwallex Payouts", el("code", null, `${e.transferId.slice(0, 8)}… ${e.status.toLowerCase()}`));
     }
   }
 
   // ─── the message to the incumbent ───
   function offer(e) {
-    const m = moment({ title: `Outbid asks ${B(e.to)} to match ${money(e.amount, e.currency)}`, lead: [`${B(e.to)} is the incumbent and ${B(e.from)} came in lower. ${e.matched ? `${B(e.to)} matches, so nothing has to move.` : `${B(e.to)} passes, so you switch.`}`], kind: "offer", dwell: 5000 });
+    const r = state.reopened;
+    const inc = r?.bids.find((b) => b.vendor === e.to), rival = r?.bids.find((b) => b.vendor === e.from);
+    const lead = inc && rival
+      ? [`At its new price ${B(e.to)} would cost `, el("b", null, `${whole(inc.total, r.currency)} over the term`), `${inc.verdict === "over-budget" ? ", over your budget" : ""}. ${B(e.from)} costs ${whole(rival.total, r.currency)}. So Outbid reopens the auction and sends ${B(e.to)} one message:`]
+      : [`${B(e.from)} came in lower, so Outbid sends ${B(e.to)} one message:`];
+    const m = moment({ title: `${B(e.from)} is cheaper now. ${B(e.to)} is asked to match.`, lead, kind: "offer", dwell: 6500 });
     const box = el("div", "msg");
     const out = el("div", "bubble out", `${B(e.from)} costs ${money(e.amount, e.currency)} per ${e.per}. Match, or the company switches.`);
     const back = el("div", "bubble in"); back.style.animationDelay = "1.4s";
     back.append(el("span", "from", B(e.to)), e.matched ? `We match: ${money(e.matched.amount, e.matched.currency)} per ${e.per}.` : "We pass.");
     box.append(out, back);
-    m.card.append(box);
+    const then = el("p", "lead"); then.style.margin = "14px 0 0"; then.style.animation = "rise .4s ease-out 2.4s both";
+    then.append(e.matched ? `${B(e.to)} matches, so nothing has to move. New terms still mean a new card.` : `${B(e.to)} passes, so the company switches to ${B(e.from)}.`);
+    m.card.append(box, then);
+    state.reopened = null;
   }
+
+  // ─── the agent panel ───
+  // One line per call the agent makes, landing with the moment it belongs to, like the captions.
+  // The same read made again in a row (polling a card's status) folds into one line with a count.
+  const SERVICE = { claude: "Claude", airwallex: "Airwallex", metal: "Metal", code: "Code", you: "You" };
+  const brandText = (t) => String(t ?? "").replace(/Vendor [A-Z]/g, B);
+  const secs = (ms) => (ms >= 1000 ? `${(ms / 1000).toFixed(1)} s` : ms > 0 ? `${ms} ms` : "");
+  // Every entry keeps the order its event arrived in, whenever it is shown: a replay can show a moment's
+  // calls later than the next moment's, and the panel still reads in the order the agent made them.
+  let seq = 0, lastEntry = null;
+  function logEntry(c) {
+    const log = $("log");
+    const order = c.seq ?? ++seq;
+    let before = null;
+    for (let li = log.lastElementChild; li && Number(li.dataset.seq) > order; li = li.previousElementSibling) before = li;
+    // Only reads fold (a status polled until it is ready); every charge, transfer and decision is its own line.
+    if (!before && lastEntry && lastEntry.key === `${c.service}|${c.op}` && /^GET /.test(c.endpoint ?? "")) {
+      lastEntry.n++; lastEntry.x.textContent = `×${lastEntry.n}`;
+      if (c.detail) lastEntry.dt.replaceChildren(brandText(c.detail));
+      lastEntry.li.dataset.seq = order;
+      return;
+    }
+    const li = el("li", `e ${c.service}${c.ok === false ? " fail" : ""}`);
+    li.dataset.seq = order;
+    const r1 = el("div", "r1");
+    const x = el("span", "x");
+    r1.append(el("span", `tag ${c.service}`, SERVICE[c.service] ?? c.service), el("span", "op", brandText(c.op)), x, el("span", "ms", secs(c.ms ?? 0)));
+    li.append(r1);
+    if (c.endpoint) li.append(el("div", "ep", c.endpoint));
+    const dt = el("div", "dt");
+    if (c.url) { const a = el("a", null, brandText(c.detail ?? "on Metal")); a.href = c.url; a.target = "_blank"; a.rel = "noopener"; dt.append(a); }
+    else if (c.detail) dt.append(brandText(c.detail));
+    li.append(dt);
+    if (before) { log.insertBefore(li, before); li.scrollIntoView({ block: "nearest" }); return; }
+    log.querySelector(".e.now")?.classList.remove("now");
+    li.classList.add("now");
+    log.append(li);
+    log.scrollTop = log.scrollHeight;
+    lastEntry = { key: `${c.service}|${c.op}`, n: 1, x, dt, li };
+  }
+  // A call made after a new part started, before that part has a moment on stage, waits for it, so the
+  // panel never runs ahead into the next part (the renewal charge must not show on the purchase's end).
+  let heldCalls = [];
+  const call = (e) => {
+    e.seq = ++seq;
+    const last = moments[moments.length - 1];
+    // Calls that follow an open approval (issuing the card) come after the buyer's answer, never before it.
+    if (last?.kind === "approval" && last.hold) (last.after ??= []).push(e);
+    else if (last && last.scene && last.scene !== state.scene) heldCalls.push(e);
+    else onStage(() => logEntry(e), 250);
+  };
+  const agentLive = (on) => $("agentDot").classList.toggle("live", on);
 
   const end = () => {
     source.close();
-    onStage(() => { $("dot").classList.remove("on", "live"); $("status").classList.remove("live"); }, 2500);
+    onStage(() => { $("dot").classList.remove("on", "live"); $("status").classList.remove("live"); agentLive(false); }, 2500);
     caption("End of the run. Everything above ran against the Airwallex sandbox and Metal testnet.");
   };
   // The page says whether it is live against the sandbox or replaying a recorded run.
   const mode = (text, live) => { const m = $("mode"); m.textContent = text; m.classList.toggle("live", live); m.hidden = false; };
-  const replay = (e) => { state.replay = true; mode(`Replay · recorded ${e.recorded ?? "earlier"} against the Airwallex sandbox`, false); };
-  const handlers = { replay, "await-intent": awaitIntent, start, vendor, cash, scene, note, deposit, ranking, approval, approved, card: cardIssued, cardStatus, charge, escrow, offer, end };
+  const replay = (e) => {
+    state.replay = true;
+    mode(`Replay · recorded ${e.recorded ?? "earlier"} against the Airwallex sandbox`, false);
+    $("where").replaceChildren(`A recorded run of the agent, replayed. It ran in `, el("code", null, "npm run demo"), ` on ${e.recorded ?? "an earlier day"}; these are the calls it made, in order.`);
+  };
+  const handlers = { replay, "await-intent": awaitIntent, drafted, call, start, vendor, cash, scene, note, incoming, deposit, ranking, approval, approved, card: cardIssued, cardStatus, charge, escrow, offer, end };
   const source = new EventSource("/events");
   source.onopen = () => $("dot").classList.add("on");
   source.onerror = () => $("dot").classList.remove("on");
