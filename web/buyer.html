@@ -1185,6 +1185,10 @@
 
   const end = () => {
     source.close();
+    // A run that stops after the purchase (a recording cut before the edge cases) still ends on its own
+    // screen, without an empty list of edge cases.
+    if (state.done && !state.finale) finale();
+    if (state.finale && !state.finale.list.children.length) state.finale.card.querySelector(".edge").hidden = true;
     onStage(() => { $("dot").classList.remove("on", "live"); $("status").classList.remove("live"); agentLive(false); }, 2500);
     caption("End of the run. Everything above ran against the Airwallex sandbox and Metal testnet.");
   };

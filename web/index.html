@@ -422,18 +422,14 @@
       <span class="metal">Metal testnet<small>fee escrow</small></span>
     </div>
     <div class="evidence">
-      <div class="cap">The run behind this page, recorded 2026-11-10. The Metal transactions are public; the Airwallex ids are in <code>evidence/2026-11-10.json</code> with the response fields that prove each step.</div>
+      <div class="cap">The run behind this page and the Demo Day video, recorded 2026-11-12. The Metal transactions are public; the Airwallex ids are in <code>evidence/2026-11-12.json</code> with the response fields that prove each step. The recording stops after the renewal hike is declined; <code>npm run demo</code> plays the rest of the edge cases.</div>
       <table class="ev">
         <tr><th>Step</th><th>Airwallex</th><th>Metal</th></tr>
-        <tr><td>Harbor's card, €2,960 per charge, EUR, MCC 7372</td><td><code>card f5551cf2… •••• 7597 · ACTIVE</code></td><td><a href="https://testnet.metalntwx.com/tx/0xb0ee828779471992a2ca63d27719231e66fa77a081e490a7a1ef8e9cb193d172" rel="noopener">fee prepaid 0xb0ee8287…</a></td></tr>
-        <tr><td>Agreed charge €2,960</td><td><code>01a1c3e9-1b2a… APPROVED</code></td><td><a href="https://testnet.metalntwx.com/tx/0x861eae190c94a0ddfdfde7589a6c46b555d77bd3f1cec10956d4f347748e3a7a" rel="noopener">fee released, split 0x861eae19…</a></td></tr>
-        <tr><td>Corner Bistro €180</td><td><code>01a1c3e9-24eb… DECLINED · MERCHANT_CATEGORY_NOT_ALLOWED</code></td><td></td></tr>
-        <tr><td>Rebate $20 to the buyer's bank</td><td><code>transfer P261110-OMO44AY · SCHEDULED</code></td><td></td></tr>
-        <tr><td>Renewal at €3,612.20</td><td><code>01a1c3e9-4772… DECLINED · LIMIT_EXCEEDED</code></td><td></td></tr>
-        <tr><td>Harbor matches at €3,012.93: new card, old card frozen</td><td><code>card e2a5275d… •••• 9429 · ACTIVE</code> <code>f5551cf2… INACTIVE</code></td><td></td></tr>
-        <tr><td>Summit's card after the deposit, $34,500 per charge</td><td><code>card 1af53a69… •••• 0090 · ACTIVE</code> <code>e2a5275d… INACTIVE</code></td><td><a href="https://testnet.metalntwx.com/tx/0xdd95cd00d38b0f96dfcf840b9b5225aeb7ccd0e57ff69a67cadcfd3800251254" rel="noopener">fee prepaid 0xdd95cd00…</a></td></tr>
-        <tr><td>First annual charge $34,500, then the old card tried</td><td><code>01a1c3eb-0c78… APPROVED</code> <code>01a1c3eb-1b4e… DECLINED · CARD_INACTIVE</code></td><td><a href="https://testnet.metalntwx.com/tx/0x19da2a2155585835dc88a747a33dc35f16e2e40c605fd45e3fcc7d93056afa13" rel="noopener">fee released, split 0x19da2a21…</a></td></tr>
-        <tr><td>Second rebate $20</td><td><code>transfer P261110-65D4EUC · SCHEDULED</code></td><td></td></tr>
+        <tr><td>Harbor's card, €2,960 per charge, EUR, MCC 7372</td><td><code>card ab985415… •••• 5043 · ACTIVE</code></td><td><a href="https://testnet.metalntwx.com/tx/0x7ed7600f0ed9cf40944063e7ac0e99633254467c970543ee40fd7ad9c3e45274" rel="noopener">fee prepaid 0x7ed7600f…</a></td></tr>
+        <tr><td>Agreed charge €2,960</td><td><code>01a1ceb5-24d0… APPROVED</code></td><td><a href="https://testnet.metalntwx.com/tx/0x0d1e4d59043c852008c951dbd9caa4e17070311115b99f5e7a4ff15055a40f7b" rel="noopener">fee released, split 0x0d1e4d59…</a></td></tr>
+        <tr><td>Corner Bistro €180</td><td><code>01a1ceb5-2e6d… DECLINED · MERCHANT_CATEGORY_NOT_ALLOWED</code></td><td></td></tr>
+        <tr><td>Rebate $20 to the buyer's bank</td><td><code>transfer P261112-JCJSIBO · SCHEDULED</code></td><td></td></tr>
+        <tr><td>Renewal at €3,612.20</td><td><code>01a1ceb5-70ab… DECLINED · LIMIT_EXCEEDED</code></td><td></td></tr>
       </table>
     </div>
   </section>

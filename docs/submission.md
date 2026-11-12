@@ -17,9 +17,9 @@ their prepaid fee is split into the buyer's rebate when the card charge clears.
 
 ## Description
 
-**Companies buy software and compute at list price. Vendors spend a fortune on sales and marketing to find
-those same companies.** When agents do the buying, that's backwards: the agent already knows exactly what it
-needs. Outbid lets vendors compete for it, and turns their acquisition budget into the buyer's discount.
+**Ads compete for people's attention. But more and more of the buying is done by AI agents, and agents don't
+see ads.** So vendors need a new place to compete. Outbid lets them bid for an agent's purchase directly, and the
+winning bid becomes a card that can only pay what the buyer approved.
 
 **How it works (Kit 02: Intent-Bound Purchase Agent)**
 
@@ -40,10 +40,12 @@ needs. Outbid lets vendors compete for it, and turns their acquisition budget in
    are those terms: a per-transaction limit at the approved amount, a currency allowlist, the vendor's merchant
    category. The agreed charge clears; a restaurant charge is declined by the network with
    `MERCHANT_CATEGORY_NOT_ALLOWED`.
-6. **Vendors pay only for closed deals.** The winning vendor prepaid a $25 acquisition fee into an escrow on
-   **Metal testnet** (Airwallex has no escrow object, and a marketplace shouldn't hold vendors' fees itself).
-   The cleared **card transaction** is the proof of sale: the escrow splits the fee in one transaction, $20 to
-   the buyer and $5 to Outbid, and **Airwallex Payouts** carry the rebate to the buyer's bank.
+6. **Vendors pay only for closed deals.** Like any marketplace, Outbid takes a small fee from the winning
+   vendor: Harbor prepaid a $25 acquisition fee into an escrow on **Metal testnet** (Airwallex has no escrow
+   object, and a marketplace shouldn't hold vendors' fees itself). The fee is released only when the charge
+   actually goes through on the card: the cleared **card transaction** is the proof of sale, reported by the
+   network rather than by either party. The escrow splits the fee in one transaction, $5 to Outbid and $20
+   back to the buyer who brought the deal, and **Airwallex Payouts** carry the rebate to the buyer's bank.
 
 **The decision keeps changing as the facts do.** At renewal the incumbent bills 22% more; the card declines it
 with `LIMIT_EXCEEDED`, Outbid reopens the auction and tells the incumbent: match the lower bid, or the company
@@ -54,7 +56,7 @@ it waits. A $30,000 customer payment lands in the **Global Account**, the same r
 and after approval the company switches; the old card declines with `CARD_INACTIVE`. The reserve lives in code.
 
 **Why a card, not just a bid?** A bid is a promise; the vendor's billing system decides what gets charged, and
-an agent holding the company card is a blank check. A virtual card per winning bid means the vendor can't
+an agent holding an open company card can pay anyone anything. A virtual card per winning bid means the vendor can't
 overcharge, the agent can't overspend beyond what the human approved, and nobody can fake a sale, because every
 settled charge is reported by the network, not by either party. And almost every vendor already takes cards, so
 it needs no vendor integration.
@@ -62,7 +64,7 @@ it needs no vendor integration.
 **What's built.** Everything above runs end to end against the Airwallex sandbox and Metal testnet with
 `npm run demo`: Balances, FX, Issuing, card transactions, Global Accounts and Payouts on Airwallex; a Foundry
 `FeeEscrow` contract on Metal. A buyer console and a vendor console fill in live from the run; the buyer writes
-the request, posts the intent and gives each approval on the page, with the agent's calls listed beside it. Each run saves its request log, and `evidence/2026-11-10.json`
+the request, posts the intent and gives each approval on the page, with the agent's calls listed beside it. Each run saves its request log, and `evidence/2026-11-12.json`
 is a publishable copy of the run behind the site, with the response fields that prove each step. The hosted
 copy at outbid.fly.dev replays that run without touching the sandbox.
 
@@ -73,7 +75,7 @@ copy at outbid.fly.dev replays that run without touching the sandbox.
 | Repository, with run instructions in the README | https://github.com/soarewee/outbid |
 | Video (under 5 minutes) | https://youtu.be/MQ9fp_v3k3o |
 | Hosted replay of the recorded run: site, buyer console, vendor console | https://outbid.fly.dev |
-| Evidence of the run (Airwallex ids and response fields, Metal transactions) | `evidence/2026-11-10.json` in the repository |
+| Evidence of the run (Airwallex ids and response fields, Metal transactions) | `evidence/2026-11-12.json` in the repository |
 | Fee escrow on Metal testnet | address in `contracts/deployments/metal-testnet.json`, transactions on testnet.metalntwx.com |
 
 ## Before sending the form

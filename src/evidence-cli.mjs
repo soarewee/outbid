@@ -3,9 +3,13 @@
 // for each Airwallex call that proves a step (a card issued, a charge decided, a transfer created, an FX
 // quote, a deposit) the response fields that prove it and nothing else. Tokens, cardholder and
 // beneficiary records never leave out/. Run: node src/evidence-cli.mjs out/demo-<time>.json
+//   --purchase-only  keep the events up to the end of the purchase, for a run that was stopped in the edge
+//                    cases (the recording run on Nov 12): the replay then ends on "That's the purchase."
+//                    The Airwallex and Metal proofs stay complete.
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 
-const [file] = process.argv.slice(2);
+const [file] = process.argv.slice(2).filter((a) => !a.startsWith("--"));
+const purchaseOnly = process.argv.includes("--purchase-only");
 if (!file) { console.error("Usage: node src/evidence-cli.mjs out/demo-<time>.json"); process.exit(1); }
 const run = JSON.parse(readFileSync(file, "utf8"));
 
@@ -18,6 +22,11 @@ const proofs = [
   [/^POST \/api\/v1\/simulation\/issuing\/create$/, (l) => ({ request: pick(l.body, ["card_id", "transaction_amount", "transaction_currency", "merchant_category_code", "merchant"]), response: pick(l.response, ["card_transaction_id", "process_result", "failure_reason", "billing_amount", "billing_currency", "transaction_amount", "transaction_currency"]) })],
   [/^POST \/api\/v1\/transfers\/create$/, (l) => ({ request: pick(l.body, ["transfer_amount", "transfer_currency", "transfer_method", "reference"]), response: pick(l.response, ["id", "short_reference_id", "status", "amount_payer_pays", "transfer_currency", "created_at"]) })],
 ];
+// The events up to the first part that happens months later, then the end of the run.
+function purchase(events) {
+  const i = events.findIndex((e) => e.type === "scene" && e.later);
+  return i < 0 ? events : [...events.slice(0, i), { type: "end", t: events[i - 1].t + 1000 }];
+}
 const airwallex = [];
 for (const l of run.log ?? []) {
   const key = `${l.method} ${l.path.split("?")[0]}`;
@@ -31,7 +40,7 @@ const out = {
   explanations: run.explanations ?? [],
   airwallex,
   metal: run.metal ?? [],
-  events: run.events,
+  events: purchaseOnly ? purchase(run.events) : run.events,
 };
 mkdirSync("evidence", { recursive: true });
 const name = `evidence/${(out.recorded ?? "run").slice(0, 10)}.json`;
