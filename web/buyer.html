@@ -532,8 +532,74 @@
     withheld.forEach((w, i) => { const c = el("span", null, w); c.style.animationDelay = `${0.2 + i * 0.12}s`; chips.append(c); });
     k.append(chips); return k;
   };
+  // ─── the request box, in a replay ───
+  // A replay starts where the live run does: on the request, with Ask your agent and Post intent for the
+  // reader to press. Nothing is called: the box shows what was asked and what the agent wrote in the
+  // recorded run, and it says so. Like the approval, the run waits for the click.
+  function replayBox(request) {
+    if (state.box || !request) return;
+    state.posted = true; // the reader posts it here, so the run needs no opening moment
+    $("intent").replaceChildren(el("span", "q", "What does your company need?"));
+    status("Draft", "quiet");
+    const m = moment({ title: "What does the company need?", lead: ["The request from the recorded run. ", el("b", null, "Your agent writes the anonymous intent"), " from it: four fields, and nothing that says who you are."], kind: "post", dwell: 0 });
+    m.hold = true;
+    const asking = el("div", "asking");
+    const ask = el("textarea", "ask"); ask.value = request; ask.name = "request"; ask.rows = 4; ask.readOnly = true;
+    const go = el("button", "btn primary", "Ask your agent");
+    go.onclick = () => {
+      go.disabled = true;
+      const t = el("span", "thinking"); t.append(el("i"), "Claude read this request in the recorded run…"); go.replaceChildren(t);
+      state.box.asked = true;
+      revealRecorded();
+    };
+    asking.append(ask, go);
+    m.card.append(asking);
+    state.box = { m, asked: false, revealed: false };
+    // What the agent did before anyone asked (signing in, the demo's setup) is already on the panel.
+    const early = (c) => c.op === "Sign in" || /^Demo setup/.test(c.op);
+    for (const c of (state.preCalls ?? []).filter(early)) logEntry(c);
+    state.preCalls = (state.preCalls ?? []).filter((c) => !early(c));
+  }
+  // The recorded draft lands a beat after the reader asks for it, with the calls the agent made for it.
+  function revealRecorded() {
+    const b = state.box, dr = state.drafted;
+    if (!b || !b.asked || b.revealed || !dr) return;
+    b.revealed = true;
+    setTimeout(() => {
+      openPanel();
+      const c = b.m.card;
+      c.querySelector(".asking")?.remove();
+      c.querySelector(".lead")?.replaceChildren("What the agent wrote in the recorded run. ", el("b", null, "Vendors see these four fields"), " and nothing else.");
+      const said = el("p", "said"); said.append(el("b", null, "You: "), dr.request);
+      const wrote = el("div", "wrote"); wrote.append(el("span", "tag claude", "Claude"), `wrote this intent${dr.note ? `. ${dr.note}` : ""}`);
+      const { grid } = intentForm(dr.intent);
+      grid.classList.add("tight");
+      grid.querySelectorAll("input, select").forEach((x) => (x.disabled = true));
+      const post = el("button", "btn primary", "Post intent");
+      post.onclick = () => {
+        post.disabled = true; post.textContent = "Posted";
+        b.m.hold = false;
+        if (moments[shown] === b.m) shownAt = Date.now();
+        schedule();
+      };
+      c.append(said, wrote);
+      if (dr.budgetFrom) c.append(budgetLine(dr.intent, dr.budgetFrom));
+      c.append(grid);
+      if (dr.withheld?.length || dr.budgetFrom) c.append(keptChips(keptWith(dr)));
+      c.append(post);
+    }, 1400);
+  }
+  // In a replay the calls made before the intent is posted wait for the reader to ask, so the panel never
+  // shows the agent reading a request nobody has asked it to read yet.
+  function openPanel() {
+    state.gateOpen = true;
+    for (const c of state.preCalls ?? []) logEntry(c);
+    state.preCalls = [];
+  }
+
   function awaitIntent(e) {
     learn(e);
+    if (state.replay) return replayBox(e.defaults?.request);
     state.posted = true; // the viewer posts it here, so the run needs no opening moment
     $("intent").replaceChildren(el("span", "q", "What does your company need?"));
     status("Draft", "quiet");
@@ -583,12 +649,18 @@
     c.append(asking, err);
   }
   // A draft the run made without this page (npm run demo, or a replay): shown when the intent opens.
-  function drafted(e) { state.asked = true; if (!state.drafting) state.drafted = e; }
+  function drafted(e) {
+    state.asked = true;
+    if (!state.drafting) state.drafted = e;
+    if (state.replay) { replayBox(e.request); revealRecorded(); }
+  }
 
   // ─── the ticket, and waiting for bids ───
   let waiting = null;
   function start(e) {
     learn(e);
+    state.started = true;
+    if (state.replay && !state.box) openPanel(); // a recording with no request to ask about
     state.vendors = e.vendors;
     state.bidders = e.bidders ?? e.vendors;
     e.vendors.forEach((v, i) => (state.slot[v] = i + 1));
@@ -623,12 +695,15 @@
       agentLive(true);
       status("Vendors are bidding", "info", true);
     };
-    if (opening) whenShown(opening, ticket, 4500); else ticket();
+    // In a replay that opened on the request box, the ticket reads "posted" only once the reader has posted it.
+    const boxed = state.replay && state.box && !opening;
+    if (opening) whenShown(opening, ticket, 4500); else if (!boxed) ticket();
     // Runs with a bid bond are the ones where vendors' agents bid against each other, round by round.
     state.bond = e.bond ?? null;
     waiting = state.bond
       ? moment({ title: "Your intent is out. Vendors' agents are lining up.", lead: ["They see the category, the quantity, the budget and the term, and that the money is real. ", el("b", null, "Not who you are, not your cash"), `. Each one posts a ${money(state.bond.amount, state.bond.currency)} bond to bid, then they `, el("b", null, "undercut each other"), " until one stops."], kind: "waiting", dwell: 7000 })
       : moment({ title: "Your intent is out. Vendors are looking at it.", lead: ["They see the category, the quantity, the budget and the term. ", el("b", null, "Not who you are, not your cash"), ", not each other's bids."], kind: "waiting", dwell: 7000 });
+    if (boxed) whenShown(waiting, ticket, 0);
     waiting.slots = {};
     waiting.cursor = 1200;
     for (const v of state.bidders) {
@@ -1308,6 +1383,7 @@
   const call = (e) => {
     e.seq = ++seq;
     (state.calls ??= {})[e.service] = (state.calls[e.service] ?? 0) + 1;
+    if (state.replay && !state.started && !state.gateOpen) { (state.preCalls ??= []).push(e); return; }
     const last = moments[moments.length - 1];
     // Calls that follow an open approval (issuing the card) come after the buyer's answer, never before it.
     if (last?.kind === "approval" && last.hold) (last.after ??= []).push(e);

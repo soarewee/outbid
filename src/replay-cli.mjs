@@ -30,8 +30,9 @@ if (!now) await stage.viewer;
 const recorded = file.match(/(\d{4}-\d{2}-\d{2})/)?.[1] ?? null;
 stage.emit("replay", { file, speed, recorded });
 let last = 0;
-// A replay never waits for the buyer: the intent that was posted is in the start event.
-for (const { type, t, ...data } of events.filter((e) => e.type !== "await-intent")) {
+// A replay never waits on the server: every event goes out with its recorded timing. The buyer console
+// holds the request box and each approval for the reader's click, and shows what was recorded.
+for (const { type, t, ...data } of events) {
   await sleep(Math.min((t - last) / speed, 8000));
   last = t;
   stage.emit(type, data);

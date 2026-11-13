@@ -60,8 +60,8 @@ One purchase, and the feeling that sellers fought for it:
    lower floor (€1,300 a GPU against Orbit's $1,560, which holds while EURUSD is under 1.20) and is told that
    winning matters more than margin, so it should win; say the winner's name from the screen, not from memory.
 3. Rehearse without touching the sandbox: `npm run demo:replay -- out/demo-<time>.json` on the latest saved
-   run plays it back with the agent panel and waits for the same clicks (a replay opens on the intent already
-   written, so the request box is the one thing it can't rehearse). `--speed 2` to hurry.
+   run plays it back with the agent panel and waits for the same clicks, from the request box on (it shows the
+   recorded request and what the agent wrote from it; nothing is called). `--speed 2` to hurry.
 
 **Recording**
 

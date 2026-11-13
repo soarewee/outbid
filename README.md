@@ -48,7 +48,8 @@ Node 20 or later, no dependencies, no build.
   available cash, what the card pays, Outbid's cashback so far, and the reserve floor once it matters) and the moment
   that is happening now in the middle. Inside a part the moments replace
   each other on their own; between parts the run stops on a Continue button, so nothing passes by
-  unread, and the approval waits for its click (in a replay too). The purchase is three parts: the intent
+  unread, and the approval waits for its click (in a replay too; a replay also opens on the request box, with the recorded
+  request and Ask your agent and Post intent to press, and shows what the agent wrote in the recorded run). The purchase is three parts: the intent
   being posted (or the request box, with `--wait`), the vendors' agents posting their bonds and undercutting each
   other round by round until one stops, then their last bids ranked by FX-priced
   total cost, with the agent's explanation in its own words; the approval, which says exactly what the buyer agrees to, and
