@@ -65,8 +65,8 @@ balance** and upcoming obligations: paying both up front would put cash under th
 fits, and after approval the company switches: the old card takes the exit fee as its last charge, is frozen,
 and declines with `CARD_INACTIVE`. The reserve lives in code.
 
-**Does it have to be a card?** Not necessarily: the auction works with any payment rail. A card is convenient.
-Almost every vendor already takes one, so there is nothing for it to integrate. A subscription already bills
+**Does it have to be a card?** Not necessarily: the auction works with any payment rail. But a card is hard to
+beat. Almost every vendor already takes one, so there is nothing for it to integrate. A subscription already bills
 a card every month, so Outbid only puts a limit on it, and the agent never holds the power to send money. The
 network enforces that limit before any money moves. And a declined charge tells the agent right away, while a
 cleared one is a third party's record that the sale happened. The card's controls are the amount, the currency
@@ -80,8 +80,10 @@ fictional vendors are bound by category.
 run; the buyer writes the request, posts the intent and gives each approval on the page, with the agent's calls
 listed beside it. Each run saves its request log, and `evidence/2026-11-13.json` is a publishable copy of the
 run behind the site, with the response fields that prove each step. The hosted copy at outbid.fly.dev replays
-the purchase in that run, the one in the video, without touching the sandbox. The two vendors are demo
-vendors; next, the agent brings in public price lists as opening bids, so there is competition from day one.
+the purchase in that run, the one in the video, without touching the sandbox. The demo buys GPUs, but nothing
+in the code is about GPUs: what can be bought and each vendor's price list are data, and the same run works
+for 25 design tool seats. The two vendors are demo vendors; next, the agent brings in public price lists as
+opening bids, so there is competition from day one.
 
 ## Links
 
