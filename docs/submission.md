@@ -88,7 +88,7 @@ vendors; next, the agent brings in public price lists as opening bids, so there 
 | What | Where |
 | --- | --- |
 | Repository, with run instructions in the README | https://github.com/soarewee/outbid |
-| Video (3 minutes) | https://youtu.be/0mQKk-4Egrw |
+| Video (3 minutes 38 seconds) | https://youtu.be/LJz_P2lyHMo |
 | Hosted replay of the recorded run: site, buyer console, vendor console | https://outbid.fly.dev |
 | Evidence of the run (Airwallex ids and response fields, Metal transactions) | `evidence/2026-11-13.json` in the repository |
 | Fee escrow on Metal testnet | address in `contracts/deployments/metal-testnet.json`, transactions on testnet.metalntwx.com |
