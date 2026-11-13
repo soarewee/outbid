@@ -17,7 +17,7 @@ test("the brief carries the code's decision and the vendors' own terms, nothing 
   assert.equal(brief.winner, "Vendor B");
   const annual = brief.bids.find((b) => b.vendor === "Vendor C");
   assert.equal(annual.verdict, "breaks-reserve");
-  assert.equal(annual.cash.breachDay, 45);
+  assert.equal(annual.cash.breachDay, 56);
   assert.match(annual.terms, /prepaid up front/);
   assert.equal(brief.company.reserveFloor, 20000);
 });

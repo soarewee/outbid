@@ -1,5 +1,6 @@
 // The decision: rank bids by total cost over the term, then take the cheapest one that keeps
-// projected cash above the reserve floor. Ranking, budget and reserve are plain code; nothing here
+// projected cash above the reserve floor. Leaving the current vendor has a price its bid set, and that
+// price counts against every other bid. Ranking, budget and reserve are plain code; nothing here
 // depends on a model.
 import { round2 } from "./fx.mjs";
 
@@ -13,15 +14,26 @@ export function paymentSchedule(bid, termMonths) {
   return Array.from({ length: termMonths }, (_, i) => ({ day: i * 30, amount: bid.price.amount }));
 }
 
-export async function priceBids(bids, intent, currency, rate) {
+// `leaving` is what it costs to leave the vendor the company is with now ({ vendor, amount } in the
+// company's currency). Every other vendor's bid carries that cost: it is paid on day one and counted in
+// the bid's total, so a switch only wins when it is still cheaper after the exit fee.
+export async function priceBids(bids, intent, currency, rate, leaving = null) {
   const priced = [];
   for (const bid of bids) {
     const fx = await rate(bid.price.currency, currency);
-    const schedule = paymentSchedule(bid, intent.termMonths).map((p) => ({ day: p.day, amount: round2(p.amount * fx) }));
-    const total = round2(schedule.reduce((sum, p) => sum + p.amount, 0));
-    priced.push({ ...bid, fx, schedule, total, perMonth: round2(total / intent.termMonths) });
+    const payments = paymentSchedule(bid, intent.termMonths).map((p) => ({ day: p.day, amount: round2(p.amount * fx) }));
+    const price = round2(payments.reduce((sum, p) => sum + p.amount, 0));
+    const exitCost = leaving && leaving.vendor !== bid.vendor ? leaving.amount : 0;
+    const schedule = exitCost ? [{ day: 0, amount: exitCost }, ...payments] : payments;
+    priced.push({ ...bid, fx, schedule, exitCost, total: round2(price + exitCost), perMonth: round2(price / intent.termMonths) });
   }
   return priced.sort((a, b) => a.total - b.total);
+}
+
+// What leaving the current vendor costs, in the company's currency: the exit fee its bid set, or nothing.
+export async function costOfLeaving(current, currency, rate) {
+  if (!current?.exit?.amount) return null;
+  return { vendor: current.vendor, amount: round2(current.exit.amount * (await rate(current.exit.currency, currency))), fee: { amount: current.exit.amount, currency: current.exit.currency } };
 }
 
 // Expands recurring obligations into dated payments inside the horizon.
@@ -54,10 +66,25 @@ export function projectCash({ cash, floor, horizonDays, outflows }) {
   return breach ? { ok: false, ...breach, low, path } : { ok: true, low, path };
 }
 
-export async function decide({ intent, company, cash, bids, rate, today = new Date() }) {
+// The most the company can pay per month, starting today, and still keep its reserve through the horizon
+// with the bills already due. It is the budget when the buyer names none: the agent works it out from
+// the Airwallex balance instead of asking. Rounded down to a round figure.
+export function affordablePerMonth({ cash, company }) {
+  const { reserveFloor: floor, horizonDays } = company.policy;
+  const due = obligationSchedule(company.obligations, horizonDays);
+  let most = Infinity;
+  for (let day = 0; day <= horizonDays; day++) {
+    const owed = due.filter((o) => o.day <= day).reduce((sum, o) => sum + o.amount, 0);
+    const payments = Math.floor(day / 30) + 1; // monthly payments made by this day, the first one today
+    most = Math.min(most, (cash - floor - owed) / payments);
+  }
+  return Math.max(0, Math.floor(most / 50) * 50);
+}
+
+export async function decide({ intent, company, cash, bids, rate, leaving = null, today = new Date() }) {
   const { reserveFloor: floor, horizonDays, reconsiderAfterMonths } = company.policy;
   const obligations = obligationSchedule(company.obligations, horizonDays);
-  const ranked = await priceBids(bids, intent, company.currency, rate);
+  const ranked = await priceBids(bids, intent, company.currency, rate, leaving);
   const budget = intent.budget.amount * (await rate(intent.budget.currency, company.currency));
 
   const evaluated = ranked.map((bid) => {
@@ -77,5 +104,5 @@ export async function decide({ intent, company, cash, bids, rate, today = new Da
       }
     : null;
 
-  return { cash, floor, budget: round2(budget), ranked: evaluated, winner, passedOver, reconsider };
+  return { cash, floor, budget: round2(budget), ranked: evaluated, winner, passedOver, reconsider, leaving };
 }

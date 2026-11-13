@@ -2,7 +2,8 @@
 
 What goes into the HackerEarth form (Nov 14, 2026 03:29 KST), and what has to be true before it is sent. The
 title and the description follow the shortlisted pitch; what changed in the build (GPU capacity instead of a
-design tool, the numbers of the recorded run) is reflected here so the form matches the demo.
+design tool, vendors' agents that bid in rounds, bid bonds in place of a rebated fee, the numbers of the recorded
+run) is reflected here so the form matches the demo.
 
 ## Title
 
@@ -10,63 +11,77 @@ Outbid: Your Agent Posts What It Wants to Buy. Vendors Compete. The Winning Bid 
 
 ## One line
 
-A purchase-intent auction for what a company buys on subscription. The buyer tells its agent what it needs,
-the agent writes an anonymous intent, vendors bid, the cheapest wins, and the approved terms become an Airwallex
-virtual card that can only pay that vendor, that amount, in that currency. Vendors pay only for closed deals:
-their prepaid fee is split into the buyer's rebate when the card charge clears.
+A purchase-intent auction for what a company buys on subscription. The buyer tells its agent what it needs to
+get done, the agent works out what to buy and what the company can spend, vendors' agents bid against each
+other for it, the cheapest wins, and the approved terms become an Airwallex virtual card whose limit is the
+winning bid, in that currency, at that kind of vendor. Both sides are bound: a vendor posts a bond to bid and
+can't charge more than it bid, and leaving a commitment early costs the exit fee the bid set.
 
 ## Description
 
-**Ads compete for people's attention. But more and more of the buying is done by AI agents, and agents don't
-see ads the way people do.** So vendors need a new place to compete. Outbid lets them bid for an agent's purchase directly, and the
-winning bid becomes a card that can only pay what the buyer approved.
+**AI agents are starting to buy for companies, but buying is still built for people: websites, quote requests,
+sales calls.** An agent needs one thing: the best offer. So Outbid flips it. The agent posts what it needs,
+vendors' agents compete to win it, and the winning bid becomes a card that can't be charged a cent more than
+that bid.
 
 **How it works (Kit 02: Intent-Bound Purchase Agent)**
 
-1. **Say what you need.** The buyer writes it the way they'd tell a colleague: "We're Fernhill Robotics. Our
-   perception team needs two H100s for 12 months, under $3,750 a month. We have about $80,000 in the bank…"
-   The agent (**Claude**, with a JSON schema) writes the anonymous intent from it: H100 GPU capacity, 2 GPUs, up
-   to $3,750 a month, 12 months. It lists what it kept from vendors (the name, the team, the cash, the bills),
-   and code checks the four fields before they are posted. Vendors see those fields and nothing else.
-2. **Vendors bid, the cheapest wins.** Two vendor agents answer: Orbit $3,400 a month, Harbor €2,960 a month.
-   Outbid prices the euro bid with **Airwallex FX** and ranks total cost over the term; Harbor wins. The ranking
-   and the budget live in code; Claude reads the vendors' terms and explains the pick, and never picks.
+1. **Say what you need done.** The buyer writes it the way they'd tell a colleague: "We're Fernhill Robotics.
+   Our perception team needs to fine-tune a vision model next year. It needs about 150 GB of GPU memory." No
+   hardware, no vendor, no budget. The agent works out the rest. **Claude** (with a JSON schema) works out what
+   to buy from what is on the market: two 80 GB H100s, for 12 months, and says why. It never invents a budget:
+   code reads the **Airwallex balance** and takes the most the company can pay a month and still keep its
+   reserve through the bills already due ($5,100 at $80,000). It lists what it kept from vendors (the name, the
+   team, the use, the balance), and code checks the four fields before they are posted. Vendors see those
+   fields, and that the funds behind them are verified, and nothing else.
+2. **Vendors' agents bid against each other.** Each vendor posts a bond to bid and has its own agent (Claude),
+   which sees only its own vendor's floor and the price to beat. Both open; whoever is behind is told the price
+   to beat, priced with **Airwallex FX**, and undercuts or stops. In the recorded run Orbit goes $3,380 →
+   $3,170 and stops; Harbor goes €2,940 → €2,800 and wins. A vendor's floor is enforced in code whatever its
+   agent says. The ranking and the budget live in code too; Claude reads the vendors' terms and explains the
+   pick, and never picks.
 3. **You see the agent work.** Beside the story, the buyer console lists every call the agent makes as it makes
-   it: Claude for words, Airwallex for money, Metal for the escrow, its own code for the rules, and the buyer's
-   approvals.
+   it: Claude for words, Airwallex for money, Metal for the bid bonds, its own code for the rules, and the
+   buyer's approvals. The purchase ends on a count: the buyer did two things, the agent made the rest.
 4. **Approval is bound to the terms.** The human approves one thing: this vendor, this amount, this currency,
-   this merchant category.
+   this merchant category, and what leaving early would cost.
 5. **The winning bid becomes the card.** Outbid issues an **Airwallex virtual card** (Issuing) whose controls
-   are those terms: a per-transaction limit at the approved amount, a currency allowlist, the vendor's merchant
-   category. The agreed charge clears; a restaurant charge is declined by the network with
-   `MERCHANT_CATEGORY_NOT_ALLOWED`.
-6. **Vendors pay only for closed deals.** Like any marketplace, Outbid takes a small fee from the winning
-   vendor: Harbor prepaid a $25 acquisition fee into an escrow on **Metal testnet** (Airwallex has no escrow
-   object, and a marketplace shouldn't hold vendors' fees itself). The fee is released only when the charge
-   actually goes through on the card: the cleared **card transaction** is the proof of sale, reported by the
-   network rather than by either party. The escrow splits the fee in one transaction, $5 to Outbid and $20
-   back to the buyer who brought the deal, and **Airwallex Payouts** carry the rebate to the buyer's bank.
+   are those terms: a per-transaction limit at the bid, a currency allowlist, the vendor's merchant category.
+   The agreed charge clears; the same vendor billing a setup fee on top of its bid is declined by the network
+   with `LIMIT_EXCEEDED`. A vendor that bid low to win can't make it back later.
+6. **One thing is onchain: the bid bonds.** A vendor's bond sits in an escrow on **Metal testnet** (Airwallex has
+   no escrow object, and a marketplace shouldn't hold deposits from vendors it has never met). The loser's goes
+   straight back. The winner's becomes Outbid's fee when its charge clears on the card: the cleared **card
+   transaction** is the proof of sale, and its id is recorded with the release. Outbid sends the buyer a
+   cashback out of its fee through **Airwallex Payouts**. The company's money never leaves Airwallex.
 
 **The decision keeps changing as the facts do.** At renewal the incumbent bills 22% more; the card declines it
-with `LIMIT_EXCEEDED`, Outbid reopens the auction and tells the incumbent: match the lower bid, or the company
-switches. It matches, and gets a new card while the old one is frozen. Then a third vendor, Summit, offers the
-year prepaid for $34,500, the cheapest total. The agent reads the company's **Airwallex balance** and upcoming
-obligations: paying it up front would put cash at about $19,500 on day 45, under the $20,000 reserve floor, so
-it waits. A $30,000 customer payment lands in the **Global Account**, the same rules re-run, the prepay fits,
-and after approval the company switches; the old card declines with `CARD_INACTIVE`. The reserve lives in code.
+with `LIMIT_EXCEEDED`, and that decline tells the agent to reopen the auction and ask the incumbent: match the
+lower bid, or the company switches. It matches, and gets a new card while the old one is frozen. Then a third
+vendor, Summit, offers the year prepaid for $32,500, the cheapest total even after the exit fee the current
+vendor's bid set, which is counted against every other offer. The agent reads the company's **Airwallex
+balance** and upcoming obligations: paying both up front would put cash under the $20,000 reserve floor on day
+45, so it waits. A $30,000 customer payment lands in the **Global Account**, the same rules re-run, the prepay
+fits, and after approval the company switches: the old card takes the exit fee as its last charge, is frozen,
+and declines with `CARD_INACTIVE`. The reserve lives in code.
 
-**Why a card, not just a bid?** A bid is a promise; the vendor's billing system decides what gets charged, and
-an agent holding an open company card can pay anyone anything. A virtual card per winning bid means the vendor can't
-overcharge, the agent can't overspend beyond what the human approved, and nobody can fake a sale, because every
-settled charge is reported by the network, not by either party. And almost every vendor already takes cards, so
-it needs no vendor integration.
+**Does it have to be a card?** Not necessarily: the auction works with any payment rail. A card is convenient.
+Almost every vendor already takes one, so there is nothing for it to integrate. A subscription already bills
+a card every month, so Outbid only puts a limit on it, and the agent never holds the power to send money. The
+network enforces that limit before any money moves. And a declined charge tells the agent right away, while a
+cleared one is a third party's record that the sale happened. The card's controls are the amount, the currency
+and the merchant category; a vendor that is a known merchant brand at Airwallex can be bound by brand as well
+(`allowed_merchant_brands`), which the sandbox enforces but can't simulate a matching charge for, so the demo's
+fictional vendors are bound by category.
 
 **What's built.** Everything above runs end to end against the Airwallex sandbox and Metal testnet with
 `npm run demo`: Balances, FX, Issuing, card transactions, Global Accounts and Payouts on Airwallex; a Foundry
-`FeeEscrow` contract on Metal. A buyer console and a vendor console fill in live from the run; the buyer writes
-the request, posts the intent and gives each approval on the page, with the agent's calls listed beside it. Each run saves its request log, and `evidence/2026-11-12.json`
-is a publishable copy of the run behind the site, with the response fields that prove each step. The hosted
-copy at outbid.fly.dev replays the purchase in that run, the one in the video, without touching the sandbox.
+`FeeEscrow` contract for the bid bonds on Metal. A buyer console and a vendor console fill in live from the
+run; the buyer writes the request, posts the intent and gives each approval on the page, with the agent's calls
+listed beside it. Each run saves its request log, and `evidence/2026-11-13.json` is a publishable copy of the
+run behind the site, with the response fields that prove each step. The hosted copy at outbid.fly.dev replays
+the purchase in that run, the one in the video, without touching the sandbox. The two vendors are demo
+vendors; next, the agent brings in public price lists as opening bids, so there is competition from day one.
 
 ## Links
 
@@ -75,7 +90,7 @@ copy at outbid.fly.dev replays the purchase in that run, the one in the video, w
 | Repository, with run instructions in the README | https://github.com/soarewee/outbid |
 | Video (3 minutes) | https://youtu.be/0mQKk-4Egrw |
 | Hosted replay of the recorded run: site, buyer console, vendor console | https://outbid.fly.dev |
-| Evidence of the run (Airwallex ids and response fields, Metal transactions) | `evidence/2026-11-12.json` in the repository |
+| Evidence of the run (Airwallex ids and response fields, Metal transactions) | `evidence/2026-11-13.json` in the repository |
 | Fee escrow on Metal testnet | address in `contracts/deployments/metal-testnet.json`, transactions on testnet.metalntwx.com |
 
 ## Before sending the form

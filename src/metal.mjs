@@ -1,4 +1,5 @@
-// Metal testnet through Foundry's cast: wallets, the FeeEscrow deployment, and the fee's prepay and split.
+// Metal testnet through Foundry's cast: wallets, the FeeEscrow deployment, and the vendors' bid bonds:
+// posted before bidding, returned to the losers, and released to Outbid as its fee when the sale clears.
 // Shelling out to cast keeps the project free of npm dependencies; Foundry is needed for the escrow anyway.
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -19,18 +20,27 @@ const deploymentFile = new URL("deployments/metal-testnet.json", contractsDir);
 // Metal's guide fixes the gas limit, since estimation can fail on its native-balance checks.
 const GAS = ["--gas-price", "1", "--priority-gas-price", "1"];
 
-export function createMetal({ rpcUrl = process.env.METAL_RPC_URL, privateKey = process.env.METAL_PRIVATE_KEY, onCall = () => {} } = {}) {
+export function createMetal({ rpcUrl = process.env.METAL_RPC_URL, privateKey = process.env.METAL_PRIVATE_KEY, onCall = () => {}, execute = run } = {}) {
   if (!rpcUrl || !privateKey) throw new Error("Set METAL_RPC_URL and METAL_PRIVATE_KEY in .env.");
   const env = { ...process.env, ETH_RPC_URL: rpcUrl, PATH: `${homedir()}/.foundry/bin:${process.env.PATH}` };
   const log = [];
 
   async function tool(bin, args, cwd) {
     try {
-      const { stdout } = await run(bin, args, { env, cwd, maxBuffer: 10 * 1024 * 1024 });
+      const { stdout } = await execute(bin, args, { env, cwd, maxBuffer: 10 * 1024 * 1024 });
       return stdout.trim();
     } catch (error) {
-      // Never echo the arguments: they include private keys.
-      throw new Error(`${bin} ${args[0]} failed: ${(error.stderr || error.message).trim().split("\n").slice(-3).join(" ")}`);
+      // A dotenv warning on stderr must not hide the actual error on stdout or the exit signal.
+      // Never use error.message: execFile includes the full command and its private key in it.
+      const secrets = [rpcUrl, privateKey];
+      for (let i = 0; i < args.length - 1; i++) if (args[i] === "--private-key") secrets.push(args[i + 1]);
+      const details = [error.stderr, error.stdout].filter(Boolean).map((output) => {
+        let safe = String(output);
+        for (const secret of secrets.filter(Boolean)) safe = safe.split(secret).join("[redacted]");
+        return safe.trim().split("\n").slice(-6).join(" ");
+      }).join(" ");
+      const status = error.signal ?? error.code ?? "unknown exit";
+      throw new Error(`${bin} ${args[0]} failed (${status})${details ? `: ${details}` : ""}`);
     }
   }
   const cast = (...args) => tool("cast", args);
@@ -61,7 +71,7 @@ export function createMetal({ rpcUrl = process.env.METAL_RPC_URL, privateKey = p
   }
 
   // Tops a wallet up from the operator so it holds at least `amount` USDZ (plus a little for gas). When the
-  // operator runs short, it first sweeps earlier demo rebates and fees back from Outbid's own test wallets.
+  // operator runs short, it first sweeps earlier demo fees back from Outbid's own test wallets.
   async function ensureUsdz(operator, target, amount) {
     const have = await balance(target.address);
     if (have >= amount + 1) return null;
@@ -80,14 +90,14 @@ export function createMetal({ rpcUrl = process.env.METAL_RPC_URL, privateKey = p
     return existsSync(deploymentFile) ? JSON.parse(readFileSync(deploymentFile)) : null;
   }
 
-  async function deploy({ rebateBps }) {
+  async function deploy() {
     const chainId = Number(await cast("chain-id"));
     if (chainId !== CHAIN_ID) throw new Error(`METAL_RPC_URL is on chain ${chainId}, not Metal testnet (${CHAIN_ID}).`);
-    const [operator, rebates, fees] = await Promise.all([wallet("operator"), wallet("rebates"), wallet("fees")]);
+    const [operator, fees] = await Promise.all([wallet("operator"), wallet("fees")]);
     const out = await tool("forge", [
       "create", "src/FeeEscrow.sol:FeeEscrow", "--json", "--broadcast",
       "--rpc-url", rpcUrl, "--private-key", operator.key, "--gas-limit", "1500000", ...GAS,
-      "--constructor-args", USDZ, operator.address, rebates.address, fees.address, String(rebateBps),
+      "--constructor-args", USDZ, operator.address, fees.address,
     ], contractsDir);
     const created = JSON.parse(out.slice(out.indexOf("{")));
     const record = {
@@ -96,9 +106,7 @@ export function createMetal({ rpcUrl = process.env.METAL_RPC_URL, privateKey = p
       deployTx: created.transactionHash,
       token: USDZ,
       attester: operator.address,
-      rebateAccount: rebates.address,
       feeAccount: fees.address,
-      rebateBps,
       deployedAt: new Date().toISOString(),
     };
     mkdirSync(new URL("deployments/", contractsDir), { recursive: true });
@@ -109,26 +117,43 @@ export function createMetal({ rpcUrl = process.env.METAL_RPC_URL, privateKey = p
   return { log, cast, wallet, balance, usdz, fromUsdz, keccak, send, ensureUsdz, deployment, deploy };
 }
 
-// The vendor whose bid won prepays its acquisition fee into the escrow for this deal.
-export async function prepayFee(metal, { vendor, dealKey, amount, days = 45 }) {
+// Every vendor that wants to bid posts a bond into the escrow first, one deal per auction and vendor.
+// The operator's top-ups go one after another (they share a nonce); the vendors then post side by side.
+export async function postBonds(metal, { vendors, auction, amount, days = 45, onPosted = () => {} }) {
   const { escrow } = requireDeployment(metal);
-  const [operator, payer] = await Promise.all([metal.wallet("operator"), metal.wallet(`vendor:${vendor}`)]);
-  await metal.ensureUsdz(operator, payer, amount);
-  const dealId = await metal.keccak(dealKey);
+  const operator = await metal.wallet("operator");
+  const payers = [];
+  for (const vendor of vendors) {
+    const payer = await metal.wallet(`vendor:${vendor}`);
+    await metal.ensureUsdz(operator, payer, amount);
+    payers.push({ vendor, payer });
+  }
   const deadline = Math.floor(Date.now() / 1000) + days * 24 * 60 * 60;
-  await metal.send(payer, USDZ, "approve(address,uint256)", [escrow, metal.usdz(amount)], { label: `${vendor} approves the escrow` });
-  const hash = await metal.send(payer, escrow, "fund(bytes32,uint256,uint64)", [dealId, metal.usdz(amount), String(deadline)], { label: `${vendor} prepays the fee` });
-  return { dealId, vendor: payer.address, amount, deadline, hash };
+  return Promise.all(payers.map(async ({ vendor, payer }) => {
+    const dealId = await metal.keccak(`outbid:${auction}:${vendor}`);
+    await metal.send(payer, USDZ, "approve(address,uint256)", [escrow, metal.usdz(amount)], { label: `${vendor} approves the escrow` });
+    const hash = await metal.send(payer, escrow, "fund(bytes32,uint256,uint64)", [dealId, metal.usdz(amount), String(deadline)], { label: `${vendor} posts its bid bond` });
+    const bond = { vendor, dealId, address: payer.address, amount, deadline, hash };
+    onPosted(bond);
+    return bond;
+  }));
 }
 
-// Outbid attests the cleared charge; the escrow splits the fee into rebate and fee in one transaction.
-export async function releaseFee(metal, { dealId, chargeId }) {
+// Outbid returns a bond to the vendor that posted it: it lost the auction, or the buyer didn't approve.
+export async function returnBond(metal, bond) {
+  const { escrow } = requireDeployment(metal);
+  const operator = await metal.wallet("operator");
+  const hash = await metal.send(operator, escrow, "refund(bytes32)", [bond.dealId], { label: `Outbid returns ${bond.vendor}'s bond` });
+  return { hash };
+}
+
+// Outbid attests the cleared charge; the winner's bond becomes Outbid's fee for the sale.
+export async function releaseBond(metal, bond, { chargeId }) {
   const record = requireDeployment(metal);
   const operator = await metal.wallet("operator");
   const proof = await metal.keccak(chargeId);
-  const hash = await metal.send(operator, record.escrow, "release(bytes32,bytes32)", [dealId, proof], { label: "Outbid releases the fee" });
-  const [rebates, fees] = await Promise.all([metal.balance(record.rebateAccount), metal.balance(record.feeAccount)]);
-  return { hash, proof, rebateBps: record.rebateBps, rebateAccountBalance: rebates, feeAccountBalance: fees };
+  const hash = await metal.send(operator, record.escrow, "release(bytes32,bytes32)", [bond.dealId, proof], { label: `Outbid releases ${bond.vendor}'s bond as its fee` });
+  return { hash, proof, feeAccountBalance: await metal.balance(record.feeAccount) };
 }
 
 function requireDeployment(metal) {

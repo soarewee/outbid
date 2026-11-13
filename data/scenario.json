@@ -4,14 +4,13 @@
     "payer": "Northwind Traders",
     "amount": 30000
   },
-  "wrongMerchant": {
-    "name": "Corner Bistro",
-    "mcc": "5812",
-    "amount": 180
+  "overcharge": {
+    "label": "Setup fee",
+    "amount": 400
   },
-  "acquisitionFee": {
+  "bidBond": {
     "amount": 25,
-    "currency": "USD",
-    "rebateBps": 8000
-  }
+    "currency": "USD"
+  },
+  "cashbackBps": 2000
 }

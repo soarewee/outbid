@@ -8,4 +8,4 @@ COPY src ./src
 COPY web ./web
 COPY evidence ./evidence
 EXPOSE 4780
-CMD ["node", "src/replay-cli.mjs", "evidence/2026-11-12.json", "--now"]
+CMD ["node", "src/replay-cli.mjs", "evidence/2026-11-13.json", "--now"]

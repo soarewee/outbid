@@ -80,18 +80,22 @@
     s.appendChild(svgEl("path", { d: kind === "check" ? "M3 8.5l3 3 7-7" : "M4 4l8 8M12 4l-8 8" }));
     return s;
   };
+  // The categories on the market come with the run (data/catalog.json); this one is here for recordings
+  // from before they did.
   const CATEGORY = { "gpu-h100": { name: "H100 GPU capacity", unit: "GPU" } };
+  const learn = (e) => Object.assign(CATEGORY, e.catalog ?? {});
   const categoryName = (c) => CATEGORY[c]?.name ?? c.replace(/-/g, " ");
   const qty = (intent) => { const u = CATEGORY[intent.category]?.unit ?? "unit"; return `${intent.quantity} ${u}${intent.quantity === 1 ? "" : "s"}`; };
   const cycleWord = (cycle) => (cycle === "annual" ? "per year, prepaid" : "per month");
   const perShort = (cycle) => (cycle === "annual" ? "/yr" : "/mo");
   const clock = (t) => `${String(Math.floor(t / 60000)).padStart(2, "0")}:${String(Math.floor((t % 60000) / 1000)).padStart(2, "0")}`;
-  const TITLE = { opening: "Opening bid", reopened: "Renewal, reopened", recheck: "Re-run after the buyer's cash changed" };
+  const TITLE = { opening: "Final bid", reopened: "Renewal, reopened", recheck: "Re-run after the buyer's cash changed" };
   // Why a charge failed, as the vendor should read it.
   const REASON = {
     LIMIT_EXCEEDED: "above what the buyer approved",
     MERCHANT_CATEGORY_NOT_ALLOWED: "merchant category not allowed",
     CURRENCY_NOT_ALLOWED: "wrong currency",
+    MERCHANT_BRAND_NOT_ALLOWED: "not the vendor that was approved",
     CARD_INACTIVE: "the buyer froze this card",
   };
 
@@ -118,7 +122,7 @@
   }
 
   function reset() {
-    state.deals = {};
+    state.deals = {}; state.bondCard = null; state.facts = null;
     for (const id of ["intent", "bids", "msgs", "deals", "pay", "fees", "log"]) $(id).replaceChildren();
     for (const s of document.querySelectorAll(".section")) s.hidden = true;
     $("fin").hidden = true;
@@ -132,6 +136,7 @@
     replay(e) { replaying = true; mode(`Replay · recorded ${e.recorded ?? "earlier"} against the Airwallex sandbox`, false); },
     "await-intent"() { $("empty").textContent = "A buyer is writing an intent…"; },
     start(e) {
+      learn(e);
       vendors = e.vendors; e.vendors.forEach((v, i) => (state.slot[v] = i + 1));
       if (!replaying) mode("Live · Airwallex sandbox", true);
       state.term = e.intent.termMonths;
@@ -142,8 +147,61 @@
       c.append(el("div", "big", `${categoryName(intent.category)}, ${qty(intent)}, up to ${whole(intent.budget.amount, intent.budget.currency)} a ${intent.budget.per}`));
       const facts = el("div", "facts");
       for (const t of [`${intent.termMonths}-month term`, `Budget ${whole(intent.budget.amount, intent.budget.currency)}/${intent.budget.per}`, qty(intent), "Pays by card"]) facts.append(el("span", "pill quiet", t));
+      state.facts = facts; state.bond = e.bond ?? null; state.cur = e.company?.currency ?? "USD";
       c.append(facts, el("div", "foot", "That is all you get. The buyer's name, balance and reserve stay hidden; the agent bids on the intent alone and the card tells you when you've won."));
       show("s-intent");
+    },
+    funds(e) {
+      if (!e.verified || !state.facts) return;
+      const p = el("span", "pill good"); p.append(icon("check"), "Funds verified on Airwallex");
+      state.facts.append(p);
+    },
+    // One row per move your agent makes: its price, and whether that leads once the round is priced.
+    round(e) {
+      const mv = e.moves.find((m) => m.vendor === me);
+      if (!mv) return;
+      const row = el("div", "mine");
+      const price = el("div", "price num");
+      if (mv.price) price.append(money(mv.price.amount, mv.price.currency), el("small", null, perShort(mv.billing)));
+      const st = el("div", "state");
+      const leads = e.leader === me;
+      const pill = el("span", `pill ${leads ? "good" : "quiet"}`);
+      pill.append(icon(leads ? "check" : "cross"), mv.action === "pass" ? "Stopped" : leads ? "Leading" : "Behind");
+      st.append(pill, mv.message ? `“${mv.message}”` : "");
+      row.append(el("div", "t", `Round ${e.n}`), price, el("div", "sub", mv.action === "open" ? "Your agent opens" : mv.action === "lower" ? "Your agent undercuts the best bid" : "Your agent stops here: lower would be under your floor, or not worth it"), el("div", "right num", mv.total ? `${whole(mv.total, state.cur)} to the buyer over the term` : ""), st);
+      $("bids").append(row);
+      show("s-bids");
+    },
+    bond(e) {
+      if (e.vendor !== me) return;
+      const link = (url, hash) => { const a = el("a", null, `${hash.slice(0, 10)}… on Metal`); a.href = url; a.target = "_blank"; a.rel = "noopener"; return a; };
+      const line = (steps, left, right, cls) => { const s = el("div", `s ${cls ?? ""}`); s.append(el("span", null, left), right); steps.append(s); };
+      document.querySelector("#s-fee h2").textContent = "Bid bond";
+      if (e.step === "posted") {
+        const c = el("div", "card"); state.bondCard = c;
+        c.append(el("div", "cap", "Your ticket into the auction"));
+        const hero = el("div", "hero"); hero.append(`${money(e.amount, e.currency)} in escrow`, el("small", null, "Your bid bond, in the Outbid escrow on Metal testnet. Lose the auction and it comes straight back. Win, and it becomes Outbid's fee once the buyer's first charge clears on the card. If nothing clears by the deadline, you take it back yourself."));
+        const steps = el("div", "steps");
+        line(steps, "You posted the bond (USDZ)", link(e.url, e.hash));
+        line(steps, "Bidding", el("code", null, "…"), "wait");
+        c.append(hero, steps);
+        $("fees").append(c);
+      } else if (state.bondCard) {
+        const c = state.bondCard;
+        c.querySelector(".wait")?.remove();
+        const hero = c.querySelector(".hero"), steps = c.querySelector(".steps");
+        if (e.step === "returned") {
+          c.querySelector(".cap").textContent = "Bond returned";
+          hero.replaceChildren(`${money(e.amount, e.currency)} back`, el("small", null, `Returned in full: ${e.why}. Bidding cost you nothing.`));
+          line(steps, "Outbid returned the bond", link(e.url, e.hash));
+        } else if (e.step === "released") {
+          c.querySelector(".cap").textContent = "Deal closed";
+          hero.replaceChildren(`${money(e.amount, e.currency)} fee paid`, el("small", null, "The buyer's charge cleared, which is the proof of sale, so your bond became Outbid's fee. You paid for a closed deal, not for a click."));
+          line(steps, "Proof of sale, Airwallex transaction", el("code", null, `${e.txId.slice(0, 13)}…`));
+          line(steps, "Bond released to Outbid", link(e.url, e.hash));
+        }
+      }
+      show("s-fee");
     },
     ranking(e) {
       const i = e.bids.findIndex((b) => b.vendor === me);
@@ -180,7 +238,8 @@
         ["Currency", e.approval.currency],
         ["Merchant category", `MCC ${e.approval.merchantCategory}`],
         ["Card", `•••• ${(e.number ?? "").slice(-4) || "????"}`, e.brand],
-      ]) { const t = el("div"); const vv = el("div", "v", v); if (s) vv.append(el("small", null, s)); t.append(el("div", "l", l), vv); terms.append(t); }
+        e.approval.exit && ["If the buyer leaves early", money(e.approval.exit.amount, e.approval.exit.currency), "exit fee, set by your bid"],
+      ].filter(Boolean)) { const t = el("div"); const vv = el("div", "v", v); if (s) vv.append(el("small", null, s)); t.append(el("div", "l", l), vv); terms.append(t); }
       const note = el("div", "note", "Bill exactly this and it clears. Anything above it, in another currency or from another merchant is declined by the network.");
       c.append(head, terms, note);
       $("deals").append(c);
@@ -204,7 +263,7 @@
       const res = el("div", `res ${e.outcome}`);
       res.append(icon(e.outcome === "approved" ? "check" : "cross"));
       if (e.outcome === "approved") res.append("Cleared");
-      else res.append(`Declined · ${REASON[e.detail] ?? e.detail}`, " ", el("code", null, e.detail));
+      else res.append(`Declined · ${e.kind === "overcharge" ? "more than you bid" : REASON[e.detail] ?? e.detail}`, " ", el("code", null, e.detail));
       line.append(el("div", "who", e.label), el("div", "amt num", money(e.amount, e.currency)), el("div", "how", e.txId ? `Airwallex transaction ${e.txId.slice(0, 8)}` : "Airwallex transaction"), res);
       $("pay").append(line);
       show("s-pay");

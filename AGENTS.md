@@ -3,10 +3,11 @@
 Instructions for any coding agent working in this repo (Claude Code reads it through `CLAUDE.md`).
 
 Outbid is a purchase-intent auction for company SaaS buying: a company's agent posts an anonymous intent,
-vendor agents bid, the agent picks a bid that respects the company's cash reserve, and the approved terms
-become an Airwallex virtual card that can only pay that vendor, that amount, in that currency. Vendors prepay
-an acquisition fee into an escrow; when the card charge clears, the fee is split into the buyer's rebate and
-Outbid's fee. It is a solo entry in the Airwallex Agentic Banking Hackathon (Kit 02: Intent-Bound Purchase
+vendors' agents bid against each other, the agent picks a bid that respects the company's cash reserve, and the
+approved terms become an Airwallex virtual card that can only pay that vendor, that amount, in that currency.
+Vendors post a bid bond into an escrow to bid; a loser's bond goes back, and when the winner's card charge
+clears its bond becomes Outbid's fee (Outbid sends the buyer a cashback from it). Leaving a commitment early
+costs the exit fee the bid set. It is a solo entry in the Airwallex Agentic Banking Hackathon (Kit 02: Intent-Bound Purchase
 Agent).
 
 ## The hackathon
@@ -18,7 +19,7 @@ deadline **Nov 14, 2026 03:29 KST**. The shortlisted pitch is the title and desc
 What drives the build:
 
 - It must be built on the Airwallex API (sandbox): balances, FX, Issuing, card transactions, Global Accounts,
-  Payouts. Metal testnet holds only what Airwallex doesn't: the fee escrow.
+  Payouts. Metal testnet holds only what Airwallex doesn't: the escrow for the vendors' bid bonds.
 - Follow the [builder guide](https://airwallexdev.com/guide): decisions change when balances, deadlines or risk
   change; approvals are bound to amount, currency, counterparty and terms; limits and the reserve live in
   code, and the model reads vendor terms and explains the trade-off.

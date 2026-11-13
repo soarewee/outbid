@@ -23,7 +23,7 @@ const AIRWALLEX = [
   [/^POST \/api\/v1\/issuing\/cards\/create$/, "Issuing · create the card", (b) => {
     const c = b?.authorization_controls;
     const limit = c?.transaction_limits?.limits?.[0];
-    return c ? `at most ${amount(limit?.amount, c.transaction_limits.currency)} a charge, ${c.allowed_currencies?.join(", ")} only, MCC ${c.allowed_merchant_categories?.join(", ")} only` : null;
+    return c ? `at most ${amount(limit?.amount, c.transaction_limits.currency)} a charge, ${c.allowed_currencies?.join(", ")} only, MCC ${c.allowed_merchant_categories?.join(", ")} only${c.allowed_merchant_brands?.ids?.length ? ", one merchant brand only" : ""}` : null;
   }],
   [/^GET \/api\/v1\/issuing\/cards\/[^/]+$/, "Issuing · card status", (b, r) => r?.card_status ?? null],
   [/^POST \/api\/v1\/issuing\/cards\/[^/]+\/update$/, "Issuing · freeze the old card", (b, r) => r?.card_status ?? null],
@@ -59,7 +59,7 @@ const METAL = [
   [/^fund vendor:(.*)$/, (v) => `Top up ${v}'s test wallet`],
   [/^fund (.*)$/, (v) => `Top up the ${v} test wallet`],
   [/^sweep (.*)$/, (v) => `Sweep earlier ${v} back`],
-  [/^(.*) approves the escrow$/, (v) => `${v} lets the escrow take the fee`],
+  [/^(.*) approves the escrow$/, (v) => `${v} lets the escrow take its bond`],
 ];
 const metalName = (label) => {
   for (const [re, name] of METAL) { const m = label.match(re); if (m) return name(m[1]); }

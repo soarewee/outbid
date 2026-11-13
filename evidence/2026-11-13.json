@@ -1,0 +1,1230 @@
+{
+ "recorded": "2026-11-13T11:41:21Z",
+ "note": "A demo run of Outbid against the Airwallex sandbox and Metal testnet. `events` are what the consoles played; `airwallex` holds, for each call that proves a step, the fields that prove it; `metal` lists the escrow transactions (open them on https://testnet.metalntwx.com). Credentials, cardholder and beneficiary records are left out.",
+ "model": "claude-opus-5-5",
+ "explanations": [
+  {
+   "key": "opening",
+   "text": "Vendor B wins at €2,800 a month, about $3,078 at today's rate, for $36,941 over 12 months against Vendor A's $38,040 at $3,170 a month. Both fit your $5,100 monthly budget. The trade-off is that Vendor B bills in euros and locks you in for 12 months, with €2,800 due if you leave early, while Vendor A lets you cancel any time.",
+   "model": "claude-opus-5-5",
+   "usage": {
+    "input": 1032,
+    "output": 247
+   },
+   "ms": 2664
+  }
+ ],
+ "airwallex": [
+  {
+   "method": "GET",
+   "path": "/api/v1/fx/rates/current?sell_currency=EUR&buy_currency=USD&sell_amount=1000",
+   "status": 200,
+   "response": {
+    "currency_pair": "EURUSD",
+    "rate": 1.099445,
+    "sell_currency": "EUR",
+    "buy_currency": "USD"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/fx/rates/current?sell_currency=USD&buy_currency=EUR&sell_amount=1000",
+   "status": 200,
+   "response": {
+    "currency_pair": "EURUSD",
+    "rate": 1.110871,
+    "sell_currency": "USD",
+    "buy_currency": "EUR"
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/issuing/cards/create",
+   "status": 202,
+   "request": {
+    "authorization_controls": {
+     "allowed_transaction_count": "MULTIPLE",
+     "allowed_currencies": [
+      "EUR"
+     ],
+     "allowed_merchant_categories": [
+      "7372"
+     ],
+     "transaction_limits": {
+      "currency": "EUR",
+      "limits": [
+       {
+        "amount": 2800,
+        "interval": "PER_TRANSACTION"
+       }
+      ]
+     }
+    },
+    "nick_name": "Outbid: Vendor B @ EUR 2800/monthly"
+   },
+   "response": {
+    "card_id": "bae1fc06-019a-4162-aab1-8d0775b9f173",
+    "card_number": "************3857",
+    "card_status": "ACTIVE",
+    "brand": "VISA",
+    "created_at": "2026-11-13T11:41:07.026+0000"
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/simulation/issuing/create",
+   "status": 201,
+   "request": {
+    "card_id": "bae1fc06-019a-4162-aab1-8d0775b9f173",
+    "transaction_amount": 2800,
+    "transaction_currency": "EUR",
+    "merchant_category_code": "7372"
+   },
+   "response": {
+    "card_transaction_id": "01a1d4b6-1ed0-7000-9b51-e11d08274e3f",
+    "process_result": "APPROVED",
+    "billing_amount": 2800,
+    "billing_currency": "EUR",
+    "transaction_amount": 2800,
+    "transaction_currency": "EUR"
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/simulation/issuing/create",
+   "status": 201,
+   "request": {
+    "card_id": "bae1fc06-019a-4162-aab1-8d0775b9f173",
+    "transaction_amount": 3200,
+    "transaction_currency": "EUR",
+    "merchant_category_code": "7372"
+   },
+   "response": {
+    "card_transaction_id": "01a1d4b6-2ca4-7000-9f23-c71ecc9be3ca",
+    "process_result": "DECLINED",
+    "failure_reason": "LIMIT_EXCEEDED",
+    "billing_amount": 3200,
+    "billing_currency": "EUR",
+    "transaction_amount": 3200,
+    "transaction_currency": "EUR"
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/transfers/create",
+   "status": 201,
+   "request": {
+    "transfer_amount": 5,
+    "transfer_currency": "USD",
+    "transfer_method": "LOCAL",
+    "reference": "Outbid cashback 0x1ac5b4b6"
+   },
+   "response": {
+    "id": "c4c72cfc-fea9-4b15-be96-57dfb37c7a13",
+    "short_reference_id": "P261113-E6ROHT7",
+    "status": "SCHEDULED",
+    "amount_payer_pays": 5,
+    "transfer_currency": "USD",
+    "created_at": "2026-11-13T11:41:19+0000"
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/simulation/issuing/create",
+   "status": 201,
+   "request": {
+    "card_id": "bae1fc06-019a-4162-aab1-8d0775b9f173",
+    "transaction_amount": 3416.95,
+    "transaction_currency": "EUR",
+    "merchant_category_code": "7372"
+   },
+   "response": {
+    "card_transaction_id": "01a1d4b6-4e8d-7000-9699-a857d8888636",
+    "process_result": "DECLINED",
+    "failure_reason": "LIMIT_EXCEEDED",
+    "billing_amount": 3416.95,
+    "billing_currency": "EUR",
+    "transaction_amount": 3416.95,
+    "transaction_currency": "EUR"
+   }
+  }
+ ],
+ "metal": [
+  {
+   "label": "fund vendor:Vendor B",
+   "from": "0xf5d174d7C86c46ab30dD01A28C71eB646d12452a",
+   "to": "0x000000000000000000000000000000000000b5d5",
+   "hash": "0x00ab9749f8fc5fa83798025deff3f78ef501d75058f27fb279026c50891b3281",
+   "status": "0x1"
+  },
+  {
+   "label": "Vendor A approves the escrow",
+   "from": "0xDEfE56239dfDF31E923f4518b0D5E581E1819730",
+   "to": "0x000000000000000000000000000000000000b5d5",
+   "hash": "0xc361dff15786b01260afd011a0aa9c0d89a0693b552a0326ac3edc356288bc0b",
+   "status": "0x1"
+  },
+  {
+   "label": "Vendor B approves the escrow",
+   "from": "0xc5E14e16A3DDA30Ad5D7A9e2eb5cBaEEFd37A181",
+   "to": "0x000000000000000000000000000000000000b5d5",
+   "hash": "0xd1273e900e9a2a80172ea11e4a8f52b3e689c227510387b7c5711f0486be182f",
+   "status": "0x1"
+  },
+  {
+   "label": "Vendor A posts its bid bond",
+   "from": "0xDEfE56239dfDF31E923f4518b0D5E581E1819730",
+   "to": "0x608A640A76d0371465A5c7dA35a86636B19ffDab",
+   "hash": "0xc4164e7a7ecb112b794baff9e47a2b1c4b89864bf43cd91a7d9ac4f4e916a2c8",
+   "status": "0x1"
+  },
+  {
+   "label": "Vendor B posts its bid bond",
+   "from": "0xc5E14e16A3DDA30Ad5D7A9e2eb5cBaEEFd37A181",
+   "to": "0x608A640A76d0371465A5c7dA35a86636B19ffDab",
+   "hash": "0xa4e5526d30670c5682811731a1cc3af78d80f8d3396a203354b1c610e0af4baf",
+   "status": "0x1"
+  },
+  {
+   "label": "Outbid returns Vendor A's bond",
+   "from": "0xf5d174d7C86c46ab30dD01A28C71eB646d12452a",
+   "to": "0x608A640A76d0371465A5c7dA35a86636B19ffDab",
+   "hash": "0x7de0f224b80de888ae9feac1ce077963d43f10bff720724bee9d0b59357ada2a",
+   "status": "0x1"
+  },
+  {
+   "label": "Outbid releases Vendor B's bond as its fee",
+   "from": "0xf5d174d7C86c46ab30dD01A28C71eB646d12452a",
+   "to": "0x608A640A76d0371465A5c7dA35a86636B19ffDab",
+   "hash": "0x1ac5b4b6dccf40c8233cc29f8fe90133f7d17e63197395c622907e0ed8981332",
+   "status": "0x1"
+  }
+ ],
+ "events": [
+  {
+   "type": "call",
+   "t": 865,
+   "service": "airwallex",
+   "op": "Sign in",
+   "endpoint": "POST /api/v1/authentication/login",
+   "detail": "API key exchanged for a session token",
+   "ok": true,
+   "ms": 860
+  },
+  {
+   "type": "call",
+   "t": 1220,
+   "service": "airwallex",
+   "op": "Demo setup · reset the sandbox balance",
+   "endpoint": "simulated deposit or payout",
+   "detail": "$80,000.00 → $80,000.00, so every run starts the same",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "type": "await-intent",
+   "t": 1220,
+   "defaults": {
+    "request": "We're Fernhill Robotics. Our perception team needs to fine-tune a vision model next year. It needs about 150 GB of GPU memory.",
+    "category": "gpu-h100",
+    "quantity": 2,
+    "budget": {
+     "amount": 3750,
+     "currency": "USD",
+     "per": "month"
+    },
+    "termMonths": 12,
+    "merchantCategory": "7372"
+   },
+   "company": {
+    "currency": "USD",
+    "policy": {
+     "reserveFloor": 20000,
+     "horizonDays": 90,
+     "reconsiderAfterMonths": 3
+    },
+    "obligations": [
+     {
+      "label": "Payroll",
+      "amount": 4500,
+      "firstDay": 14,
+      "everyDays": 14
+     },
+     {
+      "label": "Quarterly tax",
+      "amount": 12500,
+      "firstDay": 45
+     }
+    ]
+   }
+  },
+  {
+   "type": "call",
+   "t": 164480,
+   "service": "claude",
+   "op": "Read your request, wrote the intent",
+   "endpoint": "POST /v1/messages · claude-opus-5-5",
+   "detail": "3 things kept from vendors · 1,033 in, 143 out",
+   "ok": true,
+   "ms": 3202
+  },
+  {
+   "type": "call",
+   "t": 164643,
+   "service": "airwallex",
+   "op": "Balances · read cash",
+   "endpoint": "GET /api/v1/balances/current",
+   "detail": "$80,000.00 available",
+   "ok": true,
+   "ms": 163
+  },
+  {
+   "type": "call",
+   "t": 164644,
+   "service": "code",
+   "op": "Set the budget from your balance",
+   "endpoint": "src/auction.mjs",
+   "detail": "$5,100.00 a month keeps $20,000.00 in reserve for 90 days",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "type": "drafted",
+   "t": 164644,
+   "request": "We're Fernhill Robotics. Our perception team needs to fine-tune a vision model next year. It needs about 150 GB of GPU memory.",
+   "intent": {
+    "category": "gpu-h100",
+    "quantity": 2,
+    "budget": {
+     "amount": 5100,
+     "currency": "USD",
+     "per": "month"
+    },
+    "termMonths": 12
+   },
+   "withheld": [
+    "Company name: Fernhill Robotics",
+    "Team: perception team",
+    "Use: fine-tuning a vision model"
+   ],
+   "note": "150 GB of GPU memory needs two 80 GB GPUs; term not stated, chose 12 months to cover next year.",
+   "model": "claude-opus-5-5",
+   "budgetFrom": {
+    "cash": 80000,
+    "floor": 20000,
+    "horizonDays": 90,
+    "currency": "USD"
+   }
+  },
+  {
+   "type": "start",
+   "t": 184177,
+   "intent": {
+    "request": "We're Fernhill Robotics. Our perception team needs to fine-tune a vision model next year. It needs about 150 GB of GPU memory.",
+    "category": "gpu-h100",
+    "quantity": 2,
+    "budget": {
+     "amount": 5100,
+     "currency": "USD",
+     "per": "month"
+    },
+    "termMonths": 12,
+    "merchantCategory": "7372"
+   },
+   "company": {
+    "currency": "USD",
+    "policy": {
+     "reserveFloor": 20000,
+     "horizonDays": 90,
+     "reconsiderAfterMonths": 3
+    },
+    "obligations": [
+     {
+      "label": "Payroll",
+      "amount": 4500,
+      "firstDay": 14,
+      "everyDays": 14
+     },
+     {
+      "label": "Quarterly tax",
+      "amount": 12500,
+      "firstDay": 45
+     }
+    ]
+   },
+   "scenario": {
+    "startingCash": 80000,
+    "customerPayment": {
+     "payer": "Northwind Traders",
+     "amount": 30000
+    },
+    "overcharge": {
+     "label": "Setup fee",
+     "amount": 400
+    },
+    "bidBond": {
+     "amount": 25,
+     "currency": "USD"
+    },
+    "cashbackBps": 2000
+   },
+   "vendors": [
+    "Vendor A",
+    "Vendor B",
+    "Vendor C"
+   ],
+   "bidders": [
+    "Vendor A",
+    "Vendor B"
+   ],
+   "bond": {
+    "amount": 25,
+    "currency": "USD"
+   },
+   "vendorModel": "claude-haiku-5-5"
+  },
+  {
+   "type": "scene",
+   "t": 184177,
+   "n": 1,
+   "title": "Vendors' agents bid against each other.",
+   "later": false
+  },
+  {
+   "type": "call",
+   "t": 184356,
+   "service": "airwallex",
+   "op": "Balances · read cash",
+   "endpoint": "GET /api/v1/balances/current",
+   "detail": "$80,000.00 available",
+   "ok": true,
+   "ms": 179
+  },
+  {
+   "type": "cash",
+   "t": 184356,
+   "available": 80000
+  },
+  {
+   "type": "call",
+   "t": 184356,
+   "service": "code",
+   "op": "Check the funds behind the intent",
+   "endpoint": "src/demo-cli.mjs",
+   "detail": "the balance covers the budget above the reserve",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "type": "funds",
+   "t": 184356,
+   "verified": true
+  },
+  {
+   "type": "call",
+   "t": 184356,
+   "service": "code",
+   "op": "Post the anonymous intent",
+   "endpoint": "src/vendors.mjs",
+   "detail": "2 vendor agents read it",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "type": "call",
+   "t": 192426,
+   "service": "metal",
+   "op": "Escrow · Top up Vendor B's test wallet",
+   "endpoint": "cast send · Metal testnet",
+   "detail": "0x00ab9749…",
+   "url": "https://testnet.metalntwx.com/tx/0x00ab9749f8fc5fa83798025deff3f78ef501d75058f27fb279026c50891b3281",
+   "ok": true,
+   "ms": 2957
+  },
+  {
+   "type": "call",
+   "t": 195252,
+   "service": "metal",
+   "op": "Escrow · Vendor A lets the escrow take its bond",
+   "endpoint": "cast send · Metal testnet",
+   "detail": "0xc361dff1…",
+   "url": "https://testnet.metalntwx.com/tx/0xc361dff15786b01260afd011a0aa9c0d89a0693b552a0326ac3edc356288bc0b",
+   "ok": true,
+   "ms": 2801
+  },
+  {
+   "type": "call",
+   "t": 196659,
+   "service": "metal",
+   "op": "Escrow · Vendor B lets the escrow take its bond",
+   "endpoint": "cast send · Metal testnet",
+   "detail": "0xd1273e90…",
+   "url": "https://testnet.metalntwx.com/tx/0xd1273e900e9a2a80172ea11e4a8f52b3e689c227510387b7c5711f0486be182f",
+   "ok": true,
+   "ms": 4209
+  },
+  {
+   "type": "call",
+   "t": 198115,
+   "service": "metal",
+   "op": "Escrow · Vendor A posts its bid bond",
+   "endpoint": "cast send · Metal testnet",
+   "detail": "0xc4164e7a…",
+   "url": "https://testnet.metalntwx.com/tx/0xc4164e7a7ecb112b794baff9e47a2b1c4b89864bf43cd91a7d9ac4f4e916a2c8",
+   "ok": true,
+   "ms": 2862
+  },
+  {
+   "type": "bond",
+   "t": 198115,
+   "step": "posted",
+   "vendor": "Vendor A",
+   "amount": 25,
+   "currency": "USD",
+   "hash": "0xc4164e7a7ecb112b794baff9e47a2b1c4b89864bf43cd91a7d9ac4f4e916a2c8",
+   "url": "https://testnet.metalntwx.com/tx/0xc4164e7a7ecb112b794baff9e47a2b1c4b89864bf43cd91a7d9ac4f4e916a2c8"
+  },
+  {
+   "type": "vendor",
+   "t": 198115,
+   "vendor": "Vendor A",
+   "text": "Posted a $25.00 bid bond to enter the auction."
+  },
+  {
+   "type": "call",
+   "t": 199456,
+   "service": "metal",
+   "op": "Escrow · Vendor B posts its bid bond",
+   "endpoint": "cast send · Metal testnet",
+   "detail": "0xa4e5526d…",
+   "url": "https://testnet.metalntwx.com/tx/0xa4e5526d30670c5682811731a1cc3af78d80f8d3396a203354b1c610e0af4baf",
+   "ok": true,
+   "ms": 2797
+  },
+  {
+   "type": "bond",
+   "t": 199457,
+   "step": "posted",
+   "vendor": "Vendor B",
+   "amount": 25,
+   "currency": "USD",
+   "hash": "0xa4e5526d30670c5682811731a1cc3af78d80f8d3396a203354b1c610e0af4baf",
+   "url": "https://testnet.metalntwx.com/tx/0xa4e5526d30670c5682811731a1cc3af78d80f8d3396a203354b1c610e0af4baf"
+  },
+  {
+   "type": "vendor",
+   "t": 199457,
+   "vendor": "Vendor B",
+   "text": "Posted a $25.00 bid bond to enter the auction."
+  },
+  {
+   "type": "call",
+   "t": 201312,
+   "service": "airwallex",
+   "op": "FX · today's rate",
+   "endpoint": "GET /api/v1/fx/rates/current",
+   "detail": "EURUSD 1.099445",
+   "ok": true,
+   "ms": 402
+  },
+  {
+   "type": "vendor",
+   "t": 201313,
+   "vendor": "Vendor A",
+   "text": "Sees the anonymous intent. Opens at $3,380.00 monthly. Round one: open a little under list at 1690, keeping margin well above the 1560 floor. Budget 5100 covers 2x1690=3380."
+  },
+  {
+   "type": "vendor",
+   "t": 201313,
+   "vendor": "Vendor B",
+   "text": "Sees the anonymous intent. Opens at €2,940.00 monthly. Round one, open near list price. Idle capacity and winning matter more than margin, so a slight discount to list is reasonable."
+  },
+  {
+   "type": "round",
+   "t": 201313,
+   "n": 1,
+   "leader": "Vendor B",
+   "moves": [
+    {
+     "vendor": "Vendor A",
+     "action": "open",
+     "price": {
+      "amount": 3380,
+      "currency": "USD"
+     },
+     "billing": "monthly",
+     "perMonth": 3380,
+     "total": 40560,
+     "message": "2x H100 80GB reserved, billed monthly, cancel any time. Ready to start.",
+     "model": "claude-haiku-5-5"
+    },
+    {
+     "vendor": "Vendor B",
+     "action": "open",
+     "price": {
+      "amount": 2940,
+      "currency": "EUR"
+     },
+     "billing": "monthly",
+     "perMonth": 3232.37,
+     "total": 38788.44,
+     "message": "2x H100 80GB reserved in Frankfurt, 12-month term, billed monthly in EUR.",
+     "model": "claude-haiku-5-5"
+    }
+   ]
+  },
+  {
+   "type": "call",
+   "t": 201313,
+   "service": "code",
+   "op": "Bidding · round 1",
+   "endpoint": "src/bidding.mjs",
+   "detail": "Vendor A $3,380.00, Vendor B €2,940.00 → Vendor B leads",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "type": "vendor",
+   "t": 203691,
+   "vendor": "Vendor A",
+   "text": "Round 2: goes down to $3,170.00 monthly. Price to beat is 1616.18. A roughly 2% undercut to 1585 keeps healthy margin above the 1560 floor. Stop there rather than chase."
+  },
+  {
+   "type": "round",
+   "t": 203691,
+   "n": 2,
+   "leader": "Vendor A",
+   "moves": [
+    {
+     "vendor": "Vendor A",
+     "action": "lower",
+     "price": {
+      "amount": 3170,
+      "currency": "USD"
+     },
+     "billing": "monthly",
+     "perMonth": 3170,
+     "total": 38040,
+     "message": "We can offer 2× H100 80GB reserved at $1,585 per unit monthly, cancel anytime.",
+     "model": "claude-haiku-5-5"
+    }
+   ]
+  },
+  {
+   "type": "call",
+   "t": 203691,
+   "service": "code",
+   "op": "Bidding · round 2",
+   "endpoint": "src/bidding.mjs",
+   "detail": "Vendor A $3,170.00 → Vendor A leads",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "type": "call",
+   "t": 203821,
+   "service": "airwallex",
+   "op": "FX · today's rate",
+   "endpoint": "GET /api/v1/fx/rates/current",
+   "detail": "EURUSD 1.110871",
+   "ok": true,
+   "ms": 130
+  },
+  {
+   "type": "vendor",
+   "t": 205711,
+   "vendor": "Vendor B",
+   "text": "Round 3: goes down to €2,800.00 monthly. Idle capacity earns nothing, so winning a year matters more than margin. Undercut by about 2% to 1400, above floor."
+  },
+  {
+   "type": "round",
+   "t": 205711,
+   "n": 3,
+   "leader": "Vendor B",
+   "moves": [
+    {
+     "vendor": "Vendor B",
+     "action": "lower",
+     "price": {
+      "amount": 2800,
+      "currency": "EUR"
+     },
+     "billing": "monthly",
+     "perMonth": 3078.45,
+     "total": 36941.4,
+     "message": "Frankfurt H100s reserved, 12-month term, monthly EUR billing, ready to start.",
+     "model": "claude-haiku-5-5"
+    }
+   ]
+  },
+  {
+   "type": "call",
+   "t": 205711,
+   "service": "code",
+   "op": "Bidding · round 3",
+   "endpoint": "src/bidding.mjs",
+   "detail": "Vendor B €2,800.00 → Vendor B leads",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "type": "vendor",
+   "t": 207821,
+   "vendor": "Vendor A",
+   "text": "Round 4: stops at $3,170.00 monthly. Price to beat 1539.22 is under our 1560 floor. Bidding would lose money, so we pass per policy."
+  },
+  {
+   "type": "round",
+   "t": 207821,
+   "n": 4,
+   "leader": "Vendor B",
+   "moves": [
+    {
+     "vendor": "Vendor A",
+     "action": "pass",
+     "price": {
+      "amount": 3170,
+      "currency": "USD"
+     },
+     "billing": "monthly",
+     "perMonth": 3170,
+     "total": 38040,
+     "message": "Our best price is above your target, so we are withdrawing.",
+     "model": "claude-haiku-5-5"
+    }
+   ]
+  },
+  {
+   "type": "call",
+   "t": 207821,
+   "service": "code",
+   "op": "Bidding · round 4",
+   "endpoint": "src/bidding.mjs",
+   "detail": "Vendor A stops → Vendor B leads",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "type": "call",
+   "t": 207822,
+   "service": "code",
+   "op": "Rank the bids",
+   "endpoint": "src/auction.mjs",
+   "detail": "2 bids on total cost → Vendor B",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "type": "call",
+   "t": 210487,
+   "service": "claude",
+   "op": "Explain the pick to you",
+   "endpoint": "POST /v1/messages · claude-opus-5-5",
+   "detail": "1,032 in, 247 out",
+   "ok": true,
+   "ms": 2664
+  },
+  {
+   "type": "ranking",
+   "t": 210489,
+   "key": "opening",
+   "title": "Cheapest first over the term, priced with Airwallex FX",
+   "explanation": {
+    "text": "Vendor B wins at €2,800 a month, about $3,078 at today's rate, for $36,941 over 12 months against Vendor A's $38,040 at $3,170 a month. Both fit your $5,100 monthly budget. The trade-off is that Vendor B bills in euros and locks you in for 12 months, with €2,800 due if you leave early, while Vendor A lets you cancel any time.",
+    "model": "claude-opus-5-5",
+    "usage": {
+     "input": 1032,
+     "output": 247
+    },
+    "ms": 2664
+   },
+   "currency": "USD",
+   "cash": 80000,
+   "floor": 20000,
+   "budget": 5100,
+   "winner": "Vendor B",
+   "reconsider": null,
+   "leaving": null,
+   "bids": [
+    {
+     "vendor": "Vendor B",
+     "price": {
+      "amount": 2800,
+      "currency": "EUR"
+     },
+     "billing": "monthly",
+     "fx": 1.099445,
+     "total": 36941.4,
+     "perMonth": 3078.45,
+     "verdict": "fits",
+     "cashPath": {
+      "ok": true,
+      "low": {
+       "day": 90,
+       "balance": 28186.2
+      },
+      "path": [
+       76921.55,
+       76921.55,
+       76921.55,
+       76921.55,
+       76921.55,
+       76921.55,
+       76921.55,
+       76921.55,
+       76921.55,
+       76921.55,
+       76921.55,
+       76921.55,
+       76921.55,
+       76921.55,
+       72421.55,
+       72421.55,
+       72421.55,
+       72421.55,
+       72421.55,
+       72421.55,
+       72421.55,
+       72421.55,
+       72421.55,
+       72421.55,
+       72421.55,
+       72421.55,
+       72421.55,
+       72421.55,
+       67921.55,
+       67921.55,
+       64843.1,
+       64843.1,
+       64843.1,
+       64843.1,
+       64843.1,
+       64843.1,
+       64843.1,
+       64843.1,
+       64843.1,
+       64843.1,
+       64843.1,
+       64843.1,
+       60343.1,
+       60343.1,
+       60343.1,
+       47843.1,
+       47843.1,
+       47843.1,
+       47843.1,
+       47843.1,
+       47843.1,
+       47843.1,
+       47843.1,
+       47843.1,
+       47843.1,
+       47843.1,
+       43343.1,
+       43343.1,
+       43343.1,
+       43343.1,
+       40264.65,
+       40264.65,
+       40264.65,
+       40264.65,
+       40264.65,
+       40264.65,
+       40264.65,
+       40264.65,
+       40264.65,
+       40264.65,
+       35764.65,
+       35764.65,
+       35764.65,
+       35764.65,
+       35764.65,
+       35764.65,
+       35764.65,
+       35764.65,
+       35764.65,
+       35764.65,
+       35764.65,
+       35764.65,
+       35764.65,
+       35764.65,
+       31264.65,
+       31264.65,
+       31264.65,
+       31264.65,
+       31264.65,
+       31264.65,
+       28186.2
+      ]
+     },
+     "exit": {
+      "amount": 2800,
+      "currency": "EUR",
+      "periods": 1
+     },
+     "exitCost": 0,
+     "message": null
+    },
+    {
+     "vendor": "Vendor A",
+     "price": {
+      "amount": 3170,
+      "currency": "USD"
+     },
+     "billing": "monthly",
+     "fx": 1,
+     "total": 38040,
+     "perMonth": 3170,
+     "verdict": "fits",
+     "cashPath": {
+      "ok": true,
+      "low": {
+       "day": 90,
+       "balance": 27820
+      },
+      "path": [
+       76830,
+       76830,
+       76830,
+       76830,
+       76830,
+       76830,
+       76830,
+       76830,
+       76830,
+       76830,
+       76830,
+       76830,
+       76830,
+       76830,
+       72330,
+       72330,
+       72330,
+       72330,
+       72330,
+       72330,
+       72330,
+       72330,
+       72330,
+       72330,
+       72330,
+       72330,
+       72330,
+       72330,
+       67830,
+       67830,
+       64660,
+       64660,
+       64660,
+       64660,
+       64660,
+       64660,
+       64660,
+       64660,
+       64660,
+       64660,
+       64660,
+       64660,
+       60160,
+       60160,
+       60160,
+       47660,
+       47660,
+       47660,
+       47660,
+       47660,
+       47660,
+       47660,
+       47660,
+       47660,
+       47660,
+       47660,
+       43160,
+       43160,
+       43160,
+       43160,
+       39990,
+       39990,
+       39990,
+       39990,
+       39990,
+       39990,
+       39990,
+       39990,
+       39990,
+       39990,
+       35490,
+       35490,
+       35490,
+       35490,
+       35490,
+       35490,
+       35490,
+       35490,
+       35490,
+       35490,
+       35490,
+       35490,
+       35490,
+       35490,
+       30990,
+       30990,
+       30990,
+       30990,
+       30990,
+       30990,
+       27820
+      ]
+     },
+     "exit": null,
+     "exitCost": 0,
+     "message": null
+    }
+   ]
+  },
+  {
+   "type": "note",
+   "t": 210489,
+   "text": "Pick: Vendor B"
+  },
+  {
+   "type": "vendor",
+   "t": 210489,
+   "vendor": "Vendor A",
+   "text": "Lost. Another bid won; the buyer stays anonymous."
+  },
+  {
+   "type": "vendor",
+   "t": 210489,
+   "vendor": "Vendor B",
+   "text": "Won. The buyer's card will confirm it."
+  },
+  {
+   "type": "scene",
+   "t": 210489,
+   "n": 2,
+   "title": "One approval becomes the card.",
+   "later": false
+  },
+  {
+   "type": "approval",
+   "t": 210492,
+   "id": "b14143f9-6395-455b-8a58-cf1d06d00980",
+   "terms": {
+    "vendor": "Vendor B",
+    "amount": 2800,
+    "currency": "EUR",
+    "cycle": "monthly",
+    "merchantCategory": "7372",
+    "exit": {
+     "amount": 2800,
+     "currency": "EUR"
+    },
+    "merchantBrand": null
+   }
+  },
+  {
+   "type": "call",
+   "t": 213370,
+   "service": "metal",
+   "op": "Escrow · Outbid returns Vendor A's bond",
+   "endpoint": "cast send · Metal testnet",
+   "detail": "0x7de0f224…",
+   "url": "https://testnet.metalntwx.com/tx/0x7de0f224b80de888ae9feac1ce077963d43f10bff720724bee9d0b59357ada2a",
+   "ok": true,
+   "ms": 2842
+  },
+  {
+   "type": "bond",
+   "t": 213370,
+   "step": "returned",
+   "vendor": "Vendor A",
+   "amount": 25,
+   "currency": "USD",
+   "why": "another bid won",
+   "hash": "0x7de0f224b80de888ae9feac1ce077963d43f10bff720724bee9d0b59357ada2a",
+   "url": "https://testnet.metalntwx.com/tx/0x7de0f224b80de888ae9feac1ce077963d43f10bff720724bee9d0b59357ada2a"
+  },
+  {
+   "type": "vendor",
+   "t": 213371,
+   "vendor": "Vendor A",
+   "text": "Bond returned: another bid won."
+  },
+  {
+   "type": "approved",
+   "t": 241060,
+   "id": "b14143f9-6395-455b-8a58-cf1d06d00980",
+   "approved": true
+  },
+  {
+   "type": "call",
+   "t": 241230,
+   "service": "airwallex",
+   "op": "Issuing · cardholder",
+   "endpoint": "GET /api/v1/issuing/cardholders",
+   "detail": null,
+   "ok": true,
+   "ms": 169
+  },
+  {
+   "type": "call",
+   "t": 241771,
+   "service": "airwallex",
+   "op": "Issuing · create the card",
+   "endpoint": "POST /api/v1/issuing/cards/create",
+   "detail": "at most €2,800.00 a charge, EUR only, MCC 7372 only",
+   "ok": true,
+   "ms": 540
+  },
+  {
+   "type": "call",
+   "t": 241899,
+   "service": "airwallex",
+   "op": "Issuing · card status",
+   "endpoint": "GET /api/v1/issuing/cards/{id}",
+   "detail": "ACTIVE",
+   "ok": true,
+   "ms": 128
+  },
+  {
+   "type": "card",
+   "t": 241899,
+   "id": "bae1fc06-019a-4162-aab1-8d0775b9f173",
+   "number": "************3857",
+   "brand": "VISA",
+   "status": "ACTIVE",
+   "approval": {
+    "vendor": "Vendor B",
+    "amount": 2800,
+    "currency": "EUR",
+    "cycle": "monthly",
+    "merchantCategory": "7372",
+    "exit": {
+     "amount": 2800,
+     "currency": "EUR"
+    },
+    "merchantBrand": null
+   },
+   "replaces": null
+  },
+  {
+   "type": "call",
+   "t": 245468,
+   "service": "airwallex",
+   "op": "Issuing · a charge on the card",
+   "endpoint": "POST /api/v1/simulation/issuing/create",
+   "detail": "€2,800.00 at MCC 7372 → APPROVED",
+   "ok": true,
+   "ms": 3567
+  },
+  {
+   "type": "charge",
+   "t": 245468,
+   "cardId": "bae1fc06-019a-4162-aab1-8d0775b9f173",
+   "label": "Agreed charge",
+   "kind": "agreed",
+   "amount": 2800,
+   "currency": "EUR",
+   "mcc": "7372",
+   "merchant": "Vendor B",
+   "outcome": "approved",
+   "detail": "APPROVED",
+   "txId": "01a1d4b6-1ed0-7000-9b51-e11d08274e3f"
+  },
+  {
+   "type": "call",
+   "t": 248847,
+   "service": "airwallex",
+   "op": "Issuing · a charge on the card",
+   "endpoint": "POST /api/v1/simulation/issuing/create",
+   "detail": "€3,200.00 at MCC 7372 → DECLINED LIMIT_EXCEEDED",
+   "ok": true,
+   "ms": 3378
+  },
+  {
+   "type": "charge",
+   "t": 248847,
+   "cardId": "bae1fc06-019a-4162-aab1-8d0775b9f173",
+   "label": "Agreed charge + setup fee",
+   "kind": "overcharge",
+   "amount": 3200,
+   "currency": "EUR",
+   "mcc": "7372",
+   "merchant": "Vendor B",
+   "outcome": "declined",
+   "detail": "LIMIT_EXCEEDED",
+   "txId": "01a1d4b6-2ca4-7000-9f23-c71ecc9be3ca"
+  },
+  {
+   "type": "scene",
+   "t": 248847,
+   "n": 3,
+   "title": "The cleared charge closes the sale.",
+   "later": false
+  },
+  {
+   "type": "call",
+   "t": 251517,
+   "service": "metal",
+   "op": "Escrow · Outbid releases Vendor B's bond as its fee",
+   "endpoint": "cast send · Metal testnet",
+   "detail": "0x1ac5b4b6…",
+   "url": "https://testnet.metalntwx.com/tx/0x1ac5b4b6dccf40c8233cc29f8fe90133f7d17e63197395c622907e0ed8981332",
+   "ok": true,
+   "ms": 2593
+  },
+  {
+   "type": "bond",
+   "t": 252968,
+   "step": "released",
+   "vendor": "Vendor B",
+   "cardId": "bae1fc06-019a-4162-aab1-8d0775b9f173",
+   "txId": "01a1d4b6-1ed0-7000-9b51-e11d08274e3f",
+   "amount": 25,
+   "currency": "USD",
+   "hash": "0x1ac5b4b6dccf40c8233cc29f8fe90133f7d17e63197395c622907e0ed8981332",
+   "url": "https://testnet.metalntwx.com/tx/0x1ac5b4b6dccf40c8233cc29f8fe90133f7d17e63197395c622907e0ed8981332"
+  },
+  {
+   "type": "vendor",
+   "t": 252968,
+   "vendor": "Vendor B",
+   "text": "The buyer's charge cleared, so the $25.00 bond became Outbid's fee for the sale."
+  },
+  {
+   "type": "call",
+   "t": 253175,
+   "service": "airwallex",
+   "op": "Payouts · the buyer's bank",
+   "endpoint": "GET /api/v1/beneficiaries",
+   "detail": null,
+   "ok": true,
+   "ms": 205
+  },
+  {
+   "type": "call",
+   "t": 254072,
+   "service": "airwallex",
+   "op": "Payouts · send a transfer",
+   "endpoint": "POST /api/v1/transfers/create",
+   "detail": "$5.00, scheduled",
+   "ok": true,
+   "ms": 897
+  },
+  {
+   "type": "cashback",
+   "t": 254072,
+   "vendor": "Vendor B",
+   "amount": 5,
+   "of": 25,
+   "currency": "USD",
+   "transferId": "c4c72cfc-fea9-4b15-be96-57dfb37c7a13",
+   "status": "SCHEDULED"
+  },
+  {
+   "type": "end",
+   "t": 255072
+  }
+ ]
+}

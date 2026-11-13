@@ -8,13 +8,14 @@ interface IToken {
 }
 
 /// @title FeeEscrow
-/// @notice Holds the acquisition fee a vendor prepays when its bid wins. When Outbid attests that the deal's
-///         first card charge cleared, one call splits the fee between the buyer's rebate and Outbid's fee.
-///         If no charge clears by the deadline, the vendor takes its fee back.
+/// @notice Holds the bond a vendor posts to bid in an Outbid auction. A vendor that loses gets its bond back
+///         at once. The winner's bond stays until Outbid attests that the deal's first card charge cleared;
+///         then it becomes Outbid's fee for the sale. If no charge clears by the deadline, the vendor takes
+///         its bond back itself.
 /// @dev The contract can't see the card network. The attester reports the cleared Airwallex transaction and
-///      its id is stored as the proof. The rebate share is fixed at deployment, so neither the vendor nor
-///      the attester can change a deal's split. On Metal a credit can be quarantined instead of landing, so
-///      every transfer checks that the recipient's balance rose by the full amount.
+///      its id is stored as the proof. The attester can only send a bond two ways: to the fee account with a
+///      proof, or back to the vendor that posted it. On Metal a credit can be quarantined instead of landing,
+///      so every transfer checks that the recipient's balance rose by the full amount.
 contract FeeEscrow {
     enum State {
         None,
@@ -32,20 +33,16 @@ contract FeeEscrow {
         bytes32 proof;
     }
 
-    uint256 private constant BPS = 10_000;
-
     IToken public immutable token;
     address public immutable attester;
-    /// Collects buyers' rebates, which Outbid pays out to each buyer's bank through Airwallex Payouts.
-    address public immutable rebateAccount;
+    /// Outbid's fees. Any cashback to a buyer is Outbid's own, paid from here through Airwallex Payouts.
     address public immutable feeAccount;
-    uint16 public immutable rebateBps;
 
     mapping(bytes32 dealId => Deal) public deals;
     bool private locked;
 
     event Funded(bytes32 indexed dealId, address indexed vendor, uint256 amount, uint64 deadline);
-    event Released(bytes32 indexed dealId, bytes32 proof, uint256 rebate, uint256 fee);
+    event Released(bytes32 indexed dealId, bytes32 proof, uint256 fee);
     event Refunded(bytes32 indexed dealId, uint256 amount);
 
     error WrongState(State state);
@@ -62,16 +59,14 @@ contract FeeEscrow {
         locked = false;
     }
 
-    constructor(IToken token_, address attester_, address rebateAccount_, address feeAccount_, uint16 rebateBps_) {
-        if (rebateBps_ > BPS) revert BadTerms();
+    constructor(IToken token_, address attester_, address feeAccount_) {
         token = token_;
         attester = attester_;
-        rebateAccount = rebateAccount_;
         feeAccount = feeAccount_;
-        rebateBps = rebateBps_;
     }
 
-    /// The winning vendor prepays `amount` for `dealId`. It must approve the escrow first.
+    /// A vendor posts `amount` as its bond for `dealId` (one auction, one vendor) before it bids. It must
+    /// approve the escrow first.
     function fund(bytes32 dealId, uint256 amount, uint64 deadline) external nonReentrant {
         Deal storage deal = deals[dealId];
         if (deal.state != State.None) revert WrongState(deal.state);
@@ -84,27 +79,28 @@ contract FeeEscrow {
         emit Funded(dealId, msg.sender, amount, deadline);
     }
 
-    /// Called by Outbid once the deal's first card charge has cleared. Splits the fee in one transaction.
+    /// Called by Outbid once the winner's first card charge has cleared. The bond becomes Outbid's fee.
     function release(bytes32 dealId, bytes32 proof) external nonReentrant {
         if (msg.sender != attester) revert NotAllowed();
         Deal storage deal = deals[dealId];
         if (deal.state != State.Funded) revert WrongState(deal.state);
         if (block.timestamp >= deal.deadline) revert TooLate();
-        uint256 rebate = deal.amount * rebateBps / BPS;
-        uint256 fee = deal.amount - rebate;
         deal.state = State.Released;
         deal.proof = proof;
-        _move(address(this), rebateAccount, rebate);
-        _move(address(this), feeAccount, fee);
-        emit Released(dealId, proof, rebate, fee);
+        _move(address(this), feeAccount, deal.amount);
+        emit Released(dealId, proof, deal.amount);
     }
 
-    /// The vendor takes its fee back if no charge cleared by the deadline.
+    /// The bond goes back to the vendor that posted it. Outbid returns it as soon as the vendor has lost the
+    /// auction or the buyer has declined; the vendor can take it back itself once the deadline has passed
+    /// with no charge cleared.
     function refund(bytes32 dealId) external nonReentrant {
         Deal storage deal = deals[dealId];
         if (deal.state != State.Funded) revert WrongState(deal.state);
-        if (msg.sender != deal.vendor) revert NotAllowed();
-        if (block.timestamp < deal.deadline) revert TooEarly();
+        if (msg.sender != attester) {
+            if (msg.sender != deal.vendor) revert NotAllowed();
+            if (block.timestamp < deal.deadline) revert TooEarly();
+        }
         deal.state = State.Refunded;
         _move(address(this), deal.vendor, deal.amount);
         emit Refunded(dealId, deal.amount);

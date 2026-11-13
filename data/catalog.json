@@ -1,0 +1,16 @@
+{
+  "gpu-h100": {
+    "name": "H100 GPU capacity",
+    "unit": "GPU",
+    "item": "H100 80GB, reserved",
+    "describe": "Reserved NVIDIA H100 GPUs in the cloud, 80 GB of memory each, priced per GPU",
+    "merchantCategory": "7372"
+  },
+  "design-seats": {
+    "name": "Design tool seats",
+    "unit": "seat",
+    "item": "design tool seats",
+    "describe": "Seats of a collaborative design tool for a product team, priced per seat",
+    "merchantCategory": "5734"
+  }
+}

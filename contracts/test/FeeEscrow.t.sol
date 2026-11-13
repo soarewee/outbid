@@ -52,7 +52,7 @@ contract FeeEscrowTest {
 
     address private constant ATTESTER = address(0xA11);
     address private constant VENDOR = address(0xB0B);
-    address private constant REBATES = address(0xBEE);
+    address private constant STRANGER = address(0xBAD);
     address private constant FEES = address(0xFEE);
     bytes32 private constant DEAL = keccak256("intent-1:Vendor B");
     bytes32 private constant PROOF = keccak256("airwallex-tx-1");
@@ -63,7 +63,7 @@ contract FeeEscrowTest {
     function setUp() public {
         vm.warp(1_000_000);
         token = new TestToken();
-        escrow = new FeeEscrow(token, ATTESTER, REBATES, FEES, 8_000);
+        escrow = new FeeEscrow(token, ATTESTER, FEES);
         token.mint(VENDOR, 100 ether);
         vm.prank(VENDOR);
         token.approve(address(escrow), 25 ether);
@@ -71,11 +71,11 @@ contract FeeEscrowTest {
         escrow.fund(DEAL, 25 ether, uint64(block.timestamp + 30 days));
     }
 
-    function test_releaseSplitsTheFeeOnce() public {
+    function test_theWinnersBondBecomesTheFeeOnce() public {
         vm.prank(ATTESTER);
         escrow.release(DEAL, PROOF);
-        assertEq(token.balanceOf(REBATES), 20 ether);
-        assertEq(token.balanceOf(FEES), 5 ether);
+        assertEq(token.balanceOf(FEES), 25 ether);
+        assertEq(token.balanceOf(VENDOR), 75 ether);
         (,, FeeEscrow.State state,, bytes32 proof) = escrow.deals(DEAL);
         assert(state == FeeEscrow.State.Released);
         assert(proof == PROOF);
@@ -91,7 +91,30 @@ contract FeeEscrowTest {
         escrow.release(DEAL, PROOF);
     }
 
-    function test_vendorIsRefundedOnlyAfterTheDeadline() public {
+    function test_aLosingVendorGetsItsBondBackAtOnce() public {
+        vm.prank(ATTESTER);
+        escrow.refund(DEAL);
+        assertEq(token.balanceOf(VENDOR), 100 ether);
+        assertEq(token.balanceOf(FEES), 0);
+        (,, FeeEscrow.State state,,) = escrow.deals(DEAL);
+        assert(state == FeeEscrow.State.Refunded);
+
+        vm.expectRevert(abi.encodeWithSelector(FeeEscrow.WrongState.selector, FeeEscrow.State.Refunded));
+        vm.prank(ATTESTER);
+        escrow.release(DEAL, PROOF);
+    }
+
+    function test_nobodyElseCanMoveABond() public {
+        vm.expectRevert(abi.encodeWithSelector(FeeEscrow.NotAllowed.selector));
+        vm.prank(STRANGER);
+        escrow.refund(DEAL);
+        vm.warp(block.timestamp + 30 days);
+        vm.expectRevert(abi.encodeWithSelector(FeeEscrow.NotAllowed.selector));
+        vm.prank(STRANGER);
+        escrow.refund(DEAL);
+    }
+
+    function test_vendorTakesItsBondBackItselfOnlyAfterTheDeadline() public {
         vm.expectRevert(abi.encodeWithSelector(FeeEscrow.TooEarly.selector));
         vm.prank(VENDOR);
         escrow.refund(DEAL);
@@ -112,9 +135,9 @@ contract FeeEscrowTest {
         escrow.fund(DEAL, 1 ether, uint64(block.timestamp + 1 days));
     }
 
-    function test_aQuarantinedRebateRollsTheReleaseBack() public {
-        token.quarantine(REBATES);
-        vm.expectRevert(abi.encodeWithSelector(FeeEscrow.TransferShort.selector, REBATES, 20 ether, 0));
+    function test_aQuarantinedFeeRollsTheReleaseBack() public {
+        token.quarantine(FEES);
+        vm.expectRevert(abi.encodeWithSelector(FeeEscrow.TransferShort.selector, FEES, 25 ether, 0));
         vm.prank(ATTESTER);
         escrow.release(DEAL, PROOF);
         (,, FeeEscrow.State state,,) = escrow.deals(DEAL);

@@ -23,3 +23,12 @@ test("an API error is an error, not a decline", async () => {
   const result = await charge(failing, card, { amount: 1650, currency: "USD", mcc: "5734", merchant: "Vendor A" });
   assert.equal(result.outcome, "error");
 });
+
+test("a vendor that is a known merchant brand gets a card bound to that brand too", () => {
+  const brand = "8953f157-8939-5562-85d8-27bce6ca4385";
+  const bound = cardControls(approvalFor({ vendor: "Vendor A", price: { amount: 1350, currency: "USD" }, billing: "monthly", merchantCategory: "7372", merchantBrand: brand }));
+  assert.deepEqual(bound.allowed_merchant_brands, { ids: [brand] });
+  assert.deepEqual(bound.allowed_merchant_categories, ["7372"]);
+  // Without a brand id the card is bound by category, currency and amount, and the field is left out.
+  assert.equal("allowed_merchant_brands" in cardControls(approval), false);
+});
